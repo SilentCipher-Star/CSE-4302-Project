@@ -2,4 +2,4 @@
 ## Hi its our first OOP project
 ### Hope you like the effort
 
-<i> life is a bed of thornes </i>
+<i> life is a bed of thorns </i>
