@@ -2,6 +2,7 @@
 #include "../Student/Student.hpp"
 #include "../Teacher/Teacher.hpp"
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -12,10 +13,29 @@ App::App() : isRunning(true)
 
 void App::loadUsers()
 {
-    // Simulated user database
-    users.push_back(make_shared<Student>("Airah", "123"));
-    users.push_back(make_shared<Student>("Abeed", "123"));
-    users.push_back(make_shared<Teacher>("Rafid", "admin"));
+    users.clear();
+    ifstream file("users.txt");
+    if (!file.is_open()) return;
+
+    string type, username, password;
+    while (file >> type >> username >> password)
+    {
+        if (type == "Student")
+            users.push_back(make_shared<Student>(username, password));
+        else if (type == "Teacher")
+            users.push_back(make_shared<Teacher>(username, password));
+    }
+    file.close();
+}
+
+void App::saveUser(const string& type, const string& username, const string& password)
+{
+    ofstream file("users.txt", ios::app);
+    if (file.is_open())
+    {
+        file << type << " " << username << " " << password << endl;
+        file.close();
+    }
 }
 
 void App::run()
@@ -24,35 +44,72 @@ void App::run()
 
     while (isRunning)
     {
-        string username, password;
-        cout << "\n--- Login ---\n";
-        cout << "Username: ";
-        cin >> username;
-        cout << "Password: ";
-        cin >> password;
+        int choice;
+        cout << "\n1. Sign In\n";
+        cout << "2. Create New User\n";
+        cout << "0. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
 
-        bool loggedIn = false;
-        for (auto &user : users)
+        if (choice == 1)
         {
-            if (user->getUsername() == username && user->authenticate(password))
+            string username, password;
+            cout << "\n--- Login ---\n";
+            cout << "Username: ";
+            cin >> username;
+            cout << "Password: ";
+            cin >> password;
+
+            bool loggedIn = false;
+            for (auto &user : users)
             {
-                loggedIn = true;
-                user->showMenu();
-                break;
+                if (user->getUsername() == username && user->authenticate(password))
+                {
+                    loggedIn = true;
+                    user->showMenu();
+                    break;
+                }
+            }
+
+            if (!loggedIn)
+                cout << "Invalid credentials!\n";
+        }
+        else if (choice == 2)
+        {
+            int type;
+            string username, password;
+            cout << "\n--- Create Account ---\n";
+            cout << "1. Student\n2. Teacher\nSelect Role: ";
+            cin >> type;
+            cout << "Enter Username: ";
+            cin >> username;
+            cout << "Enter Password: ";
+            cin >> password;
+
+            if (type == 1)
+            {
+                users.push_back(make_shared<Student>(username, password));
+                saveUser("Student", username, password);
+                cout << "Student account created!\n";
+            }
+            else if (type == 2)
+            {
+                users.push_back(make_shared<Teacher>(username, password));
+                saveUser("Teacher", username, password);
+                cout << "Teacher account created!\n";
+            }
+            else
+            {
+                cout << "Invalid role selected.\n";
             }
         }
-
-        if (!loggedIn)
+        else if (choice == 0)
         {
-            cout << "Invalid credentials!\n";
-        }
-
-        char exitChoice;
-        cout << "Exit application? (y/n): ";
-        cin >> exitChoice;
-        if (exitChoice == 'y' || exitChoice == 'Y')
             isRunning = false;
+        }
         else
-            cout << "\033[2J\033[1;1H"; // Clear console
+        {
+            cout << "Invalid choice.\n";
+        }
     }
 }
