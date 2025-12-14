@@ -1,19 +1,13 @@
 #include <raylib.h>
-#include <raymath.h>
+#include "raymath.h"
 #include <bits/stdc++.h>
-
+using namespace std;
 
 int main()
 {
-    InitWindow(1000, 800, "Acadence");
-    SetTargetFPS(60);
+    cout << "Hello, World!" << endl;
 
-    InitAudioDevice();
-
-    srand(time(NULL));
-
-    
-    CloseAudioDevice();
-    CloseWindow();
+    getchar();
+    getchar();
     return 0;
 }

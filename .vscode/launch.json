@@ -10,7 +10,7 @@
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
-      "externalConsole": false,
+      "externalConsole": true,
       "MIMode": "gdb",
       "setupCommands": [
         {
@@ -38,7 +38,7 @@
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
       "environment": [],
-      "externalConsole": false,
+      "externalConsole": true,
       "program": "${workspaceFolder}/${fileBasenameNoExtension}",
       "MIMode": "gdb",
       "windows": {
@@ -60,8 +60,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/Abu Sayeem Rafi/Desktop/Raylib-CPP-Starter-Template-for-VSCODE-main/Raylib-CPP-Starter-Template-for-VSCODE-main",
-      "program": "c:/Users/Abu Sayeem Rafi/Desktop/Raylib-CPP-Starter-Template-for-VSCODE-main/Raylib-CPP-Starter-Template-for-VSCODE-main/build/Debug/outDebug",
+      "cwd": "d:/OOP/CSE-4302-Project",
+      "program": "d:/OOP/CSE-4302-Project/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
