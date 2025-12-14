@@ -5,7 +5,7 @@
       "name": "Debug",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/${fileBasenameNoExtension}",
+      "program": "${workspaceFolder}/build/Acadence.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",
@@ -39,10 +39,10 @@
       "cwd": "${workspaceFolder}",
       "environment": [],
       "externalConsole": true,
-      "program": "${workspaceFolder}/${fileBasenameNoExtension}",
+      "program": "${workspaceFolder}/build/Acadence",
       "MIMode": "gdb",
       "windows": {
-        "program": "${workspaceFolder}/${fileBasenameNoExtension}.exe",
+        "program": "${workspaceFolder}/build/Acadence.exe",
         "miDebuggerPath": "C:/raylib/w64devkit/bin/gdb.exe"
       },
       "osx": {

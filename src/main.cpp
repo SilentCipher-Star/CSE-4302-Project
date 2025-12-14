@@ -1,5 +1,4 @@
 #include <raylib.h>
-#include "raymath.h"
 #include <bits/stdc++.h>
 using namespace std;
 
