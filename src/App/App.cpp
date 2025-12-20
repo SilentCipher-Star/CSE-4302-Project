@@ -1,6 +1,7 @@
 #include "App.hpp"
 #include "../Student/Student.hpp"
 #include "../Teacher/Teacher.hpp"
+#include "../Core/Input.h"
 #include <iostream>
 #include <fstream>
 
@@ -49,16 +50,31 @@ void App::run()
         cout << "2. Create New User\n";
         cout << "0. Exit\n";
         cout << "Enter choice: ";
-        cin >> choice;
-
+        choice = getInt();
         if (choice == 1)
         {
             string username, password;
             cout << "\n--- Login ---\n";
             cout << "Username: ";
-            cin >> username;
+            cin.ignore();
+            getline(cin, username);
+            if (!isValidCredential(username))
+            {
+                cout << "Invalid username characters!\n";
+                continue;
+            }
             cout << "Password: ";
-            cin >> password;
+            getline(cin, password);
+            if (!isValidCredential(password))
+            {
+                cout << "Invalid password characters!\n";
+                continue;
+            }
+            if (password.length() < 6)
+            {
+                cout << "Password must be at least 6 characters.\n";
+                continue;
+            }
 
             bool loggedIn = false;
             for (auto &user : users)
@@ -80,12 +96,22 @@ void App::run()
             string username, password;
             cout << "\n--- Create Account ---\n";
             cout << "1. Student\n2. Teacher\nSelect Role: ";
-            cin >> type;
+            type = getInt();
+            cin.ignore();
             cout << "Enter Username: ";
-            cin >> username;
+            getline(cin, username);
+            if (!isValidCredential(username))
+            {
+                cout << "Invalid username characters!\n";
+                continue;
+            }
             cout << "Enter Password: ";
-            cin >> password;
-
+            getline(cin, password);
+            if (!isValidCredential(password))
+            {
+                cout << "Invalid password characters!\n";
+                continue;
+            }
             if (type == 1)
             {
                 users.push_back(make_shared<Student>(username, password));
