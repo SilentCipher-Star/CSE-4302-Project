@@ -1,7 +1,7 @@
 #include "App.hpp"
 #include "../Student/Student.hpp"
 #include "../Teacher/Teacher.hpp"
-#include "../Core/Input.h"
+#include "../Core/Input.hpp"
 #include <iostream>
 #include <fstream>
 
