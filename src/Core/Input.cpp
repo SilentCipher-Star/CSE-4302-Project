@@ -29,7 +29,7 @@ int getIntInRange(int min, int max)
     }
 }
 
-bool isValidCredential(const std::string& s)
+bool isValidCredential(const string& s)
 {
     static const std::regex pattern("^[a-zA-Z0-9._\\-@#$!]+$");
     return std::regex_match(s, pattern);
