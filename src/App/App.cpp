@@ -70,9 +70,9 @@ void App::run()
                 cout << "Invalid password characters!\n";
                 continue;
             }
-            if (password.length() < 6)
+            if (password.length() < 4)
             {
-                cout << "Password must be at least 6 characters.\n";
+                cout << "Password must be at least 4 characters.\n";
                 continue;
             }
 
@@ -110,6 +110,11 @@ void App::run()
             if (!isValidCredential(password))
             {
                 cout << "Invalid password characters!\n";
+                continue;
+            }
+            if (password.length() < 4)
+            {
+                cout << "Password must be at least 4 characters.\n";
                 continue;
             }
             if (type == 1)
