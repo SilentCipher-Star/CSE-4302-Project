@@ -8,6 +8,10 @@ protected:
     std::string username;
     std::string password;
 
+    std::string role;
+    std::string name;
+    std::string email;
+
 public:
     Person(std::string u, std::string p) : username(u), password(p) {}
     virtual ~Person() = default;
