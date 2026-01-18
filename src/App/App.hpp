@@ -10,7 +10,9 @@ private:
     bool isRunning;
 
     void loadUsers();
-    void saveUser(const std::string& type, const std::string& username, const std::string& password);
+    void saveUser(const std::shared_ptr<Person> &user);
+    void saveAllUsers();
+    void handleAdmin();
 
 public:
     App();

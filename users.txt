@@ -1,2 +1,2 @@
-Student Tahsin 160
-Student Rafi 2897
+Admin admin admin
+Teacher Rizvi rizvi23 Lecturer CSE

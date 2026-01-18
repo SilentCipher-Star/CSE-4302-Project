@@ -5,7 +5,8 @@
 
 using namespace std;
 
-Student::Student(string u, string p) : Person(u, p) {}
+Student::Student(string u, string p, string dept, string prog, int sem)
+    : Person(u, p), department(dept), program(prog), semester(sem) {}
 
 void Student::showMenu()
 {

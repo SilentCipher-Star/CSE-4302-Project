@@ -4,7 +4,8 @@
 
 using namespace std;
 
-Teacher::Teacher(string u, string p) : Person(u, p) {}
+Teacher::Teacher(string u, string p, string desig, string dept)
+    : Person(u, p), designation(desig), department(dept) {}
 
 void Teacher::showMenu()
 {

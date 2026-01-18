@@ -17,6 +17,7 @@ public:
     virtual ~Person() = default;
 
     std::string getUsername() const { return username; }
+    std::string getPassword() const { return password; }
     bool authenticate(const std::string &p) const { return password == p; }
     virtual void showMenu() = 0;
 };
