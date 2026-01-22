@@ -20,5 +20,9 @@ private:
     void viewNotices();
     void viewGrades();
     void checkStudyPlanner();
-    void question_answer();
+    void checkHabitTracker();
+    void createHabit();
+    void viewHabit();
+    void deleteHabit();
+    void markHabitDone();
 };
