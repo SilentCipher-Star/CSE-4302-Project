@@ -20,4 +20,5 @@ private:
     void viewNotices();
     void viewGrades();
     void checkStudyPlanner();
+    void question_answer();
 };
