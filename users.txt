@@ -1,2 +1,6 @@
 Admin admin admin
 Teacher Rizvi rizvi23 Lecturer CSE
+Student Kanetah fine_shyt CSE CSE 3
+Teacher Anika tahsin junior Lecture
+Student faria omra mechanical mec 1
+Teacher jeba shajida assistant professor
