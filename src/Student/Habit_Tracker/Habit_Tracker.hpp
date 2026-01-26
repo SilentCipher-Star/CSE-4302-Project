@@ -5,7 +5,6 @@ using namespace std;
 
 class Habit
 {
-
 private:
     string activity_name;
     int time;
@@ -40,11 +39,12 @@ public:
     Habit(string name, int time, int duration, int freq, string type, int calender, bool reminder);
     ~Habit();
 
-    // funtion
+    // function
     bool completed();
 };
 
-class Prayer: public Habit{
+class Prayer: public Habit 
+{
 private:
     string waqt;
 
@@ -53,8 +53,8 @@ public:
     string GetWaqt();
 };
 
-class Workout: public Habit{
-
+class Workout: public Habit
+{
 private:
     int duration;
     int progress_timer;
@@ -77,8 +77,8 @@ protected:
     int GetProgress();
 };
 
-class Extra_Curriculum : public Habit{
-
+class Extra_Curriculum : public Habit
+{
 private:
     int duration;
     int progress_timer;
