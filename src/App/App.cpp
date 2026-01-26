@@ -13,6 +13,52 @@ App::App() : isRunning(true)
     loadUsers();
 }
 
+void App::loadUsers()
+{
+    ifstream file("users.txt");
+    if (!file.is_open())
+    {
+        cout << "Error: Could not open users.txt\n";
+        return;
+    }
+
+    string type;
+    while (file >> type)
+    {
+        if (type == "Admin")
+        {
+            string u, p;
+            file >> u >> p;
+            auto admin = make_shared<Admin>(u, p);
+            users.push_back(admin);
+        }
+        else if (type == "Teacher")
+        {
+            string u, p, desig, dept;
+            file >> u >> p >> desig >> dept;
+            auto teacher = make_shared<Teacher>(u, p, desig, dept);
+            users.push_back(teacher);
+        }
+        else if (type == "Student")
+        {
+            string u, p, dept, prog;
+            int sem;
+            file >> u >> p >> dept >> prog >> sem;
+            auto student = make_shared<Student>(u, p, dept, prog, sem);
+            users.push_back(student);
+        }
+    }
+    file.close();
+}
+
+void App::saveUser(const shared_ptr<Person> &user)
+{
+}
+
+void App::saveAllUsers()
+{
+}
+
 
 
 
