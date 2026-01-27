@@ -8,8 +8,4 @@ int main()
     cout << "Hello, World!" << endl;
     App app;
     app.run();
-
-    getchar();
-    getchar();
-    return 0;
 }
