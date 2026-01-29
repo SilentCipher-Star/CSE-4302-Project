@@ -32,22 +32,22 @@ private:
 public:
     Routine(const std::string& user);
     ~Routine();
-
+    
     void loadRoutineFromFile();
     void viewTodaySchedule();
     void viewWeeklySchedule();
     void editRoutine();
     void saveRoutineToFile();
-
+    
     void checkClassReminders();
     void showNextClass();
     void showUpcomingClasses();
     void displayReminders();
     void checkForImmediateClasses();
-
+    
     const std::vector<ClassSchedule>& getWeeklySchedule() const { return weeklySchedule; }
     const std::vector<ClassReminder>& getActiveReminders() const { return activeReminders; }
-
+    
 private:
     std::string getCurrentDay() const;
     int getCurrentTimeInMinutes() const;

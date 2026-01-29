@@ -1,0 +1,26 @@
+# Sample Student Routine File
+# Format: Day StartTime EndTime CourseCode CourseName Room Instructor
+# Use underscores for spaces in multi-word fields
+
+# Monday Classes
+Monday 09:00 10:30 CSE_4302 Object_Oriented_Programming_Lab Lab_301 Dr.Bakhtiar_Hasan
+Monday 11:00 12:30 CSE_4304 Data_Structures Room_205 Dr.Ishmam_Tashdeed
+Monday 14:00 15:30 EEE_4384 Electronics_Laboratory Lab_402 Dr.Ahmed
+
+# Tuesday Classes  
+Tuesday 08:00 09:30 CSE_4308 Database_Management_Systems_Lab Lab_301 Dr.Rahman
+Tuesday 10:00 11:30 CSE_4305 Computer_Organization_Architecture Room_203 Dr.Khan
+Tuesday 13:00 14:30 MATH_4141 Linear_Algebra Room_101 Dr.Siddique
+
+# Wednesday Classes
+Wednesday 09:00 10:30 CSE_4302 Object_Oriented_Programming_Lab Lab_301 Dr.Bakhtiar_Hasan
+Wednesday 11:00 12:30 CSE_4304 Data_Structures Room_205 Dr.Ishmam_Tashdeed
+Wednesday 15:00 16:30 EEE_4384 Electronics_Laboratory Lab_402 Dr.Ahmed
+
+# Thursday Classes
+Thursday 08:00 09:30 CSE_4308 Database_Management_Systems_Lab Lab_301 Dr.Rahman
+Thursday 10:00 11:30 CSE_4305 Computer_Organization_Architecture Room_203 Dr.Khan
+Thursday 14:00 15:30 MATH_4141 Linear_Algebra Room_101 Dr.Siddique
+
+# Friday Classes (Usually lighter)
+Friday 09:00 10:30 CSE_4302 Object_Oriented_Programming_Lab Lab_301 Dr.Bakhtiar_Hasan

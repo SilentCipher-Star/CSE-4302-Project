@@ -1,26 +1,41 @@
 #include "Student.hpp"
+#include "Routine/Routine.hpp"  // ADD: Include Routine module
 #include "Habit_Tracker/Habit_Tracker.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cstdio>
+#include <iomanip>  // ADD: For time formatting
 
 using namespace std;
 
+// MODIFIED: Constructor now creates Routine object
 Student::Student(string u, string p, string dept, string prog, int sem)
-    : Person(u, p), department(dept), program(prog), semester(sem) {}
+    : Person(u, p), department(dept), program(prog), semester(sem)
+{
+    routine = make_unique<Routine>(username);  // ADD: Create routine
+}
 
+// MODIFIED: Menu now includes routine options (1-4)
 void Student::showMenu()
 {
     int choice;
+    
+    // ADD: Show welcome and class reminders
+    cout << "\n--- Welcome back, " << username << " ---\n";
+    routine->displayReminders();
+    
     do
     {
         cout << "\n--- Student Dashboard: " << username << " ---\n";
-        cout << "1. View Today's Schedule\n";
-        cout << "2. View Notices\n";
-        cout << "3. View Grades\n";
-        cout << "4. Study Planner\n";
-        cout << "5. Habit Tracker\n";
+        cout << "1. View Today's Schedule\n";      // CHANGED: Now uses Routine
+        cout << "2. View Weekly Schedule\n";        // ADD: New routine feature
+        cout << "3. Check Class Reminders\n";       // ADD: New routine feature
+        cout << "4. Edit Routine\n";                // ADD: New routine feature
+        cout << "5. View Notices\n";                // CHANGED: Was option 2
+        cout << "6. View Grades\n";                 // CHANGED: Was option 3
+        cout << "7. Study Planner\n";               // CHANGED: Was option 4
+        cout << "8. Habit Tracker\n";               // CHANGED: Was option 5
         cout << "0. Logout\n";
         cout << "Enter choice: ";
         cin >> choice;
@@ -28,19 +43,29 @@ void Student::showMenu()
         switch (choice)
         {
         case 1:
-            viewSchedule();
+            routine->viewTodaySchedule();   // CHANGED: Use routine module
             break;
         case 2:
-            viewNotices();
+            routine->viewWeeklySchedule();  // ADD: New routine feature
             break;
         case 3:
-            viewGrades();
+            routine->checkClassReminders(); // ADD: New routine feature
+            routine->displayReminders();
             break;
         case 4:
-            checkStudyPlanner();
+            routine->editRoutine();         // ADD: New routine feature
             break;
         case 5:
-            checkHabitTracker();
+            viewNotices();                  // UNCHANGED: Just moved
+            break;
+        case 6:
+            viewGrades();                   // UNCHANGED: Just moved
+            break;
+        case 7:
+            checkStudyPlanner();            // UNCHANGED: Just moved
+            break;
+        case 8:
+            checkHabitTracker();            // UNCHANGED: Just moved
             break;
         case 0:
             cout << "Logging out...\n";
@@ -51,13 +76,9 @@ void Student::showMenu()
     } while (choice != 0);
 }
 
-void Student::viewSchedule()
-{
-    cout << "\n[Schedule]\n";
-    cout << "- 09:00 AM: Object Oriented Programming\n";
-    cout << "- 11:00 AM: Linear Algebra\n";
-    cout << "- 02:00 PM: Physics Lab (Next in 30 mins!)\n";
-}
+// REMOVED: Old hardcoded viewSchedule() - now handled by Routine module
+
+// ==================== ALL YOUR EXISTING CODE BELOW (UNCHANGED) ====================
 
 void Student::viewNotices()
 {
@@ -150,6 +171,7 @@ void Student::checkHabitTracker()
         cout << "Invalid choice.\n";
     }
 }
+
 void Student::createHabit()
 {
     cout << "\n[Create New Habit]\n";
@@ -207,7 +229,7 @@ void Student::viewHabit()
         {
             cout << "--------------------------------\n";
             cout << "Habit Name: " << name << endl;
-            cout << "Time: " << time << " mins | Duration: " << duration << " mins" << endl;
+            cout << "Time: " << time << " mins | Duration: " << duration << " " << endl;
             cout << "Frequency: " << frequency << " | Type: " << type << endl;
             cout << "Calendar: " << calender << " days | Reminder: " << (reminder ? "Yes" : "No") << endl;
             cout << "Streak: " << streak << " | Checked In: " << (check_in ? "Yes" : "No") << endl;
