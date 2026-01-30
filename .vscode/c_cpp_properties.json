@@ -46,8 +46,10 @@
         {
             "name": "Linux",
             "includePath": [
+                "${workspaceFolder}/**",
                 "/home/linuxbrew/.linuxbrew/include",
-                "${workspaceFolder}/**"
+                "/usr/include",
+                "/usr/local/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -56,10 +58,10 @@
                 "GRAPHICS_API_OPENGL_33",
                 "PLATFORM_DESKTOP"
             ],
+            "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "gcc-x64",
-            "configurationProvider": "ms-vscode.makefile-tools"
+            "intelliSenseMode": "linux-gcc-x64"
         },
         {
             "name": "winc++",
