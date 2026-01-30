@@ -1,11 +1,11 @@
 #include "Student.hpp"
-#include "Routine/Routine.hpp"  // ADD: Include Routine module
+#include "Routine/Routine.hpp" // ADD: Include Routine module
 #include "Habit_Tracker/Habit_Tracker.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cstdio>
-#include <iomanip>  // ADD: For time formatting
+#include <iomanip> // ADD: For time formatting
 
 using namespace std;
 
@@ -13,29 +13,29 @@ using namespace std;
 Student::Student(string u, string p, string dept, string prog, int sem)
     : Person(u, p), department(dept), program(prog), semester(sem)
 {
-    routine = make_unique<Routine>(username);  // ADD: Create routine
+    routine = make_unique<Routine>(username); // ADD: Create routine
 }
 
 // MODIFIED: Menu now includes routine options (1-4)
 void Student::showMenu()
 {
     int choice;
-    
+
     // ADD: Show welcome and class reminders
     cout << "\n--- Welcome back, " << username << " ---\n";
     routine->displayReminders();
-    
+
     do
     {
         cout << "\n--- Student Dashboard: " << username << " ---\n";
-        cout << "1. View Today's Schedule\n";      // CHANGED: Now uses Routine
-        cout << "2. View Weekly Schedule\n";        // ADD: New routine feature
-        cout << "3. Check Class Reminders\n";       // ADD: New routine feature
-        cout << "4. Edit Routine\n";                // ADD: New routine feature
-        cout << "5. View Notices\n";                // CHANGED: Was option 2
-        cout << "6. View Grades\n";                 // CHANGED: Was option 3
-        cout << "7. Study Planner\n";               // CHANGED: Was option 4
-        cout << "8. Habit Tracker\n";               // CHANGED: Was option 5
+        cout << "1. View Today's Schedule\n"; // CHANGED: Now uses Routine
+        cout << "2. View Weekly Schedule\n";  // ADD: New routine feature
+        cout << "3. Check Class Reminders\n"; // ADD: New routine feature
+        cout << "4. Edit Routine\n";          // ADD: New routine feature
+        cout << "5. View Notices\n";          // CHANGED: Was option 2
+        cout << "6. View Grades\n";           // CHANGED: Was option 3
+        cout << "7. Study Planner\n";         // CHANGED: Was option 4
+        cout << "8. Habit Tracker\n";         // CHANGED: Was option 5
         cout << "0. Logout\n";
         cout << "Enter choice: ";
         cin >> choice;
@@ -43,29 +43,29 @@ void Student::showMenu()
         switch (choice)
         {
         case 1:
-            routine->viewTodaySchedule();   // CHANGED: Use routine module
+            routine->viewTodaySchedule(); // CHANGED: Use routine module
             break;
         case 2:
-            routine->viewWeeklySchedule();  // ADD: New routine feature
+            routine->viewWeeklySchedule(); // ADD: New routine feature
             break;
         case 3:
             routine->checkClassReminders(); // ADD: New routine feature
             routine->displayReminders();
             break;
         case 4:
-            routine->editRoutine();         // ADD: New routine feature
+            routine->editRoutine(); // ADD: New routine feature
             break;
         case 5:
-            viewNotices();                  // UNCHANGED: Just moved
+            viewNotices(); // UNCHANGED: Just moved
             break;
         case 6:
-            viewGrades();                   // UNCHANGED: Just moved
+            viewGrades(); // UNCHANGED: Just moved
             break;
         case 7:
-            checkStudyPlanner();            // UNCHANGED: Just moved
+            checkStudyPlanner(); // UNCHANGED: Just moved
             break;
         case 8:
-            checkHabitTracker();            // UNCHANGED: Just moved
+            checkHabitTracker(); // UNCHANGED: Just moved
             break;
         case 0:
             cout << "Logging out...\n";
