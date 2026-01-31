@@ -23,7 +23,7 @@ void App::loadUsers()
         return;
     }
 
-    admin = make_shared<Admin>("admin", "admin", "Admin");
+    admin = make_shared<Admin>(users);
 
     string type;
     while (file >> type)
@@ -32,7 +32,7 @@ void App::loadUsers()
         {
             string u, p, n, e, d, ID, desig;
             file >> u >> p >> n >> e >> d >> ID >> desig;
-            auto teacher = make_shared<Teacher>(u, p, "Teacher", n, e, d, ID, desig);
+            auto teacher = make_shared<Teacher>(u, p, n, e, d, ID, desig);
             users.push_back(teacher);
         }
         else if (type == "Student")
@@ -40,7 +40,7 @@ void App::loadUsers()
             string u, p, n, e, d, ID;
             int sem;
             file >> u >> p >> n >> e >> d >> ID >> sem;
-            auto student = make_shared<Student>(u, p, "Student", n, e, d, ID, sem);
+            auto student = make_shared<Student>(u, p, n, e, d, ID, sem);
             users.push_back(student);
         }
     }

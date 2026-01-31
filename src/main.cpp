@@ -7,7 +7,7 @@
 using namespace std;
 
 int main()
-{ 
+{
     cout << "Hello, Everyone!" << endl;
     App app;
     app.run();
