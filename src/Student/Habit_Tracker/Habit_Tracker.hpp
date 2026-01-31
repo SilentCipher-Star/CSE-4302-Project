@@ -1,90 +1,110 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <memory>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <ctime>
+#include <algorithm>
+#include "../../Core/Timer.hpp"
+#include "../../Core/Input.hpp"
+
 using namespace std;
+
+enum class HabitType
+{
+    DURATION,
+    PRAYER,
+    COUNT
+};
+enum class Frequency
+{
+    DAILY,
+    WEEKLY
+};
 
 class Habit
 {
-private:
-    string activity_name;
-    int time;
-   
+protected:
+    string name;
+    HabitType type;
+    Frequency frequency;
     int streak;
-    int frequency;
-    string type; // daily,weekly,custom_days
-    bool check_in;
-    int calender;
-    bool reminder;
-
-protected:
-    void SetName(string activity);
-    void SetTime(int minutes);
-    
-    void SetFrequency(int times);
-    void SetType(string type);
-    void SetCalender(int days);
-
-    string GetName();
-    int GetTime();
-    
-    int GetFrequency();
-    string GetType();
-    int GetCalender();
-    bool Check();
-    bool Reminder();
-    
-    int GetStreak();
+    time_t lastUpdated;
+    bool isCompleted;
 
 public:
-    Habit(string name, int time, int duration, int freq, string type, int calender, bool reminder);
-    ~Habit();
+    Habit(string n, HabitType t, Frequency f);
+    virtual ~Habit() = default;
 
-    // function
-    bool completed();
+    string getName() const { return name; }
+    bool getCompleted() const { return isCompleted; }
+
+    virtual void display() const = 0;
+    virtual void perform() = 0;
+    virtual string serialize() const = 0;
+    virtual void deserialize(stringstream &ss) = 0;
+
+    void checkReset();
+    void markComplete();
+    string getFrequencyString() const;
+    string getTypeString() const;
 };
 
-class Prayer: public Habit 
+class DurationHabit : public Habit
 {
-private:
-    string waqt;
+    int targetMinutes;
+    int currentMinutes;
 
 public:
-    void SetWaqt(string waqt);
-    string GetWaqt();
+    DurationHabit(string n, Frequency f, int target);
+    void display() const override;
+    void perform() override;
+    string serialize() const override;
+    void deserialize(stringstream &ss) override;
 };
 
-class Workout: public Habit
+class CountHabit : public Habit
 {
-private:
-    int duration;
-    int progress_timer;
+    int targetCount;
+    int currentCount;
+    string unit;
 
-protected:
-    void SetDuration(int minutes);
-    int GetDuration();
-    int GetProgress();
+public:
+    CountHabit(string n, Frequency f, int target, string u);
+    void display() const override;
+    void perform() override;
+    string serialize() const override;
+    void deserialize(stringstream &ss) override;
 };
 
-class Sports: public Habit{
-
-private:
-    int duration;
-    int progress_timer;
-
-protected:
-    void SetDuration(int minutes);
-    int GetDuration();
-    int GetProgress();
-};
-
-class Extra_Curriculum : public Habit
+class PrayerHabit : public Habit
 {
-private:
-    int duration;
-    int progress_timer;
+    bool prayers[5]; // Fajr, Dhuhr, Asr, Maghrib, Isha
+public:
+    PrayerHabit();
+    void display() const override;
+    void perform() override;
+    string serialize() const override;
+    void deserialize(stringstream &ss) override;
+};
 
-protected:
-    void SetDuration(int minutes);
-    int GetDuration();
-    int GetProgress();
+class HabitTracker
+{
+    string username;
+    vector<shared_ptr<Habit>> habits;
+    string getFileName() const { return username + "_habit.txt"; }
+
+public:
+    HabitTracker(string user);
+    void loadHabits();
+    void saveHabits();
+    void menu();
+
+private:
+    void createHabit();
+    void deleteHabit();
+    void viewHabits();
+    void checkReminders();
 };

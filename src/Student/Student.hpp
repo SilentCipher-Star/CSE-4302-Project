@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "Routine/Routine.hpp"
+#include "Habit_Tracker/Habit_Tracker.hpp"
 
 using namespace std;
 
@@ -21,14 +22,10 @@ public:
     int getSemester() const { return semester; }
 
     unique_ptr<Routine> routine;
+    unique_ptr<HabitTracker> habitTracker;
 
     void changePassword();
     void viewNotices();
     void viewGrades();
     void checkStudyPlanner();
-    void checkHabitTracker();
-    void createHabit();
-    void viewHabit();
-    void deleteHabit();
-    void markHabitDone();
 };
