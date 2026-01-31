@@ -21,7 +21,8 @@ int getInt()
 int getIntInRange(int min, int max)
 {
     int x;
-    while (true) {
+    while (true)
+    {
         x = getInt();
         if (x >= min && x <= max)
             return x;
@@ -29,8 +30,8 @@ int getIntInRange(int min, int max)
     }
 }
 
-bool isValidCredential(const string& s)
+bool isValidCredential(const string &s)
 {
-    static const std::regex pattern("^[a-zA-Z0-9._\\-@#$!]+$");
-    return std::regex_match(s, pattern);
+    static const regex pattern("^[a-zA-Z0-9._\\-@#$!]+$");
+    return regex_match(s, pattern);
 }

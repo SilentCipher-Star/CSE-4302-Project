@@ -10,8 +10,8 @@
 using namespace std;
 
 // MODIFIED: Constructor now creates Routine object
-Student::Student(string u, string p, string dept, string prog, int sem)
-    : Person(u, p), department(dept), program(prog), semester(sem)
+Student::Student(string u, string p, string n, string e, string d, string ID, int sem)
+    : User(u, p, n, e, d), Student_ID(ID), semester(sem)
 {
     routine = make_unique<Routine>(username); // ADD: Create routine
 }

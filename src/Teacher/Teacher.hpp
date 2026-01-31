@@ -1,18 +1,21 @@
 #pragma once
-#include "../App/Person.hpp"
+#include "../App/User.hpp"
 
-class Teacher : public Person
+using namespace std;
+
+class Teacher : public User
 {
+private:
+    string Teacher_ID;
+    string designation;
+
 public:
-    Teacher(std::string u, std::string p, std::string desig, std::string dept);
+    Teacher(string u, string p, string n, string e, string d, string ID, string desig);
+    ~Teacher() = default;
     void showMenu() override;
 
-    std::string getDesignation() const { return designation; }
-    std::string getDepartment() const { return department; }
-
-private:
-    std::string designation;
-    std::string department;
+    string ID() const { return Teacher_ID; }
+    string getDesignation() const { return designation; }
 
     void postNotice();
     void assignGrade();

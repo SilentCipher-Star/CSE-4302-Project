@@ -8,27 +8,31 @@
 
 using namespace std;
 
-void App::handleAdmin()
+Admin::Admin() : Person("admin", "admin", "Admin") {}
+
+void Admin::showMenu()
 {
+    std::cout << "Logged in as Admin." << std::endl;
     int choice;
     do
     {
         cout << "\n--- Admin Menu ---\n";
-        cout << "1. Add Student\n";
-        cout << "2. Add Teacher\n";
+        cout << "1. Add User\n";
+        cout << "2. Delete User\n";
+        cout << "3. Show User List\n";
         cout << "0. Logout\n";
         cout << "Enter choice: ";
         choice = getInt();
 
         if (choice == 1)
         {
-            string u, p, dept, prog;
-            int sem;
+            string u, p;
             cout << "Username: ";
             cin >> u;
             cout << "Password: ";
             cin >> p;
-            cout << "Department: ";
+
+                        cout << "Name: ";
             cin >> dept;
             cout << "Program: ";
             cin >> prog;

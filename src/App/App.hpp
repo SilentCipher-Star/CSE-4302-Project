@@ -1,18 +1,18 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "Person.hpp"
+#include "Person.hpp";
+#include "User.hpp"
+using namespace std;
 
 class App
 {
 private:
-    std::vector<std::shared_ptr<Person>> users;
+    shared_ptr<Person> admin;
+    vector<shared_ptr<User>> users;
     bool isRunning;
 
     void loadUsers();
-    void saveUser(const std::shared_ptr<Person> &user);
-    void saveAllUsers();
-    void handleAdmin();
 
 public:
     App();

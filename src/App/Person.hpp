@@ -1,23 +1,23 @@
 #pragma once
 #include <string>
 #include <iostream>
+using namespace std;
 
 class Person
 {
 protected:
-    std::string username;
-    std::string password;
-
-    std::string role;
-    std::string name;
-    std::string email;
+    string username;
+    string password;
+    string role;
 
 public:
-    Person(std::string u, std::string p) : username(u), password(p) {}
+    Person(string u, string p, string r) : username(u), password(p), role(r) {}
     virtual ~Person() = default;
 
-    std::string getUsername() const { return username; }
-    std::string getPassword() const { return password; }
-    bool authenticate(const std::string &p) const { return password == p; }
+    string getUsername() const { return username; }
+    string getPassword() const { return password; }
+    string getRole() const { return role; }
+
+    bool authenticate(const string &p) const { return password == p; }
     virtual void showMenu() = 0;
 };
