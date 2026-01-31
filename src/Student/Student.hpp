@@ -22,6 +22,7 @@ public:
 
     unique_ptr<Routine> routine;
 
+    void changePassword();
     void viewNotices();
     void viewGrades();
     void checkStudyPlanner();

@@ -1,11 +1,15 @@
 #include "Student.hpp"
 #include "Routine/Routine.hpp" // ADD: Include Routine module
 #include "Habit_Tracker/Habit_Tracker.hpp"
+#include "../Core/Input.hpp"
+#include "../Core/Timer.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cstdio>
 #include <iomanip> // ADD: For time formatting
+#include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -22,12 +26,13 @@ void Student::showMenu()
     int choice;
 
     // ADD: Show welcome and class reminders
-    cout << "\n--- Welcome back, " << username << " ---\n";
+    cout << "\n--- Welcome back, " << name << " ---\n";
     routine->displayReminders();
 
     do
     {
-        cout << "\n--- Student Dashboard: " << username << " ---\n";
+        cout << string(50, '-') << endl;
+        cout << "--- Student Dashboard: " << " ---\n";
         cout << "1. View Today's Schedule\n"; // CHANGED: Now uses Routine
         cout << "2. View Weekly Schedule\n";  // ADD: New routine feature
         cout << "3. Check Class Reminders\n"; // ADD: New routine feature
@@ -36,6 +41,7 @@ void Student::showMenu()
         cout << "6. View Grades\n";           // CHANGED: Was option 3
         cout << "7. Study Planner\n";         // CHANGED: Was option 4
         cout << "8. Habit Tracker\n";         // CHANGED: Was option 5
+        cout << "9. Change Password\n";
         cout << "0. Logout\n";
         cout << "Enter choice: ";
         cin >> choice;
@@ -67,6 +73,9 @@ void Student::showMenu()
         case 8:
             checkHabitTracker(); // UNCHANGED: Just moved
             break;
+        case 9:
+            changePassword();
+            break;
         case 0:
             cout << "Logging out...\n";
             break;
@@ -79,6 +88,50 @@ void Student::showMenu()
 // REMOVED: Old hardcoded viewSchedule() - now handled by Routine module
 
 // ==================== ALL YOUR EXISTING CODE BELOW (UNCHANGED) ====================
+
+void Student::changePassword()
+{
+    cout << "\n--- Change Password ---\n";
+    string newPassword;
+    inputPassword(newPassword);
+    setPassword(newPassword);
+
+    // Update users.txt to persist the new password
+    ifstream inFile("users.txt");
+    vector<string> lines;
+    string line;
+    bool found = false;
+
+    while (getline(inFile, line))
+    {
+        stringstream ss(line);
+        string type, uName;
+        ss >> type >> uName;
+
+        if (type == "Student" && uName == username)
+        {
+            stringstream newLine;
+            newLine << "Student " << username << " " << password << " " << name << " " << email << " " << department << " " << Student_ID << " " << semester;
+            lines.push_back(newLine.str());
+            found = true;
+        }
+        else
+        {
+            lines.push_back(line);
+        }
+    }
+    inFile.close();
+
+    ofstream outFile("users.txt");
+    for (const auto &l : lines)
+        outFile << l << endl;
+    outFile.close();
+
+    if (found)
+        cout << "Password changed successfully.\n";
+    else
+        cout << "Error updating password\n";
+}
 
 void Student::viewNotices()
 {
@@ -128,15 +181,30 @@ void Student::viewGrades()
 void Student::checkStudyPlanner()
 {
     cout << "\n[Study Planner]\n";
-    cout << "[X] Review C++ Pointers\n";
-    cout << "[ ] Complete Calculus Assignment (Deadline: Tomorrow)\n";
-    cout << "[ ] Prepare for Physics Quiz\n";
+    cout << "1. View Tasks\n";
+    cout << "2. Start Focus Timer\n";
+    cout << "0. Back\n";
+    cout << "Enter choice: ";
+    int choice = getInt();
 
-    char done;
-    cout << "Did you finish the Calculus Assignment? (y/n): ";
-    cin >> done;
-    if (done == 'y' || done == 'Y')
-        cout << "Great job! Marking as complete.\n";
+    if (choice == 1)
+    {
+        cout << "\n[X] Review C++ Pointers\n";
+        cout << "[ ] Complete Calculus Assignment (Deadline: Tomorrow)\n";
+        cout << "[ ] Prepare for Physics Quiz\n";
+        cout << "\n(Task management features coming soon)\n";
+    }
+    else if (choice == 2)
+    {
+        int mins;
+        cout << "Enter duration (minutes): ";
+        cin >> mins;
+        Timer timer;
+        if (timer.start(mins))
+        {
+            cout << "Focus session recorded!\n";
+        }
+    }
 }
 
 void Student::checkHabitTracker()

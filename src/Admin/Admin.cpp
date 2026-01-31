@@ -212,7 +212,7 @@ void Admin::showMenu()
             {
                 if (user->getUsername() == u)
                 {
-                    cout << "Current Information:\n";
+                    cout << "\nCurrent Information:\n";
                     cout << "Username: " << user->getUsername() << endl;
                     cout << "Name: " << user->getName() << endl;
                     cout << "Email: " << user->getEmail() << endl;
