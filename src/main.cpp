@@ -4,11 +4,13 @@
 #include <fstream>
 #include <memory>
 #include "App/App.hpp"
+#include "Core/Input.hpp"
 using namespace std;
 
 int main()
 {
-    cout << "Hello, Everyone!" << endl;
+    clearScreen();
+    cout << "Welcome to Acadence" << endl;
     App app;
     app.run();
 }

@@ -75,6 +75,7 @@ void App::run()
                     if (user->getUsername() == u && user->getPassword() == p)
                     {
                         found = true;
+                        clearScreen();
                         user->showMenu();
                         break;
                     }

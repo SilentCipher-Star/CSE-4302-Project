@@ -24,6 +24,8 @@ Student::Student(string u, string p, string n, string e, string d, string ID, in
 // MODIFIED: Menu now includes routine options (1-4)
 void Student::showMenu()
 {
+    clearScreen();
+    string name = getName();
     int choice;
 
     // ADD: Show welcome and class reminders

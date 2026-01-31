@@ -34,6 +34,7 @@ void Admin::showMenu()
     int choice;
     do
     {
+        clearScreen();
         cout << "\n--- Admin Menu ---\n";
         cout << "1. Add Student\n";
         cout << "2. Add Teacher\n";
