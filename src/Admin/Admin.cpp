@@ -6,6 +6,7 @@
 #include "../Core/Input.hpp"
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -39,6 +40,8 @@ void Admin::showMenu()
 
         cout << "3. Delete User\n";
         cout << "4. Show User List\n";
+        cout << "5. Edit User\n";
+
         cout << "0. Logout\n";
         cout << "Enter choice: ";
         choice = getInt();
@@ -49,6 +52,11 @@ void Admin::showMenu()
             // Optimal: Use the generic input helper with a lambda for specific logic
             getValidInput(u, "Username: ", [&](const string &input) -> bool
                           {
+                if (input.length() < 3 || input.length() > 12)
+                {
+                    cout << "Username must be between 3 and 12 characters.\n";
+                    return false;
+                }
                 if (!isValidInput(input))
                 {
                     cout << "Invalid username. Allowed characters: a-z, A-Z, 0-9, . _ - @ # $ !\n";
@@ -86,6 +94,11 @@ void Admin::showMenu()
             string u, p;
             getValidInput(u, "Username: ", [&](const string &input) -> bool
                           {
+                if (input.length() < 3 || input.length() > 12)
+                {
+                    cout << "Username must be between 3 and 12 characters.\n";
+                    return false;
+                }
                 if (!isValidInput(input))
                 {
                     cout << "Invalid username. Allowed characters: a-z, A-Z, 0-9, . _ - @ # $ !\n";
@@ -105,8 +118,11 @@ void Admin::showMenu()
             cin >> name;
             cout << "Email: ";
             cin >> email;
-            cout << "Department: ";
-            cin >> dept;
+            getValidInput(dept, "Department (CSE, EEE, MPE, CEE, TVE): ", [](const string &input) -> bool
+                          {
+                if (input == "CSE" || input == "EEE" || input == "MPE" || input == "CEE" || input == "TVE") return true;
+                cout << "Invalid Department. Allowed: CSE, EEE, MPE, CEE, TVE\n";
+                return false; });
             cout << "Teacher ID: ";
             cin >> id;
             cout << "Designation: ";
@@ -122,6 +138,7 @@ void Admin::showMenu()
             string u;
             cout << "Enter username to delete: ";
             cin >> u;
+            bool found = false;
             for (auto it = users.begin(); it != users.end(); ++it)
             {
                 if ((*it)->getUsername() == u)
@@ -136,30 +153,101 @@ void Admin::showMenu()
                     }
                     for (auto &user : users)
                     {
-                        // find the user and delete that line
+                        if (auto s = dynamic_pointer_cast<Student>(user))
+                        {
+                            file << "Student " << s->getUsername() << " " << s->getPassword() << " " << s->getName() << " " << s->getEmail() << " " << s->getDepartment() << " " << s->ID() << " " << s->getSemester() << endl;
+                        }
+                        else if (auto t = dynamic_pointer_cast<Teacher>(user))
+                        {
+                            file << "Teacher " << t->getUsername() << " " << t->getPassword() << " " << t->getName() << " " << t->getEmail() << " " << t->getDepartment() << " " << t->ID() << " " << t->getDesignation() << endl;
+                        }
                     }
                     file.close();
+                    found = true;
                     break;
                 }
+            }
+            if (!found)
+            {
+                cout << "User not found.\n";
             }
         }
         else if (choice == 4)
         {
-            cout << "\n--- Student List ---\n";
+            cout << "\nStudent List:\n";
+            cout << string(95, '-') << endl;
+            cout << left << setw(5) << "No." << setw(15) << "Username" << setw(15) << "Name" << setw(25) << "Email" << setw(10) << "Dept" << setw(15) << "ID" << setw(10) << "Semester" << endl;
+            cout << string(95, '-') << endl;
+            int s_count = 0;
             for (auto &user : users)
             {
                 if (auto s = dynamic_pointer_cast<Student>(user))
                 {
-                    cout << "Name: " << s->getName() << " | Email: " << s->getEmail() << " | Department: " << s->getDepartment() << " | ID: " << s->ID() << " | Semester: " << s->getSemester() << endl;
+                    s_count++;
+                    cout << left << setw(5) << s_count << setw(15) << s->getUsername() << setw(15) << s->getName() << setw(25) << s->getEmail() << setw(10) << s->getDepartment() << setw(15) << s->ID() << setw(10) << s->getSemester() << endl;
                 }
             }
-            cout << "\n--- Teacher List ---\n";
+            cout << "\nTeacher List:\n";
+            cout << string(100, '-') << endl;
+            cout << left << setw(5) << "No." << setw(15) << "Username" << setw(15) << "Name" << setw(25) << "Email" << setw(10) << "Dept" << setw(15) << "ID" << setw(15) << "Designation" << endl;
+            cout << string(100, '-') << endl;
+            int t_count = 0;
             for (auto &user : users)
             {
                 if (auto t = dynamic_pointer_cast<Teacher>(user))
                 {
-                    cout << "Name: " << t->getName() << " | Email: " << t->getEmail() << " | Department: " << t->getDepartment() << " | ID: " << t->ID() << " | Designation: " << t->getDesignation() << endl;
+                    t_count++;
+                    cout << left << setw(5) << t_count << setw(15) << t->getUsername() << setw(15) << t->getName() << setw(25) << t->getEmail() << setw(10) << t->getDepartment() << setw(15) << t->ID() << setw(15) << t->getDesignation() << endl;
                 }
+            }
+            cout << "\nTotal Users: " << (s_count + t_count) << " (Students: " << s_count << ", Teachers: " << t_count << ")\n";
+        }
+        else if (choice == 5)
+        {
+            string u;
+            cout << "Enter username to edit: ";
+            cin >> u;
+            bool found = false;
+            for (auto &user : users)
+            {
+                if (user->getUsername() == u)
+                {
+                    cout << "Current Information:\n";
+                    cout << "Username: " << user->getUsername() << endl;
+                    cout << "Name: " << user->getName() << endl;
+                    cout << "Email: " << user->getEmail() << endl;
+                    cout << "Department: " << user->getDepartment() << endl;
+
+                    string new_password, new_name, new_email, new_dept;
+                    // Properly change password with validation
+                    inputPassword(new_password);
+                    user->setPassword(new_password);
+
+                    cout << "Enter new name: ";
+                    cin >> new_name;
+                    cout << "Enter new email: ";
+                    cin >> new_email;
+
+                    // Validate Department
+                    getValidInput(new_dept, "Enter new department (CSE, EEE, MPE, CEE, TVE): ", [](const string &input) -> bool
+                                  {
+                        if (input == "CSE" || input == "EEE" || input == "MPE" || input == "CEE" || input == "TVE") return true;
+                        cout << "Invalid Department. Allowed: CSE, EEE, MPE, CEE, TVE\n";
+                        return false; });
+
+                    user->setName(new_name);
+                    user->setEmail(new_email);
+                    user->setDepartment(new_dept);
+                    saveAllUsers();
+
+                    cout << "User information updated.\n";
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                cout << "User not found.\n";
             }
         }
         else if (choice == 0)
@@ -186,6 +274,28 @@ void Admin::saveUser(shared_ptr<User> user)
     else if (auto t = dynamic_pointer_cast<Teacher>(user))
     {
         file << "Teacher " << t->getUsername() << " " << t->getPassword() << " " << t->getName() << " " << t->getEmail() << " " << t->getDepartment() << " " << t->ID() << " " << t->getDesignation() << endl;
+    }
+    file.close();
+}
+
+void Admin::saveAllUsers()
+{
+    ofstream file("users.txt");
+    if (!file.is_open())
+    {
+        cout << "Error opening users file for saving.\n";
+        return;
+    }
+    for (auto &user : users)
+    {
+        if (auto s = dynamic_pointer_cast<Student>(user))
+        {
+            file << "Student " << s->getUsername() << " " << s->getPassword() << " " << s->getName() << " " << s->getEmail() << " " << s->getDepartment() << " " << s->ID() << " " << s->getSemester() << endl;
+        }
+        else if (auto t = dynamic_pointer_cast<Teacher>(user))
+        {
+            file << "Teacher " << t->getUsername() << " " << t->getPassword() << " " << t->getName() << " " << t->getEmail() << " " << t->getDepartment() << " " << t->ID() << " " << t->getDesignation() << endl;
+        }
     }
     file.close();
 }

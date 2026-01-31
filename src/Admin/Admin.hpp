@@ -17,4 +17,5 @@ public:
     void showMenu() override;
     bool check_existing_user(string username, vector<shared_ptr<User>> &users);
     void saveUser(shared_ptr<User> user);
+    void saveAllUsers();
 };

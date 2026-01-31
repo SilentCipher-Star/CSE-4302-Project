@@ -17,6 +17,7 @@ public:
     string getUsername() const { return username; }
     string getPassword() const { return password; }
     string getRole() const { return role; }
+    void setPassword(const string &p) { password = p; }
 
     bool authenticate(const string &p) const { return password == p; }
     virtual void showMenu() = 0;
