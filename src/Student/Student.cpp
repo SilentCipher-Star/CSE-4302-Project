@@ -19,6 +19,7 @@ Student::Student(string u, string p, string n, string e, string d, string ID, in
 {
     routine = make_unique<Routine>(username);           // ADD: Create routine
     habitTracker = make_unique<HabitTracker>(username); // ADD: Create habit tracker
+    homePage = make_unique<HomePage>(n, ID, sem, e);    // ADD: Create home page
 }
 
 // MODIFIED: Menu now includes routine options (1-4)
@@ -36,15 +37,16 @@ void Student::showMenu()
     {
         cout << string(50, '-') << endl;
         cout << "--- Student Dashboard: " << " ---\n";
-        cout << "1. View Today's Schedule\n"; // CHANGED: Now uses Routine
-        cout << "2. View Weekly Schedule\n";  // ADD: New routine feature
-        cout << "3. Check Class Reminders\n"; // ADD: New routine feature
-        cout << "4. Edit Routine\n";          // ADD: New routine feature
-        cout << "5. View Notices\n";          // CHANGED: Was option 2
-        cout << "6. View Grades\n";           // CHANGED: Was option 3
-        cout << "7. Study Planner\n";         // CHANGED: Was option 4
-        cout << "8. Habit Tracker\n";         // CHANGED: Was option 5
-        cout << "9. Change Password\n";
+        cout << "1. Personal Home Page\n";    // NEW: Homepage
+        cout << "2. View Today's Schedule\n"; // CHANGED: Now uses Routine
+        cout << "3. View Weekly Schedule\n";  // ADD: New routine feature
+        cout << "4. Check Class Reminders\n"; // ADD: New routine feature
+        cout << "5. Edit Routine\n";          // ADD: New routine feature
+        cout << "6. View Notices\n";          // CHANGED: Was option 2
+        cout << "7. View Grades\n";           // CHANGED: Was option 3
+        cout << "8. Study Planner\n";         // CHANGED: Was option 4
+        cout << "9. Habit Tracker\n";         // CHANGED: Was option 5
+        cout << "10. Change Password\n";
         cout << "0. Logout\n";
         cout << "Enter choice: ";
         cin >> choice;
@@ -52,31 +54,34 @@ void Student::showMenu()
         switch (choice)
         {
         case 1:
-            routine->viewTodaySchedule(); // CHANGED: Use routine module
+            showPersonalHomePage(); // NEW: Show personal home page
             break;
         case 2:
-            routine->viewWeeklySchedule(); // ADD: New routine feature
+            routine->viewTodaySchedule(); // CHANGED: Use routine module
             break;
         case 3:
+            routine->viewWeeklySchedule(); // ADD: New routine feature
+            break;
+        case 4:
             routine->checkClassReminders(); // ADD: New routine feature
             routine->displayReminders();
             break;
-        case 4:
+        case 5:
             routine->editRoutine(); // ADD: New routine feature
             break;
-        case 5:
+        case 6:
             viewNotices(); // UNCHANGED: Just moved
             break;
-        case 6:
+        case 7:
             viewGrades(); // UNCHANGED: Just moved
             break;
-        case 7:
+        case 8:
             checkStudyPlanner(); // UNCHANGED: Just moved
             break;
-        case 8:
+        case 9:
             habitTracker->menu(); // CHANGED: Use new HabitTracker
             break;
-        case 9:
+        case 10:
             changePassword();
             break;
         case 0:
@@ -86,6 +91,11 @@ void Student::showMenu()
             cout << "Invalid choice.\n";
         }
     } while (choice != 0);
+}
+
+void Student::showPersonalHomePage() 
+{
+    homePage->display(routine, habitTracker);
 }
 
 // REMOVED: Old hardcoded viewSchedule() - now handled by Routine module

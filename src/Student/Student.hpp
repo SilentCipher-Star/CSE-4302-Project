@@ -5,6 +5,7 @@
 #include <vector>
 #include "Routine/Routine.hpp"
 #include "Habit_Tracker/Habit_Tracker.hpp"
+#include "HomePage/HomePage.hpp"
 
 using namespace std;
 
@@ -13,11 +14,13 @@ class Student : public User
 private:
     string Student_ID;
     int semester;
+    unique_ptr<HomePage> homePage;
 
 public:
     Student(string u, string p, string n, string e, string d, string ID, int sem);
     ~Student() = default;
     void showMenu() override;
+    void showPersonalHomePage();
     string ID() const { return Student_ID; }
     int getSemester() const { return semester; }
 
