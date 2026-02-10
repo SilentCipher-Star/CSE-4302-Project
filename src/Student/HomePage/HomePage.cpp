@@ -31,7 +31,7 @@ void HomePage::showWelcomeBanner()
 
 void HomePage::showAcademicInfo()
 {
-    cout << "\n📚 Academic Information\n";
+    cout << "\n Academic Information\n";
     cout << string(70, '-') << endl;
     cout << "Name:      " << studentName << endl;
     cout << "Student ID: " << studentID << endl;
@@ -42,7 +42,7 @@ void HomePage::showAcademicInfo()
 
 void HomePage::showTodayHighlights(unique_ptr<Routine>& routine, unique_ptr<HabitTracker>& habitTracker)
 {
-    cout << "\n📅 Today's Highlights\n";
+    cout << "\n Today's Highlights\n";
     cout << string(70, '-') << endl;
     cout << "• Check your class schedule\n";
     cout << "• Review upcoming assignments\n";
@@ -52,7 +52,7 @@ void HomePage::showTodayHighlights(unique_ptr<Routine>& routine, unique_ptr<Habi
 
 void HomePage::showUpcomingEvents(unique_ptr<Routine>& routine)
 {
-    cout << "\n🔔 Upcoming Classes & Events\n";
+    cout << "\n Upcoming Classes & Events\n";
     cout << string(70, '-') << endl;
     routine->showUpcomingClasses();
     cout << "View today's schedule for details\n";
@@ -61,7 +61,7 @@ void HomePage::showUpcomingEvents(unique_ptr<Routine>& routine)
 
 void HomePage::showQuickStats(unique_ptr<Routine>& routine, unique_ptr<HabitTracker>& habitTracker)
 {
-    cout << "\n📊 Quick Stats\n";
+    cout << "\n Quick Stats\n";
     cout << string(70, '-') << endl;
     cout << "• Total Classes Today: [From Routine]\n";
     cout << "• Study Hours Logged: [From Study Planner]\n";

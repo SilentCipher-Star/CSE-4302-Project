@@ -21,12 +21,12 @@ Routine::~Routine()
 
 void Routine::loadRoutineFromFile()
 {
-    string filename = "routines/" + username + "_routine.txt";
+    string filename = "../routines/" + username + "_routine.txt";
     ifstream file(filename);
 
     if (!file.is_open())
     {
-        file.open("routines/default_routine.txt");
+        file.open("../routines/default_routine.txt");
         if (!file.is_open())
         {
             cout << "[WARNING] No routine file found for " << username << ".\n";
@@ -265,7 +265,7 @@ void Routine::editRoutine()
 
 void Routine::saveRoutineToFile()
 {
-    string filename = "routines/" + username + "_routine.txt";
+    string filename = "../routines/" + username + "_routine.txt";
     ofstream file(filename);
 
     if (!file.is_open())
@@ -381,7 +381,7 @@ void Routine::showUpcomingClasses()
     int currentTime = getCurrentTimeInMinutes();
     int count = 0;
 
-    cout << "\n📋 Upcoming Classes Today:\n";
+    cout << "\n Upcoming Classes Today:\n";
 
     for (const auto &cls : weeklySchedule)
     {

@@ -15,7 +15,7 @@ App::App() : isRunning(true)
 
 void App::loadUsers()
 {
-    ifstream file("users.txt");
+    ifstream file("../users.txt");
 
     if (!file.is_open())
     {

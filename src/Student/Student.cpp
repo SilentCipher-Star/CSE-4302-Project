@@ -32,7 +32,7 @@ void Student::showMenu()
     // ADD: Show welcome and class reminders
     cout << "\n--- Welcome back, " << name << " ---\n";
     routine->displayReminders();
-
+    viewAttendence();
     do
     {
         cout << string(50, '-') << endl;
@@ -93,7 +93,7 @@ void Student::showMenu()
     } while (choice != 0);
 }
 
-void Student::showPersonalHomePage() 
+void Student::showPersonalHomePage()
 {
     homePage->display(routine, habitTracker);
 }
@@ -218,4 +218,63 @@ void Student::checkStudyPlanner()
             cout << "Focus session recorded!\n";
         }
     }
+}
+
+void Student::viewAttendence()
+{
+    // cout << "\n[Attendence]\n";
+    ifstream file("../attendence.txt");
+    if (!file.is_open())
+    {
+        cout << "No Attendence recorded yet.\n";
+        return;
+    }
+
+    string sName, subject;
+    int total_class, taken_class, attended_class;
+    float percentage;
+    bool found = false;
+    while (file >> sName >> subject >> total_class >> taken_class >> attended_class >> percentage)
+    {
+        if (sName == username)
+        {
+            cout << "Your Attendence for " << subject << endl;
+            cout << "Attendence: " << percentage << endl;
+            found = true;
+
+            if (percentage >= 85)
+            {
+                cout << "Your Attendence is 85% or more" << endl;
+                cout << "Eligible for examination." << endl;
+            }
+            else if (percentage <= 85)
+            {
+                cout << "Your Attendence is less than 85%" << endl;
+
+                int remaining_class = total_class - taken_class;
+                int max_attended = attended_class + remaining_class;
+                int max_percentage = (max_attended * 100) / total_class;
+
+                if (percentage >= 85)
+                {
+                    cout << "****Your Attendence is up to Mark****" << endl;
+                    cout << "****Eligible for examination.***" << endl;
+                }
+                else if (max_percentage >= 85)
+                {
+                    cout << "**** Warning!!!! Attendance below 85%.****" << endl;
+                    cout << "**** Attend all remaining classes to be eligible.****" << endl;
+                }
+                else
+                {
+                    cout << "**** Warning!!!!Attendance cannot reach 85% even if all remaining classes are attended.****" << endl;
+                    cout << "**** Please meet the course teacher.****" << endl;
+                }
+            }
+        }
+    }
+    if (!found)
+        cout << "****No attendance record found for you.****\n";
+
+    file.close();
 }

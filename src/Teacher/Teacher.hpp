@@ -19,4 +19,6 @@ public:
 
     void postNotice();
     void assignGrade();
+    void Attendence();
+
 };

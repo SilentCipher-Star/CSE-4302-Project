@@ -15,6 +15,7 @@ void Teacher::showMenu()
         cout << "\n--- Teacher Dashboard: " << username << " ---\n";
         cout << "1. Post Class Notice\n";
         cout << "2. Assign Grade\n";
+        cout << "3. Attendence\n";
         cout << "0. Logout\n";
         cout << "Enter choice: ";
         cin >> choice;
@@ -26,6 +27,9 @@ void Teacher::showMenu()
             break;
         case 2:
             assignGrade();
+            break;
+        case 3:
+            Attendence();
             break;
         case 0:
             cout << "Logging out...\n";
@@ -42,7 +46,7 @@ void Teacher::postNotice()
     cout << "Enter notice message (use_underscores_for_spaces): ";
     cin >> notice; // Simple input for MVP
 
-    ofstream file("notices.txt", ios::app);
+    ofstream file("../notices.txt", ios::app);
     if (file.is_open())
     {
         file << "[" << username << "]: " << notice << endl;
@@ -66,7 +70,7 @@ void Teacher::assignGrade()
     cout << "Enter Grade: ";
     cin >> grade;
 
-    ofstream file("grades.txt", ios::app);
+    ofstream file("../grades.txt", ios::app);
     if (file.is_open())
     {
         file << sName << " " << subject << " " << grade << endl;
@@ -77,4 +81,44 @@ void Teacher::assignGrade()
     {
         cout << "Error opening grades file.\n";
     }
+}
+
+void Teacher::Attendence()
+{
+    int total_class, taken_class, attended_class;
+    string sub, studentUserName;
+
+    cout << "Student UserName: ";
+    cin >> studentUserName;
+
+    cout << "Subject Name: ";
+    cin >> sub;
+
+    cout << "Total Classes to be Taken: ";
+    cin >> total_class;
+
+    cout << "Total Classes Taken: ";
+    cin >> taken_class;
+
+    cout << "Total Classes Attended By the Student: ";
+    cin >> attended_class;
+    float percentage  = (attended_class * 100)/taken_class;
+    
+    ofstream file("../attendence.txt", ios::app);
+    if (file.is_open())
+    {
+        file << studentUserName << " " << sub << " "
+             << total_class << " "
+             << taken_class << " "
+             << attended_class << " "
+             << percentage << endl;
+        cout << "Attendence recorded successfully.\n";
+        file.close();
+    }
+    else
+    {
+        cout << "Error opening Attendence file.\n";
+    }
+
+    
 }

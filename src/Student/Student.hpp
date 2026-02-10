@@ -15,10 +15,11 @@ private:
     string Student_ID;
     int semester;
     unique_ptr<HomePage> homePage;
-
-public:
+    
+    public:
     Student(string u, string p, string n, string e, string d, string ID, int sem);
     ~Student() = default;
+    void viewAttendence();
     void showMenu() override;
     void showPersonalHomePage();
     string ID() const { return Student_ID; }
