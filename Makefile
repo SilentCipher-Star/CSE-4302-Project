@@ -46,6 +46,7 @@ all: $(PROJECT_NAME)
 $(PROJECT_NAME): $(SRC)
 	mkdir -p $(BUILD_DIR)
 	$(CC) -o $(BUILD_DIR)/$(PROJECT_NAME) $(SRC) $(CFLAGS)
+	cp users.txt $(BUILD_DIR)/
 
 # Clean everything
 clean:

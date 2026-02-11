@@ -15,6 +15,13 @@ inline void clearScreen()
     cout << "\033[2J\033[1;1H";
 }
 
+inline void pauseInput()
+{
+    cout << "\nPress Enter to continue...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.get();
+}
+
 inline int getInt()
 {
     int x;

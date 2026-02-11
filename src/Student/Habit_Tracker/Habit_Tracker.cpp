@@ -78,6 +78,8 @@ void DurationHabit::display() const
 
 void DurationHabit::perform()
 {
+    clearScreen();
+    cout << "\n--- Perform Habit: " << name << " ---\n";
     checkReset();
     if (isCompleted)
     {
@@ -131,6 +133,8 @@ void CountHabit::display() const
 
 void CountHabit::perform()
 {
+    clearScreen();
+    cout << "\n--- Perform Habit: " << name << " ---\n";
     checkReset();
     if (isCompleted)
     {
@@ -185,6 +189,8 @@ void PrayerHabit::display() const
 
 void PrayerHabit::perform()
 {
+    clearScreen();
+    cout << "\n--- Daily Prayers ---\n";
     checkReset();
     time_t now = time(0);
     tm *ltm = localtime(&now);
@@ -257,7 +263,8 @@ HabitTracker::HabitTracker(string user) : username(user) { loadHabits(); }
 void HabitTracker::loadHabits()
 {
     habits.clear();
-    ifstream file(getFileName());
+    string path = "Habits/" + getFileName();
+    ifstream file(path);
     if (!file.is_open())
         return;
 
@@ -287,7 +294,8 @@ void HabitTracker::loadHabits()
 
 void HabitTracker::saveHabits()
 {
-    ofstream file(getFileName());
+    string path = "Habits/" + getFileName();
+    ofstream file(path);
     for (auto &h : habits)
     {
         file << h->serialize() << endl;
@@ -297,6 +305,7 @@ void HabitTracker::saveHabits()
 
 void HabitTracker::createHabit()
 {
+    clearScreen();
     cout << "\n--- Create Habit ---\n";
     cout << "1. Workout/Extracurricular (Timer based)\n";
     cout << "2. Hydration/Count (Counter based)\n";
@@ -341,6 +350,7 @@ void HabitTracker::createHabit()
 
 void HabitTracker::deleteHabit()
 {
+    clearScreen();
     viewHabits();
     cout << "Enter number to delete (0 to cancel): ";
     int idx = getInt();
@@ -389,6 +399,7 @@ void HabitTracker::menu()
     int choice;
     do
     {
+        clearScreen();
         cout << "\n--- Habit Tracker ---\n";
         checkReminders();
         cout << "\n1. View Habits\n";
@@ -403,6 +414,7 @@ void HabitTracker::menu()
         {
         case 1:
             viewHabits();
+            pauseInput();
             break;
         case 2:
             viewHabits();
@@ -414,12 +426,15 @@ void HabitTracker::menu()
                 habits[idx - 1]->perform();
                 saveHabits();
             }
+            pauseInput();
             break;
         case 3:
             createHabit();
+            pauseInput();
             break;
         case 4:
             deleteHabit();
+            pauseInput();
             break;
         }
     } while (choice != 0);

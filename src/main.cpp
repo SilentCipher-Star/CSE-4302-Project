@@ -1,4 +1,3 @@
-// #include "../raylib.h"
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -9,8 +8,6 @@ using namespace std;
 
 int main()
 {
-    clearScreen();
-    cout << "Welcome to Acadence" << endl;
     App app;
     app.run();
 }

@@ -15,7 +15,7 @@ App::App() : isRunning(true)
 
 void App::loadUsers()
 {
-    ifstream file("../users.txt");
+    ifstream file("users.txt");
 
     if (!file.is_open())
     {
@@ -51,12 +51,16 @@ void App::run()
 {
     while (isRunning)
     {
+        clearScreen();
+        cout << "--- Acadence ---\n";
         cout << "\n1. Login\n0. Exit\nChoice: ";
         int choice = getInt(); // Only integer inputs
         if (choice == 0)
             isRunning = false;
         else if (choice == 1)
         {
+            clearScreen();
+            cout << "--- Login ---\n";
             string u, p;
             cout << "Username: ";
             cin >> u;
@@ -66,6 +70,7 @@ void App::run()
             if (admin->getUsername() == u && admin->getPassword() == p)
             {
                 found = true;
+                clearScreen();
                 admin->showMenu();
             }
             else
@@ -82,7 +87,10 @@ void App::run()
                 }
             }
             if (!found)
+            {
                 cout << "Invalid credentials.\n";
+                pauseInput();
+            }
         }
     }
 }
