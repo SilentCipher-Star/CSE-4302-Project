@@ -95,6 +95,7 @@ void Student::showMenu()
 
 void Student::showPersonalHomePage()
 {
+    clearScreen();
     homePage->display(routine, habitTracker);
 }
 
@@ -104,6 +105,7 @@ void Student::showPersonalHomePage()
 
 void Student::changePassword()
 {
+    clearScreen();
     cout << "\n--- Change Password ---\n";
     string newPassword;
     inputPassword(newPassword);

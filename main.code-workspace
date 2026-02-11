@@ -6,7 +6,7 @@
 	],
 	"settings": {
 		"files.associations": {
-			"raylib.h": "cpp",
+			
 			"limits": "cpp",
 			"array": "cpp",
 			"atomic": "cpp",

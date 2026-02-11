@@ -1,4 +1,4 @@
-Student asr 289700 Rafi rafi@iut.com CSE 230041106 2
+Student asr 123456 Rafi rafi@iut.com CSE 230041106 2
 Teacher mu.du M@du951 Muhsin mu.du@iut.com CSE 004951 Lecturer
 Student luna 123456 luna nancy CSE 230041069 4
 Student Anika Fucked Tahsin hihbuggjh@gmail.com EEE 160 2

@@ -21,7 +21,7 @@
       ],
       "windows": {
         "program": "${workspaceFolder}/build/Acadence.exe",
-        "miDebuggerPath": "C:/raylib/w64devkit/bin/gdb.exe"
+        "miDebuggerPath": "gdb.exe"
       },
       "osx": {
         "MIMode": "lldb"
@@ -44,7 +44,7 @@
       "MIMode": "gdb",
       "windows": {
         "program": "${workspaceFolder}/build/Acadence.exe",
-        "miDebuggerPath": "C:/raylib/w64devkit/bin/gdb.exe"
+        "miDebuggerPath": "gdb.exe"
       },
       "osx": {
         "MIMode": "lldb"

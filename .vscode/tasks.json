@@ -10,9 +10,8 @@
                 "BUILD_MODE=DEBUG"
             ],
             "windows": {
-                "command": "C:/raylib/w64devkit/bin/mingw32-make.exe",
+                "command": "mingw32-make.exe",
                 "args": [
-                    "RAYLIB_PATH=C:/raylib/raylib",
                     "PROJECT_NAME=Acadence",
                     "BUILD_MODE=DEBUG"
                 ]
@@ -26,9 +25,6 @@
             "linux": {
                 "args": [
                     "PROJECT_NAME=Acadence",
-                    "DESTDIR=/home/linuxbrew/.linuxbrew",
-                    "RAYLIB_LIBTYPE=SHARED",
-                    "EXAMPLE_RUNTIME_PATH=/home/linuxbrew/.linuxbrew/lib",
                     "BUILD_MODE=DEBUG"
                 ]
             },
@@ -45,9 +41,8 @@
                 "PLATFORM=PLATFORM_DESKTOP"
             ],
             "windows": {
-                "command": "C:/raylib/w64devkit/bin/mingw32-make.exe",
+                "command": "mingw32-make.exe",
                 "args": [
-                    "RAYLIB_PATH=C:/raylib/raylib",
                     "PROJECT_NAME=Acadence"
                 ]
             },
@@ -58,10 +53,7 @@
             },
             "linux": {
                 "args": [
-                    "PROJECT_NAME=Acadence",
-                    "DESTDIR=/home/linuxbrew/.linuxbrew",
-                    "RAYLIB_LIBTYPE=SHARED",
-                    "EXAMPLE_RUNTIME_PATH=/home/linuxbrew/.linuxbrew/lib"
+                    "PROJECT_NAME=Acadence"
                 ]
             },
             "problemMatcher": [
@@ -71,7 +63,7 @@
                 "kind": "build",
                 "isDefault": false
             },
-            "detail": "compiler: C:\\raylib\\mingw\\bin\\g++.exe"
+            "detail": "compiler: g++.exe"
         },
         {
             "type": "cppbuild",
