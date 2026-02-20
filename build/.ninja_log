@@ -1,9 +1,9 @@
 # ninja log v7
-2	230	1771568379481215100	Acadence_autogen/timestamp	b7f61dbf13cb2d0c
-2	230	1771568379481215100	Acadence_autogen/mocs_compilation.cpp	b7f61dbf13cb2d0c
-2	230	1771568379481215100	/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/timestamp	b7f61dbf13cb2d0c
-2	230	1771568379481215100	/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/mocs_compilation.cpp	b7f61dbf13cb2d0c
-251	1672	1771568379513147400	CMakeFiles/Acadence.dir/course.cpp.o	4b6dac3f5fa965e3
+7	209	1771569643461024200	Acadence_autogen/timestamp	b7f61dbf13cb2d0c
+7	209	1771569643461024200	Acadence_autogen/mocs_compilation.cpp	b7f61dbf13cb2d0c
+7	209	1771569643461024200	/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/timestamp	b7f61dbf13cb2d0c
+7	209	1771569643461024200	/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/mocs_compilation.cpp	b7f61dbf13cb2d0c
+210	1110	1771569643470827300	CMakeFiles/Acadence.dir/course.cpp.o	4b6dac3f5fa965e3
 253	1718	1771568379514661200	CMakeFiles/Acadence.dir/utils.cpp.o	cad240758eb9dbce
 250	1915	1771568379512015900	CMakeFiles/Acadence.dir/person.cpp.o	8cc4c605924f2e8c
 250	1934	1771568379512250600	CMakeFiles/Acadence.dir/admin.cpp.o	a06c3ddba9056410
@@ -13,16 +13,6 @@
 250	2573	1771568379512598000	CMakeFiles/Acadence.dir/student.cpp.o	af69090c985e8d11
 252	2671	1771568379514087200	CMakeFiles/Acadence.dir/habit.cpp.o	7d064dbab099129e
 254	2686	1771568379515707100	CMakeFiles/Acadence.dir/circularprogress.cpp.o	801cb90550bc88f3
-249	2982	1771568379511227800	CMakeFiles/Acadence.dir/Acadence_autogen/mocs_compilation.cpp.o	3cd6af3c11539d5d
-250	3431	1771568379511538900	CMakeFiles/Acadence.dir/main.cpp.o	983f99d555692c46
-251	3907	1771568379513376600	CMakeFiles/Acadence.dir/academicmanager.cpp.o	46c435c566c50080
-250	4775	1771568379511798700	CMakeFiles/Acadence.dir/mainwindow.cpp.o	4c163f6b56bda26c
-4776	5095	1771568384037549700	Acadence	ea8eb421bc7bde6f
-7	209	1771569643461024200	Acadence_autogen/timestamp	b7f61dbf13cb2d0c
-7	209	1771569643461024200	Acadence_autogen/mocs_compilation.cpp	b7f61dbf13cb2d0c
-7	209	1771569643461024200	/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/timestamp	b7f61dbf13cb2d0c
-7	209	1771569643461024200	/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/mocs_compilation.cpp	b7f61dbf13cb2d0c
-210	1110	1771569643470827300	CMakeFiles/Acadence.dir/course.cpp.o	4b6dac3f5fa965e3
 210	1821	1771569643470182500	CMakeFiles/Acadence.dir/Acadence_autogen/mocs_compilation.cpp.o	3cd6af3c11539d5d
 210	2118	1771569643470438500	CMakeFiles/Acadence.dir/main.cpp.o	983f99d555692c46
 211	2605	1771569643471038800	CMakeFiles/Acadence.dir/academicmanager.cpp.o	46c435c566c50080
