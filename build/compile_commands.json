@@ -1,0 +1,86 @@
+[
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/Acadence_autogen/mocs_compilation.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/mocs_compilation.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/mocs_compilation.cpp",
+  "output": "CMakeFiles/Acadence.dir/Acadence_autogen/mocs_compilation.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/main.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/main.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/main.cpp",
+  "output": "CMakeFiles/Acadence.dir/main.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/mainwindow.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/mainwindow.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/mainwindow.cpp",
+  "output": "CMakeFiles/Acadence.dir/mainwindow.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/person.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/person.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/person.cpp",
+  "output": "CMakeFiles/Acadence.dir/person.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/admin.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/admin.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/admin.cpp",
+  "output": "CMakeFiles/Acadence.dir/admin.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/student.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/student.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/student.cpp",
+  "output": "CMakeFiles/Acadence.dir/student.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/teacher.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/teacher.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/teacher.cpp",
+  "output": "CMakeFiles/Acadence.dir/teacher.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/course.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/course.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/course.cpp",
+  "output": "CMakeFiles/Acadence.dir/course.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/academicmanager.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/academicmanager.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/academicmanager.cpp",
+  "output": "CMakeFiles/Acadence.dir/academicmanager.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/timer.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/timer.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/timer.cpp",
+  "output": "CMakeFiles/Acadence.dir/timer.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/habit.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/habit.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/habit.cpp",
+  "output": "CMakeFiles/Acadence.dir/habit.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/routine.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/routine.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/routine.cpp",
+  "output": "CMakeFiles/Acadence.dir/routine.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/utils.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/utils.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/utils.cpp",
+  "output": "CMakeFiles/Acadence.dir/utils.cpp.o"
+},
+{
+  "directory": "/run/media/asr/storage/OOP/CSE-4302-Project/build",
+  "command": "/usr/bin/c++ -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -I/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include -isystem /usr/include/qt6/QtWidgets -isystem /usr/include/qt6 -isystem /usr/include/qt6/QtCore -isystem /usr/lib64/qt6/mkspecs/linux-g++ -isystem /usr/include/qt6/QtGui -DQT_QML_DEBUG -DQT_DECLARATIVE_DEBUG -g -std=gnu++17 -o CMakeFiles/Acadence.dir/circularprogress.cpp.o -c /run/media/asr/storage/OOP/CSE-4302-Project/circularprogress.cpp",
+  "file": "/run/media/asr/storage/OOP/CSE-4302-Project/circularprogress.cpp",
+  "output": "CMakeFiles/Acadence.dir/circularprogress.cpp.o"
+}
+]
