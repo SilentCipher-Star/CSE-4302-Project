@@ -167,7 +167,8 @@ void applyTheme(QApplication &a, const AppTheme &theme)
  */
 void initializeDataFiles()
 {
-    QFile adminsFile("admins.csv");
+    QString dataDir = AcadenceManager::getDataDirectory();
+    QFile adminsFile(dataDir + "admins.csv");
     if (!adminsFile.exists())
     {
         if (adminsFile.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -186,7 +187,7 @@ void initializeDataFiles()
 
     for (const QString &fileName : otherFiles)
     {
-        QFile file(fileName);
+        QFile file(dataDir + fileName);
         if (!file.exists() && !file.open(QIODevice::WriteOnly | QIODevice::Text))
         {
             // Log warning or handle error, but don't crash main loop yet

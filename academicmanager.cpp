@@ -8,6 +8,8 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QMap>
+#include <QDir>
+#include <QCoreApplication>
 
 // Helper functions for CSV handling
 /**
@@ -16,10 +18,21 @@
  * @param filename The path to the CSV file.
  * @return A QVector of QStringList, where each inner list is a row.
  */
+QString AcadenceManager::getDataDirectory()
+{
+    QString path = QCoreApplication::applicationDirPath() + "/../data";
+    QDir dir(path);
+    if (!dir.exists())
+    {
+        dir.mkpath(".");
+    }
+    return path + "/";
+}
+
 QVector<QStringList> AcadenceManager::readCsv(const QString &filename)
 {
     QVector<QStringList> data;
-    QFile file(filename);
+    QFile file(getDataDirectory() + filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         throw Acadence::FileException("Failed to open file for reading: " + filename);
@@ -89,7 +102,7 @@ static QString escapeCsv(const QString &val)
 
 static void appendCsv(const QString &filename, const QStringList &fields)
 {
-    QFile file(filename);
+    QFile file(AcadenceManager::getDataDirectory() + filename);
     if (!file.open(QIODevice::Append | QIODevice::Text))
     {
         throw Acadence::FileException("Failed to open file for appending: " + filename);
@@ -107,7 +120,7 @@ static void appendCsv(const QString &filename, const QStringList &fields)
 
 void AcadenceManager::writeCsv(const QString &filename, const QVector<QStringList> &data)
 {
-    QFile file(filename);
+    QFile file(getDataDirectory() + filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         throw Acadence::FileException("Failed to open file for writing: " + filename);
