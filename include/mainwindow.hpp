@@ -97,6 +97,10 @@ private:
     int userId;
     QString userName;
 
+    void setupTables();
+    void setupTimers();
+    void setupConnections();
+
     void refreshDashboard();
     void refreshPlanner();
     void refreshHabits();
