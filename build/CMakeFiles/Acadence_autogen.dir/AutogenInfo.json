@@ -1,17 +1,17 @@
 {
-	"BUILD_DIR" : "/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen",
-	"CMAKE_BINARY_DIR" : "/run/media/asr/storage/OOP/CSE-4302-Project/build",
-	"CMAKE_CURRENT_BINARY_DIR" : "/run/media/asr/storage/OOP/CSE-4302-Project/build",
-	"CMAKE_CURRENT_SOURCE_DIR" : "/run/media/asr/storage/OOP/CSE-4302-Project",
+	"BUILD_DIR" : "/mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen",
+	"CMAKE_BINARY_DIR" : "/mnt/windows/OOP/CSE-4302-Project/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/mnt/windows/OOP/CSE-4302-Project/build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/mnt/windows/OOP/CSE-4302-Project",
 	"CMAKE_EXECUTABLE" : "/usr/bin/cmake",
 	"CMAKE_LIST_FILES" : 
 	[
-		"/run/media/asr/storage/OOP/CSE-4302-Project/CMakeLists.txt",
-		"/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/3.31.10/CMakeSystem.cmake",
+		"/mnt/windows/OOP/CSE-4302-Project/CMakeLists.txt",
+		"/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/3.31.10/CMakeSystem.cmake",
 		"/usr/lib64/cmake/Qt6/qt.toolchain.cmake",
 		"/usr/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake",
 		"/usr/share/cmake/Modules/Platform/Linux-Initialize.cmake",
-		"/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/3.31.10/CMakeCXXCompiler.cmake",
+		"/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/3.31.10/CMakeCXXCompiler.cmake",
 		"/usr/share/cmake/Modules/CMakeSystemSpecificInformation.cmake",
 		"/usr/share/cmake/Modules/CMakeGenericSystem.cmake",
 		"/usr/share/cmake/Modules/CMakeInitializeConfigs.cmake",
@@ -404,94 +404,106 @@
 		"/usr/lib64/cmake/Qt6Widgets/Qt6WidgetsPlugins.cmake",
 		"/usr/lib64/cmake/Qt6Widgets/Qt6WidgetsVersionlessAliasTargets.cmake"
 	],
-	"CMAKE_SOURCE_DIR" : "/run/media/asr/storage/OOP/CSE-4302-Project",
+	"CMAKE_SOURCE_DIR" : "/mnt/windows/OOP/CSE-4302-Project",
 	"CROSS_CONFIG" : false,
-	"DEP_FILE" : "/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/deps",
+	"DEP_FILE" : "/mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/deps",
 	"DEP_FILE_RULE_NAME" : "Acadence_autogen/timestamp",
 	"HEADERS" : 
 	[
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/academicmanager.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/academicmanager.hpp",
 			"MU",
-			"EWIEGA46WW/moc_academicmanager.cpp",
+			"6YEA5652QU/moc_academicmanager.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/admin.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/admin.hpp",
 			"MU",
-			"EWIEGA46WW/moc_admin.cpp",
+			"6YEA5652QU/moc_admin.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/circularprogress.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/course.hpp",
 			"MU",
-			"EWIEGA46WW/moc_circularprogress.cpp",
+			"6YEA5652QU/moc_course.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/course.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/csvhandler.hpp",
 			"MU",
-			"EWIEGA46WW/moc_course.cpp",
+			"6YEA5652QU/moc_csvhandler.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/exceptions.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/exceptions.hpp",
 			"MU",
-			"EWIEGA46WW/moc_exceptions.cpp",
+			"6YEA5652QU/moc_exceptions.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/habit.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/habit.hpp",
 			"MU",
-			"EWIEGA46WW/moc_habit.cpp",
+			"6YEA5652QU/moc_habit.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/mainwindow.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/logindialog.hpp",
 			"MU",
-			"EWIEGA46WW/moc_mainwindow.cpp",
+			"6YEA5652QU/moc_logindialog.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/person.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/mainwindow.hpp",
 			"MU",
-			"EWIEGA46WW/moc_person.cpp",
+			"6YEA5652QU/moc_mainwindow.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/routine.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/person.hpp",
 			"MU",
-			"EWIEGA46WW/moc_routine.cpp",
+			"6YEA5652QU/moc_person.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/student.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/routine.hpp",
 			"MU",
-			"EWIEGA46WW/moc_student.cpp",
+			"6YEA5652QU/moc_routine.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/teacher.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/student.hpp",
 			"MU",
-			"EWIEGA46WW/moc_teacher.cpp",
+			"6YEA5652QU/moc_student.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/timer.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/teacher.hpp",
 			"MU",
-			"EWIEGA46WW/moc_timer.cpp",
+			"6YEA5652QU/moc_teacher.cpp",
 			null
 		],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/utils.hpp",
+			"/mnt/windows/OOP/CSE-4302-Project/include/theme.hpp",
 			"MU",
-			"EWIEGA46WW/moc_utils.cpp",
+			"6YEA5652QU/moc_theme.cpp",
+			null
+		],
+		[
+			"/mnt/windows/OOP/CSE-4302-Project/include/timer.hpp",
+			"MU",
+			"6YEA5652QU/moc_timer.cpp",
+			null
+		],
+		[
+			"/mnt/windows/OOP/CSE-4302-Project/include/utils.hpp",
+			"MU",
+			"6YEA5652QU/moc_utils.cpp",
 			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
-	"INCLUDE_DIR" : "/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/include",
-	"MOC_COMPILATION_FILE" : "/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/mocs_compilation.cpp",
+	"INCLUDE_DIR" : "/mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/include",
+	"MOC_COMPILATION_FILE" : "/mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/mocs_compilation.cpp",
 	"MOC_DEFINITIONS" : [ "QT_CORE_LIB", "QT_GUI_LIB", "QT_WIDGETS_LIB" ],
 	"MOC_DEPEND_FILTERS" : 
 	[
@@ -502,6 +514,7 @@
 	],
 	"MOC_INCLUDES" : 
 	[
+		"/mnt/windows/OOP/CSE-4302-Project/include",
 		"/usr/include/qt6/QtWidgets",
 		"/usr/include/qt6",
 		"/usr/include/qt6/QtCore",
@@ -534,44 +547,38 @@
 		"-E",
 		"/usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp"
 	],
-	"MOC_PREDEFS_FILE" : "/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/moc_predefs.h",
+	"MOC_PREDEFS_FILE" : "/mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/moc_predefs.h",
 	"MOC_RELAXED_MODE" : false,
 	"MOC_SKIP" : [],
 	"MULTI_CONFIG" : false,
 	"PARALLEL" : 8,
-	"PARSE_CACHE_FILE" : "/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/Acadence_autogen.dir/ParseCache.txt",
+	"PARSE_CACHE_FILE" : "/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/Acadence_autogen.dir/ParseCache.txt",
 	"QT_MOC_EXECUTABLE" : "/usr/lib64/qt6/libexec/moc",
 	"QT_UIC_EXECUTABLE" : "/usr/lib64/qt6/libexec/uic",
 	"QT_VERSION_MAJOR" : 6,
 	"QT_VERSION_MINOR" : 10,
-	"SETTINGS_FILE" : "/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/Acadence_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE" : "/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/Acadence_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
+		[ "/mnt/windows/OOP/CSE-4302-Project/main.cpp", "MU", null ],
 		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/academicmanager.cpp",
+			"/mnt/windows/OOP/CSE-4302-Project/src/academicmanager.cpp",
 			"MU",
 			null
 		],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/admin.cpp", "MU", null ],
-		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/circularprogress.cpp",
-			"MU",
-			null
-		],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/course.cpp", "MU", null ],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/habit.cpp", "MU", null ],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/main.cpp", "MU", null ],
-		[
-			"/run/media/asr/storage/OOP/CSE-4302-Project/mainwindow.cpp",
-			"MU",
-			null
-		],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/person.cpp", "MU", null ],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/routine.cpp", "MU", null ],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/student.cpp", "MU", null ],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/teacher.cpp", "MU", null ],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/timer.cpp", "MU", null ],
-		[ "/run/media/asr/storage/OOP/CSE-4302-Project/utils.cpp", "MU", null ]
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/admin.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/course.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/csvhandler.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/habit.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/logindialog.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/mainwindow.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/person.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/routine.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/student.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/teacher.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/theme.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/timer.cpp", "MU", null ],
+		[ "/mnt/windows/OOP/CSE-4302-Project/src/utils.cpp", "MU", null ]
 	],
 	"UIC_OPTIONS" : [],
 	"UIC_SEARCH_PATHS" : [],

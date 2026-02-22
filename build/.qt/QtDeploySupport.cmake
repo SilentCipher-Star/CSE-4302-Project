@@ -35,7 +35,7 @@ set(__QT_DEPLOY_SYSTEM_NAME "Linux")
 set(__QT_DEPLOY_SHARED_LIBRARY_SUFFIX ".so")
 set(__QT_DEPLOY_IS_SHARED_LIBS_BUILD "ON")
 set(__QT_DEPLOY_TOOL "GRD")
-set(__QT_DEPLOY_IMPL_DIR "/run/media/asr/storage/OOP/CSE-4302-Project/build/.qt")
+set(__QT_DEPLOY_IMPL_DIR "/mnt/windows/OOP/CSE-4302-Project/build/.qt")
 set(__QT_DEPLOY_VERBOSE "")
 set(__QT_CMAKE_EXPORT_NAMESPACE "Qt6")
 set(__QT_LIBINFIX "")
@@ -60,7 +60,7 @@ set(__QT_DEPLOY_QT_DEBUG_POSTFIX "")
 
 # Define the CMake commands to be made available during deployment.
 set(__qt_deploy_support_files
-    "/run/media/asr/storage/OOP/CSE-4302-Project/build/.qt/QtDeployTargets.cmake"
+    "/mnt/windows/OOP/CSE-4302-Project/build/.qt/QtDeployTargets.cmake"
     "/usr/lib64/cmake/Qt6Core/Qt6CoreDeploySupport.cmake"
 )
 foreach(__qt_deploy_support_file IN LISTS __qt_deploy_support_files)

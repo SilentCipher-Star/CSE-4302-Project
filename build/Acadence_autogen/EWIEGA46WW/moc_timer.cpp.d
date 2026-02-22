@@ -1,5 +1,5 @@
-/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/EWIEGA46WW/moc_timer.cpp: /run/media/asr/storage/OOP/CSE-4302-Project/timer.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/moc_predefs.h \
+/mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/EWIEGA46WW/moc_timer.cpp: /mnt/windows/OOP/CSE-4302-Project/timer.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/moc_predefs.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/bitsperlong.h \
   /usr/include/asm-generic/errno-base.h \

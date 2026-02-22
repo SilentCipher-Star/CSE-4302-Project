@@ -1,15 +1,15 @@
-/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/EWIEGA46WW/moc_mainwindow.cpp: /run/media/asr/storage/OOP/CSE-4302-Project/mainwindow.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/moc_predefs.h \
-  /run/media/asr/storage/OOP/CSE-4302-Project/academicmanager.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/circularprogress.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/course.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/exceptions.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/habit.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/person.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/routine.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/student.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/teacher.hpp \
-  /run/media/asr/storage/OOP/CSE-4302-Project/timer.hpp \
+/mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/EWIEGA46WW/moc_mainwindow.cpp: /mnt/windows/OOP/CSE-4302-Project/mainwindow.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/moc_predefs.h \
+  /mnt/windows/OOP/CSE-4302-Project/academicmanager.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/course.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/csvhandler.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/exceptions.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/habit.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/person.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/routine.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/student.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/teacher.hpp \
+  /mnt/windows/OOP/CSE-4302-Project/timer.hpp \
   /usr/include/alloca.h \
   /usr/include/asm-generic/bitsperlong.h \
   /usr/include/asm-generic/errno-base.h \
@@ -441,7 +441,6 @@
   /usr/include/qt6/QtCore/qversiontagging.h \
   /usr/include/qt6/QtCore/qxptype_traits.h \
   /usr/include/qt6/QtCore/qyieldcpu.h \
-  /usr/include/qt6/QtGui/QColor \
   /usr/include/qt6/QtGui/QStandardItemModel \
   /usr/include/qt6/QtGui/qaction.h \
   /usr/include/qt6/QtGui/qbitmap.h \
@@ -473,7 +472,6 @@
   /usr/include/qt6/QtWidgets/QMainWindow \
   /usr/include/qt6/QtWidgets/QStyledItemDelegate \
   /usr/include/qt6/QtWidgets/QTableWidgetItem \
-  /usr/include/qt6/QtWidgets/QWidget \
   /usr/include/qt6/QtWidgets/qabstractitemdelegate.h \
   /usr/include/qt6/QtWidgets/qabstractitemview.h \
   /usr/include/qt6/QtWidgets/qabstractscrollarea.h \

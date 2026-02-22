@@ -1,5 +1,5 @@
-/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/Acadence.dir
-/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/edit_cache.dir
-/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/rebuild_cache.dir
-/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/Acadence_autogen_timestamp_deps.dir
-/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/Acadence_autogen.dir
+/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/Acadence.dir
+/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/edit_cache.dir
+/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/rebuild_cache.dir
+/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/Acadence_autogen_timestamp_deps.dir
+/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/Acadence_autogen.dir

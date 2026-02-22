@@ -1,34 +1,38 @@
 Acadence_autogen/timestamp: \
-	/run/media/asr/storage/OOP/CSE-4302-Project/CMakeLists.txt \
-	/run/media/asr/storage/OOP/CSE-4302-Project/academicmanager.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/academicmanager.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/admin.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/admin.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/build/Acadence_autogen/moc_predefs.h \
-	/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/3.31.10/CMakeCXXCompiler.cmake \
-	/run/media/asr/storage/OOP/CSE-4302-Project/build/CMakeFiles/3.31.10/CMakeSystem.cmake \
-	/run/media/asr/storage/OOP/CSE-4302-Project/circularprogress.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/circularprogress.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/course.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/course.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/exceptions.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/habit.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/habit.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/main.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/mainwindow.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/mainwindow.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/person.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/person.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/routine.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/routine.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/student.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/student.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/teacher.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/teacher.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/timer.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/timer.hpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/utils.cpp \
-	/run/media/asr/storage/OOP/CSE-4302-Project/utils.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/CMakeLists.txt \
+	/mnt/windows/OOP/CSE-4302-Project/build/Acadence_autogen/moc_predefs.h \
+	/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/3.31.10/CMakeCXXCompiler.cmake \
+	/mnt/windows/OOP/CSE-4302-Project/build/CMakeFiles/3.31.10/CMakeSystem.cmake \
+	/mnt/windows/OOP/CSE-4302-Project/include/academicmanager.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/admin.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/course.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/csvhandler.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/exceptions.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/habit.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/logindialog.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/mainwindow.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/person.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/routine.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/student.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/teacher.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/theme.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/timer.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/include/utils.hpp \
+	/mnt/windows/OOP/CSE-4302-Project/main.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/academicmanager.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/admin.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/course.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/csvhandler.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/habit.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/logindialog.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/mainwindow.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/person.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/routine.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/student.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/teacher.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/theme.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/timer.cpp \
+	/mnt/windows/OOP/CSE-4302-Project/src/utils.cpp \
 	/usr/include/alloca.h \
 	/usr/include/asm-generic/bitsperlong.h \
 	/usr/include/asm-generic/errno-base.h \
@@ -359,6 +363,9 @@ Acadence_autogen/timestamp: \
 	/usr/include/qt6/QtCore/qcontainerinfo.h \
 	/usr/include/qt6/QtCore/qcontainertools_impl.h \
 	/usr/include/qt6/QtCore/qcontiguouscache.h \
+	/usr/include/qt6/QtCore/qcoreapplication.h \
+	/usr/include/qt6/QtCore/qcoreapplication_platform.h \
+	/usr/include/qt6/QtCore/qcoreevent.h \
 	/usr/include/qt6/QtCore/qdarwinhelpers.h \
 	/usr/include/qt6/QtCore/qdatastream.h \
 	/usr/include/qt6/QtCore/qdatetime.h \
@@ -394,6 +401,7 @@ Acadence_autogen/timestamp: \
 	/usr/include/qt6/QtCore/qmetatype.h \
 	/usr/include/qt6/QtCore/qminmax.h \
 	/usr/include/qt6/QtCore/qnamespace.h \
+	/usr/include/qt6/QtCore/qnativeinterface.h \
 	/usr/include/qt6/QtCore/qnumeric.h \
 	/usr/include/qt6/QtCore/qobject.h \
 	/usr/include/qt6/QtCore/qobject_impl.h \
@@ -453,6 +461,7 @@ Acadence_autogen/timestamp: \
 	/usr/include/qt6/QtCore/qtversionchecks.h \
 	/usr/include/qt6/QtCore/qtypeinfo.h \
 	/usr/include/qt6/QtCore/qtypes.h \
+	/usr/include/qt6/QtCore/qurl.h \
 	/usr/include/qt6/QtCore/qutf8stringview.h \
 	/usr/include/qt6/QtCore/qvariant.h \
 	/usr/include/qt6/QtCore/qvarlengtharray.h \
@@ -460,7 +469,6 @@ Acadence_autogen/timestamp: \
 	/usr/include/qt6/QtCore/qversiontagging.h \
 	/usr/include/qt6/QtCore/qxptype_traits.h \
 	/usr/include/qt6/QtCore/qyieldcpu.h \
-	/usr/include/qt6/QtGui/QColor \
 	/usr/include/qt6/QtGui/QStandardItemModel \
 	/usr/include/qt6/QtGui/qaction.h \
 	/usr/include/qt6/QtGui/qbitmap.h \
@@ -471,11 +479,15 @@ Acadence_autogen/timestamp: \
 	/usr/include/qt6/QtGui/qfontinfo.h \
 	/usr/include/qt6/QtGui/qfontmetrics.h \
 	/usr/include/qt6/QtGui/qfontvariableaxis.h \
+	/usr/include/qt6/QtGui/qguiapplication.h \
+	/usr/include/qt6/QtGui/qguiapplication_platform.h \
 	/usr/include/qt6/QtGui/qicon.h \
 	/usr/include/qt6/QtGui/qimage.h \
+	/usr/include/qt6/QtGui/qinputmethod.h \
 	/usr/include/qt6/QtGui/qkeysequence.h \
 	/usr/include/qt6/QtGui/qpaintdevice.h \
 	/usr/include/qt6/QtGui/qpalette.h \
+	/usr/include/qt6/QtGui/qpen.h \
 	/usr/include/qt6/QtGui/qpixelformat.h \
 	/usr/include/qt6/QtGui/qpixmap.h \
 	/usr/include/qt6/QtGui/qpolygon.h \
@@ -483,23 +495,35 @@ Acadence_autogen/timestamp: \
 	/usr/include/qt6/QtGui/qrgb.h \
 	/usr/include/qt6/QtGui/qrgba64.h \
 	/usr/include/qt6/QtGui/qstandarditemmodel.h \
+	/usr/include/qt6/QtGui/qtextcursor.h \
+	/usr/include/qt6/QtGui/qtextdocument.h \
+	/usr/include/qt6/QtGui/qtextformat.h \
+	/usr/include/qt6/QtGui/qtextoption.h \
 	/usr/include/qt6/QtGui/qtgui-config.h \
 	/usr/include/qt6/QtGui/qtguiexports.h \
 	/usr/include/qt6/QtGui/qtguiglobal.h \
 	/usr/include/qt6/QtGui/qtransform.h \
 	/usr/include/qt6/QtGui/qvalidator.h \
 	/usr/include/qt6/QtGui/qwindowdefs.h \
+	/usr/include/qt6/QtWidgets/QApplication \
+	/usr/include/qt6/QtWidgets/QDialog \
+	/usr/include/qt6/QtWidgets/QLineEdit \
 	/usr/include/qt6/QtWidgets/QMainWindow \
+	/usr/include/qt6/QtWidgets/QPushButton \
 	/usr/include/qt6/QtWidgets/QStyledItemDelegate \
 	/usr/include/qt6/QtWidgets/QTableWidgetItem \
-	/usr/include/qt6/QtWidgets/QWidget \
+	/usr/include/qt6/QtWidgets/qabstractbutton.h \
 	/usr/include/qt6/QtWidgets/qabstractitemdelegate.h \
 	/usr/include/qt6/QtWidgets/qabstractitemview.h \
 	/usr/include/qt6/QtWidgets/qabstractscrollarea.h \
 	/usr/include/qt6/QtWidgets/qabstractslider.h \
 	/usr/include/qt6/QtWidgets/qabstractspinbox.h \
+	/usr/include/qt6/QtWidgets/qapplication.h \
+	/usr/include/qt6/QtWidgets/qdialog.h \
 	/usr/include/qt6/QtWidgets/qframe.h \
+	/usr/include/qt6/QtWidgets/qlineedit.h \
 	/usr/include/qt6/QtWidgets/qmainwindow.h \
+	/usr/include/qt6/QtWidgets/qpushbutton.h \
 	/usr/include/qt6/QtWidgets/qrubberband.h \
 	/usr/include/qt6/QtWidgets/qsizepolicy.h \
 	/usr/include/qt6/QtWidgets/qslider.h \
@@ -826,5 +850,5 @@ Acadence_autogen/timestamp: \
 	/usr/share/cmake/Modules/Platform/Linux-Initialize.cmake \
 	/usr/share/cmake/Modules/Platform/Linux.cmake \
 	/usr/share/cmake/Modules/Platform/UnixPaths.cmake \
-	/run/media/asr/storage/OOP/CSE-4302-Project/mainwindow.ui \
+	/mnt/windows/OOP/CSE-4302-Project/src/mainwindow.ui \
 	/usr/bin/cmake
