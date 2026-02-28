@@ -116,30 +116,6 @@ void AcadenceManager::addNotice(const QString &content, const QString &author)
     CsvHandler::appendCsv("notices.csv", {date, author, content});
 }
 
-QString AcadenceManager::getNextClass(int userId)
-{
-    Student *s = getStudent(userId);
-    if (!s)
-        return "No Data";
-
-    int semester = s->getSemester();
-    delete s;
-
-    QString day = QDate::currentDate().toString("dddd");
-    QVector<RoutineSession> routine = getRoutineForDay(day, semester);
-    QTime now = QTime::currentTime();
-
-    for (const auto &item : routine)
-    {
-        QTime start = QTime::fromString(item.getStartTime(), "HH:mm");
-        if (start > now)
-        {
-            return item.getCourseCode() + " (" + item.getStartTime() + ")";
-        }
-    }
-    return "No more classes";
-}
-
 QString AcadenceManager::getDashboardStats(int userId, QString role)
 {
     if (role == "Student")
@@ -326,6 +302,20 @@ void AcadenceManager::completeTask(int taskId, bool status)
         }
     }
     CsvHandler::writeCsv("tasks.csv", data);
+}
+
+void AcadenceManager::deleteTask(int taskId)
+{
+    QVector<QStringList> data = CsvHandler::readCsv("tasks.csv");
+    QVector<QStringList> newData;
+    for (const auto &row : data)
+    {
+        if (row.size() > 0 && row[0].toInt() != taskId)
+        {
+            newData.append(row);
+        }
+    }
+    CsvHandler::writeCsv("tasks.csv", newData);
 }
 
 DailyPrayerStatus AcadenceManager::getDailyPrayers(int userId, QString date)

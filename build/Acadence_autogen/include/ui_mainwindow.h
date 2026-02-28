@@ -55,7 +55,6 @@ public:
     QLabel *val_p_sem;
     QLabel *lbl_p_email;
     QLabel *val_p_email;
-    QLabel *label_nextClass;
     QLabel *label_notices;
     QListWidget *noticeListWidget;
     QPushButton *addNoticeButton;
@@ -240,13 +239,7 @@ public:
 
         formLayout_profile->setWidget(4, QFormLayout::ItemRole::FieldRole, val_p_email);
 
-
         verticalLayout_dash->addWidget(groupBox_profile);
-
-        label_nextClass = new QLabel(tab_dashboard);
-        label_nextClass->setObjectName("label_nextClass");
-
-        verticalLayout_dash->addWidget(label_nextClass);
 
         label_notices = new QLabel(tab_dashboard);
         label_notices->setObjectName("label_notices");
@@ -289,7 +282,6 @@ public:
         addTaskButton->setObjectName("addTaskButton");
 
         horizontalLayout_task->addWidget(addTaskButton);
-
 
         verticalLayout_plan->addLayout(horizontalLayout_task);
 
@@ -340,9 +332,7 @@ public:
 
         horizontalLayout_timerControls->addWidget(btnTimerStop);
 
-
         verticalLayout_timer->addLayout(horizontalLayout_timerControls);
-
 
         verticalLayout_plan->addWidget(groupBox_timer);
 
@@ -380,7 +370,6 @@ public:
 
         hbox_prayers->addWidget(chkIsha);
 
-
         verticalLayout_habit->addWidget(groupBox_prayers);
 
         habitListWidget = new QListWidget(tab_habits);
@@ -404,7 +393,6 @@ public:
         btnDeleteHabit->setObjectName("btnDeleteHabit");
 
         horizontalLayout_habitButtons->addWidget(btnDeleteHabit);
-
 
         verticalLayout_habit->addLayout(horizontalLayout_habitButtons);
 
@@ -447,9 +435,7 @@ public:
 
         horizontalLayout_workoutTimerControls->addWidget(btnWorkoutStop);
 
-
         verticalLayout_workoutTimer->addLayout(horizontalLayout_workoutTimerControls);
-
 
         verticalLayout_habit->addWidget(groupBox_workoutTimer);
 
@@ -570,7 +556,6 @@ public:
 
         hbox_routine_manage->addWidget(btnAddRoutine_Teacher);
 
-
         verticalLayout_teacher_routine->addWidget(grp_routine_manage);
 
         tableTeacherRoutine = new QTableWidget(tab_teacher_routine);
@@ -627,7 +612,6 @@ public:
 
         hbox_assessment->addWidget(btnCreateAssessment);
 
-
         verticalLayout_teacher_assessment->addWidget(grp_assessment);
 
         verticalSpacer_assessment = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
@@ -655,7 +639,6 @@ public:
 
         hbox_grading_controls->addWidget(btnSaveGrades);
 
-
         vbox_grading->addLayout(hbox_grading_controls);
 
         tableGrading = new QTableWidget(grp_grading);
@@ -670,7 +653,6 @@ public:
         tableGrading->setObjectName("tableGrading");
 
         vbox_grading->addWidget(tableGrading);
-
 
         verticalLayout_teacher_grades->addWidget(grp_grading);
 
@@ -695,7 +677,6 @@ public:
         btnSaveAttendance->setObjectName("btnSaveAttendance");
 
         hbox_attendance_controls->addWidget(btnSaveAttendance);
-
 
         verticalLayout_teacher_attendance->addLayout(hbox_attendance_controls);
 
@@ -726,7 +707,6 @@ public:
         btnQueryAction->setObjectName("btnQueryAction");
 
         hbox_queries->addWidget(btnQueryAction);
-
 
         verticalLayout_queries->addLayout(hbox_queries);
 
@@ -764,7 +744,6 @@ public:
 
         horizontalLayout_buttons->addWidget(btnDeleteRow);
 
-
         verticalLayout_admin->addLayout(horizontalLayout_buttons);
 
         tabWidget->addTab(tab_admin, QString());
@@ -782,7 +761,6 @@ public:
         retranslateUi(MainWindow);
 
         tabWidget->setCurrentIndex(0);
-
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -802,8 +780,6 @@ public:
         val_p_sem->setText(QCoreApplication::translate("MainWindow", "-", nullptr));
         lbl_p_email->setText(QCoreApplication::translate("MainWindow", "Email:", nullptr));
         val_p_email->setText(QCoreApplication::translate("MainWindow", "-", nullptr));
-        label_nextClass->setText(QCoreApplication::translate("MainWindow", "Next Class: --", nullptr));
-        label_nextClass->setStyleSheet(QCoreApplication::translate("MainWindow", "font-weight: bold; color: #2c3e50; font-size: 14px; margin-bottom: 10px;", nullptr));
         label_notices->setText(QCoreApplication::translate("MainWindow", "Class Notices:", nullptr));
         addNoticeButton->setText(QCoreApplication::translate("MainWindow", "Post Notice (Teacher Only)", nullptr));
         logoutButton->setText(QCoreApplication::translate("MainWindow", "Logout", nullptr));
@@ -922,11 +898,13 @@ public:
         btnDeleteRow->setText(QCoreApplication::translate("MainWindow", "Delete Selected Row", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_admin), QCoreApplication::translate("MainWindow", "Admin Panel", nullptr));
     } // retranslateUi
-
 };
 
-namespace Ui {
-    class MainWindow: public Ui_MainWindow {};
+namespace Ui
+{
+    class MainWindow : public Ui_MainWindow
+    {
+    };
 } // namespace Ui
 
 QT_END_NAMESPACE

@@ -1,5 +1,21 @@
-101, John Doe   , john.doe@school.edu   , jdoe  , 123, CSE , Professor          , 80000.00
-102, Jane Smith , jane.smith@school.edu , jsmith, 123, EEE , Lecturer           , 60000.00
-103, Peter Jones, peter.jones@school.edu, pjones, 123, Math, Professor          , 75000.00
-104, Alice Brown, alice.brown@school.edu, abrown, 123, CSE , Assistant Professor, 65000.00
-105, Bob Johnson, bob.johnson@school.edu, bjohn , 123, EEE , Lecturer           , 60000.00
+101, John Doe      , john.doe@school.edu      , jdoe     , 123456, CSE, Professor          , 80000.00
+102, Jane Smith    , jane.smith@school.edu    , jsmith   , 123456, CSE, Lecturer           , 60000.00
+103, Peter Jones   , peter.jones@school.edu   , pjones   , 123456, CSE, Professor          , 75000.00
+104, Alice Brown   , alice.brown@school.edu   , abrown   , 123456, CSE, Assistant Professor, 65000.00
+105, Bob Johnson   , bob.johnson@school.edu   , bjohn    , 123456, CSE, Lecturer           , 60000.00
+106, Lisa Davis    , lisa.davis@school.edu    , ldavis   , 123456, CSE, Professor          , 75000.00
+107, Mike Wilson   , mike.wilson@school.edu   , mwilson  , 123456, CSE, Assistant Professor, 65000.00
+108, Sarah Lee     , sarah.lee@school.edu     , slee     , 123456, CSE, Lecturer           , 60000.00
+109, David Garcia  , david.garcia@school.edu  , dgarcia  , 123456, CSE, Professor          , 75000.00
+110, Emma Martinez , emma.martinez@school.edu , emartinez, 123456, CSE, Assistant Professor, 65000.00
+111, Alex Johnson  , alex.johnson@school.edu  , ajohn    , 123456, CSE, Lecturer           , 60000.00
+112, Thomas Lee    , thomas.lee@school.edu    , tlee     , 123456, CSE, Professor          , 75000.00
+113, Olivia Brown  , olivia.brown@school.edu  , obrown   , 123456, CEE, Assistant Professor, 65000.00
+114, James Wilson  , james.wilson@school.edu  , jwilson  , 123456, CSE, Lecturer           , 60000.00
+115, Lily Davis    , lily.davis@school.edu    , ldavis   , 123456, CSE, Professor          , 75000.00
+116, William Garcia, william.garcia@school.edu, wgarcia  , 123456, CSE, Assistant Professor, 65000.00
+117, Ava Martinez  , ava.martinez@school.edu  , amartinez, 123456, CSE, Lecturer           , 60000.00
+118, Daniel Lee    , daniel.lee@school.edu    , dlee     , 123456, CSE, Professor          , 75000.00
+119, Sophia Brown  , sophia.brown@school.edu  , sbrown   , 123456, CSE, Assistant Professor, 65000.00
+120, John Smith    , john.smith@school.edu    , jsmith   , 123456, CEE, Lecturer           , 60000.00
+   

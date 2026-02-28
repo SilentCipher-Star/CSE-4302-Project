@@ -13,7 +13,10 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
 {
     setWindowTitle("Acadence");
     setModal(true);
-    setFixedSize(1280, 720);
+
+    // Start in Full Screen
+    setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
+    setWindowState(Qt::WindowMaximized);
 
     themes = ThemeManager::getAvailableThemes();
 
@@ -24,7 +27,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
 
     QLabel *welcomeLabel = new QLabel("Welcome to Acadence", this);
     welcomeLabel->setAlignment(Qt::AlignCenter);
-    welcomeLabel->setStyleSheet("font-size: 48pt; font-weight: bold; margin-bottom: 20px;");
+    welcomeLabel->setStyleSheet("font-size: 54pt; font-weight: bold; margin-bottom: 40px;");
     mainLayout->addWidget(welcomeLabel, 0, Qt::AlignCenter);
 
     QFrame *centerFrame = new QFrame(this);
@@ -32,7 +35,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     centerFrame->setObjectName("loginFrame");
 
     QVBoxLayout *frameLayout = new QVBoxLayout(centerFrame);
-    frameLayout->setContentsMargins(40, 40, 40, 40);
+    frameLayout->setContentsMargins(50, 50, 50, 50);
     frameLayout->setSpacing(20);
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(centerFrame);
@@ -42,6 +45,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     shadow->setColor(QColor(0, 0, 0, 60));
     centerFrame->setGraphicsEffect(shadow);
 
+    // Define username and password fields
     userEdit = new QLineEdit(centerFrame);
     userEdit->setPlaceholderText("Username");
     userEdit->setAlignment(Qt::AlignCenter);
@@ -51,6 +55,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     passEdit->setEchoMode(QLineEdit::Password);
     passEdit->setAlignment(Qt::AlignCenter);
 
+    // Add the username and password layouts
     frameLayout->addWidget(userEdit);
     frameLayout->addWidget(passEdit);
 
@@ -103,9 +108,11 @@ void LoginDialog::onLoginClicked()
     QString inputUsername = userEdit->text();
     QString inputPassword = passEdit->text();
 
+    // Exception Handling
     try
     {
-        role = authManager.login(inputUsername, inputPassword, userId);
+        // Gets role (Admin, Student or Teacher) from user
+        role = Manager.login(inputUsername, inputPassword, userId);
     }
     catch (const Acadence::Exception &e)
     {
@@ -129,7 +136,7 @@ void LoginDialog::onLoginClicked()
         }
         else if (role == "Student")
         {
-            Student *s = authManager.getStudent(userId);
+            Student *s = Manager.getStudent(userId);
             if (s)
             {
                 name = s->getName();
@@ -138,7 +145,7 @@ void LoginDialog::onLoginClicked()
         }
         else if (role == "Teacher")
         {
-            Teacher *t = authManager.getTeacher(userId);
+            Teacher *t = Manager.getTeacher(userId);
             if (t)
             {
                 name = t->getName();
@@ -155,6 +162,7 @@ void LoginDialog::onLoginClicked()
     }
 }
 
+// Returns Information
 QString LoginDialog::getRole() const { return role; }
 int LoginDialog::getUserId() const { return userId; }
 QString LoginDialog::getName() const { return name; }

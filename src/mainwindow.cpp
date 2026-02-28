@@ -17,13 +17,17 @@
 #include <QDateEdit>
 #include <QTimeEdit>
 #include <QFormLayout>
+#include <QHBoxLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QGraphicsDropShadowEffect>
 #include <QHeaderView>
+#include <QResizeEvent>
 
 static void adjustColumnWidths(QTableView *table)
 {
+    if (!table || !table->model())
+        return;
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     table->horizontalHeader()->setStretchLastSection(false);
     table->resizeColumnsToContents();
@@ -35,7 +39,7 @@ static void adjustColumnWidths(QTableView *table)
 
     int availableWidth = table->viewport()->width();
     if (availableWidth < 100)
-        availableWidth = 1200; // Fallback for initialization if viewport not ready
+        availableWidth = 1900; // Fallback for initialization if viewport not ready
 
     if (totalWidth > 0 && totalWidth < availableWidth)
     {
@@ -47,18 +51,44 @@ static void adjustColumnWidths(QTableView *table)
     }
 }
 
+// Dynamically resize table columns
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    if (ui->adminTableView->isVisible())
+        adjustColumnWidths(ui->adminTableView);
+    if (ui->tableRoutine->isVisible())
+        adjustColumnWidths(ui->tableRoutine);
+    if (ui->tableTeacherRoutine->isVisible())
+        adjustColumnWidths(ui->tableTeacherRoutine);
+    if (ui->tableAcademics->isVisible())
+        adjustColumnWidths(ui->tableAcademics);
+    if (ui->tableGrading->isVisible())
+        adjustColumnWidths(ui->tableGrading);
+    if (ui->tableAttendance->isVisible())
+        adjustColumnWidths(ui->tableAttendance);
+}
+
 MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), userRole(role), userId(uid), userName(name)
 {
     activeTimerHabit = nullptr;
     ui->setupUi(this);
-    resize(1280, 720);
+
+    // Logout button in the top right corner of the tab widget
+    ui->logoutButton->setFixedSize(90, 36);
+    ui->tabWidget->setCornerWidget(ui->logoutButton, Qt::TopRightCorner);
+
+    // Start in Full Screen
+    setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
+    setWindowState(Qt::WindowMaximized);
 
     setupTables();
     setupTimers();
     setupConnections();
 
-    ui->label_welcome->setText("Welcome, " + role + " " + name);
+    ui->label_welcome->setText("Welcome, " + name);
+    ui->label_welcome->setStyleSheet("font-size: 36px; font-weight: bold;");
 
     // Add shadow effect to profile box
     QGraphicsDropShadowEffect *profileShadow = new QGraphicsDropShadowEffect(ui->groupBox_profile);
@@ -156,7 +186,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupTables()
 {
-    // Configure all tables to have interactive resizing but not stretch the last section weirdly
+    // Configure all tables to have interactive resizing
     QList<QTableView *> tables = {
         ui->adminTableView, ui->tableRoutine, ui->tableTeacherRoutine,
         ui->tableAcademics, ui->tableGrading, ui->tableAttendance};
@@ -225,6 +255,45 @@ void MainWindow::setupConnections()
         ui->groupBox_profile->layout()->addWidget(btnChangePass);
     }
     connect(btnChangePass, &QPushButton::clicked, this, &MainWindow::onChangePasswordClicked);
+
+    // Study Planner UI Setup
+    ui->completeTaskButton->setVisible(false);
+
+    btnDeleteTask = new QPushButton("Delete Task", this);
+    btnDeleteTask->setCursor(Qt::PointingHandCursor);
+    btnDeleteTask->setToolTip("Delete Selected Task");
+
+    // Add task and Delete Task buttons fit content
+    ui->addTaskButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    btnDeleteTask->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    QWidget *parent = ui->taskLineEdit->parentWidget();
+    if (parent && parent->layout())
+    {
+        QLayout *parentLayout = parent->layout();
+        int index = parentLayout->indexOf(ui->taskLineEdit);
+
+        // Create a container for the buttons
+        QWidget *buttonContainer = new QWidget(parent);
+        QHBoxLayout *hLayout = new QHBoxLayout(buttonContainer);
+        hLayout->setContentsMargins(0, 0, 0, 0);
+        hLayout->setSpacing(5);
+
+        parentLayout->removeWidget(ui->taskLineEdit);
+        parentLayout->removeWidget(ui->addTaskButton);
+
+        hLayout->addWidget(ui->taskLineEdit);
+        hLayout->addWidget(ui->addTaskButton);
+        hLayout->addWidget(btnDeleteTask);
+
+        if (QBoxLayout *box = qobject_cast<QBoxLayout *>(parentLayout))
+            box->insertWidget(index, buttonContainer);
+        else
+            parentLayout->addWidget(buttonContainer);
+    }
+
+    connect(btnDeleteTask, &QPushButton::clicked, this, &MainWindow::on_btnDeleteTask_clicked);
+    connect(ui->taskListWidget, &QListWidget::itemChanged, this, &MainWindow::on_taskItemChanged);
 }
 
 void MainWindow::onChangePasswordClicked()
@@ -297,24 +366,6 @@ void MainWindow::refreshDashboard()
         ui->noticeListWidget->addItem("[" + n.getDate() + "] " + n.getAuthor() + ": " + n.getContent());
     }
 
-    if (userRole == "Student")
-    {
-        QString nextClass = myManager.getNextClass(userId);
-        if (nextClass.isEmpty())
-        {
-            ui->label_nextClass->setVisible(false);
-        }
-        else
-        {
-            ui->label_nextClass->setVisible(true);
-            ui->label_nextClass->setText("Next Class: " + nextClass);
-        }
-    }
-    else
-    {
-        ui->label_nextClass->setVisible(false);
-    }
-
     QString stats = myManager.getDashboardStats(userId, userRole);
     ui->label_welcome->setToolTip(stats);
 
@@ -379,6 +430,7 @@ void MainWindow::on_addNoticeButton_clicked()
     }
 }
 
+// Logout
 void MainWindow::on_logoutButton_clicked()
 {
     QApplication::exit(99);
@@ -386,17 +438,26 @@ void MainWindow::on_logoutButton_clicked()
 
 void MainWindow::refreshPlanner()
 {
+    ui->taskListWidget->blockSignals(true); // Prevent triggering itemChanged during reload
     ui->taskListWidget->clear();
     QVector<Task> tasks = myManager.getTasks(userId);
     for (const auto &t : tasks)
     {
-        QString status = t.getIsCompleted() ? "[DONE] " : "[TODO] ";
-        QListWidgetItem *item = new QListWidgetItem(status + t.getDescription());
+        QListWidgetItem *item = new QListWidgetItem(t.getDescription());
         item->setData(Qt::UserRole, t.getId());
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(t.getIsCompleted() ? Qt::Checked : Qt::Unchecked);
+
         if (t.getIsCompleted())
+        {
+            QFont f = item->font();
+            f.setStrikeOut(true);
+            item->setFont(f);
             item->setForeground(Qt::gray);
+        }
         ui->taskListWidget->addItem(item);
     }
+    ui->taskListWidget->blockSignals(false);
 }
 
 void MainWindow::on_addTaskButton_clicked()
@@ -410,15 +471,28 @@ void MainWindow::on_addTaskButton_clicked()
     }
 }
 
-void MainWindow::on_completeTaskButton_clicked()
+void MainWindow::on_btnDeleteTask_clicked()
 {
     QListWidgetItem *item = ui->taskListWidget->currentItem();
     if (item)
     {
         int id = item->data(Qt::UserRole).toInt();
-        myManager.completeTask(id, true);
-        refreshPlanner();
+        myManager.deleteTask(id);
+        delete ui->taskListWidget->takeItem(ui->taskListWidget->row(item));
     }
+}
+
+void MainWindow::on_taskItemChanged(QListWidgetItem *item)
+{
+    int id = item->data(Qt::UserRole).toInt();
+    bool isChecked = (item->checkState() == Qt::Checked);
+    myManager.completeTask(id, isChecked);
+
+    // Update visual style
+    QFont f = item->font();
+    f.setStrikeOut(isChecked);
+    item->setFont(f);
+    item->setForeground(isChecked ? Qt::gray : QPalette().color(QPalette::Text));
 }
 
 void MainWindow::on_btnTimerStart_clicked()
@@ -466,6 +540,7 @@ void MainWindow::refreshHabits()
     }
 }
 
+// Add Habit
 void MainWindow::on_btnAddHabit_clicked()
 {
     QStringList types = {"Duration (Timer)", "Count (Counter)"};
@@ -504,6 +579,7 @@ void MainWindow::on_btnAddHabit_clicked()
     refreshHabits();
 }
 
+// Perform Habit
 void MainWindow::on_btnPerformHabit_clicked()
 {
     int row = ui->habitListWidget->currentRow();
@@ -543,6 +619,7 @@ void MainWindow::on_btnPerformHabit_clicked()
     }
 }
 
+// Delete Habit
 void MainWindow::on_btnDeleteHabit_clicked()
 {
     int row = ui->habitListWidget->currentRow();
@@ -554,16 +631,19 @@ void MainWindow::on_btnDeleteHabit_clicked()
     refreshHabits();
 }
 
+// Start timer
 void MainWindow::on_btnWorkoutStart_clicked()
 {
     m_workoutTimer->start(ui->spinWorkoutMinutes->value());
 }
 
+// Pause timer
 void MainWindow::on_btnWorkoutPause_clicked()
 {
     m_workoutTimer->pause();
 }
 
+// Stop timer
 void MainWindow::on_btnWorkoutStop_clicked()
 {
     m_workoutTimer->stop();

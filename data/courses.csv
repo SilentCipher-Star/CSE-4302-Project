@@ -1,11 +1,130 @@
-1,CSE101,Introduction to Programming,101,1,3
-2,CSE102,Data Structures,101,2,3
-3,EEE201,Circuit Analysis,102,2,3
-4,MATH301,Calculus I,103,1,3
-5,CSE203,Algorithms,104,3,3
-6,CSE204,Database Systems,104,4,3
-7,CSE305,Operating Systems,101,5,3
-8,CSE306,Computer Networks,104,6,3
-9,CSE407,Software Engineering,101,7,3
-10,CSE408,Artificial Intelligence,104,8,3
-
+  1, Hum 4145 , Islamiat                                      , 101, 1, 2
+  2, Hum 4147 , "Technology, Environment and Society"         , 102, 1, 3
+  3, Math 4141, Geometry and Differential Calculus            , 103, 1, 4
+  4, Phy 4141 , Physics I                                     , 104, 1, 3
+  5, CSE 4105 , Computing for Engineers                       , 105, 1, 3
+  6, CSE 4107 , Structured Programming I                      , 106, 1, 3
+  7, Hum 4142 , Arabic I                                      , 107, 1, 1
+  8, Hum 4144 , English I                                     , 108, 1, 1
+  9, Phy 4142 , Physics I Lab                                 , 109, 1, 1
+ 10, CSE 4104 , Engineering Drawing Lab                       , 110, 1, 1
+ 11, CSE 4108 , Structured Programming I Lab                  , 111, 1, 2
+ 12, Hum 4241 , Islamic History Science and Culture           , 101, 2, 2
+ 13, Math 4241, Integral Calculus and Differential Equations  , 102, 2, 4
+ 14, Phy 4241 , Physics II                                    , 103, 2, 3
+ 15, Chem 4241, Chemistry                                     , 104, 2, 3
+ 16, CSE 4203 , Discrete Mathematics                          , 105, 2, 3
+ 17, CSE 4205 , Digital Logic Design                          , 106, 2, 3
+ 18, Hum 4242 , Arabic II                                     , 107, 2, 1
+ 19, Hum 4244 , English II                                    , 108, 2, 1
+ 20, Phy 4242 , Physics II Lab                                , 109, 2, 1
+ 21, Chem 4242, Chemistry Lab                                 , 110, 2, 1
+ 22, CSE 4202 , Structured Programming II Lab                 , 111, 2, 2
+ 23, CSE 4206 , Digital Logic Design Lab                      , 112, 2, 1
+ 24, Math 4341, Linear Algebra                                , 101, 3, 3
+ 25, EEE 4383 , Electronic Devices and Circuits               , 102, 3, 3
+ 26, CSE 4301 , Object Oriented Programming                   , 103, 3, 3
+ 27, CSE 4303 , Data Structures                               , 104, 3, 3
+ 28, CSE 4305 , Computer Organization and Architecture        , 105, 3, 3
+ 29, CSE 4307 , Database Management Systems                   , 106, 3, 3
+ 30, EEE 4384 , Electronic Devices and Circuits Lab           , 107, 3, 1
+ 31, CSE 4302 , Object Oriented Programming Lab               , 108, 3, 2
+ 32, CSE 4304 , Data Structures Lab                           , 109, 3, 2
+ 33, CSE 4308 , Database Management Systems Lab               , 110, 3, 1
+ 34, Hum 4441 , Engineering Ethics                            , 101, 4, 3
+ 35, Math 4441, Probability and Statistics                    , 102, 4, 3
+ 36, EEE 4483 , Digital Electronics and Pulse Techniques      , 103, 4, 3
+ 37, CSE 4403 , Algorithms                                    , 104, 4, 3
+ 38, CSE 4405 , Data and Telecommunications                   , 105, 4, 4
+ 39, CSE 4407 , System Analysis and Design                    , 106, 4, 2
+ 40, EEE 4484 , Digital Electronics and Pulse Techniques Lab  , 107, 4, 1
+ 41, CSE 4402 , Visual Programming Lab                        , 108, 4, 2
+ 42, CSE 4404 , Algorithms Lab                                , 109, 4, 1
+ 43, CSE 4408 , System Analysis and Design Lab                , 110, 4, 1
+ 44, CSE 4501 , Operating Systems                             , 101, 5, 3
+ 45, CSE 4503 , Microprocessor and Assembly Language          , 102, 5, 3
+ 46, CSE 4511 , Computer Networks                             , 103, 5, 3
+ 47, CSE 4513 , Software Engineering and ObjectOriented Design, 104, 5, 3
+ 48, CSE 4502 , Operating Systems Lab                         , 105, 5, 1
+ 49, CSE 4504 , Microprocessor and Assembly Language Lab      , 106, 5, 1
+ 50, CSE 4508 , RDBMS Programming Lab                         , 107, 5, 2
+ 51, CSE 4510 , Software Development                          , 108, 5, 1
+ 52, CSE 4512 , Computer Networks Lab                         , 109, 5, 2
+ 53, Math 4541, Multivariable Calculus and Complex Variables  , 110, 5, 3
+ 54, CSE 4531 , E-Commerce and Web Security                   , 111, 5, 3
+ 55, CSE 4537 , Decision Support Systems                      , 112, 5, 3
+ 56, CSE 4547 , Parallel and Distributed Systems              , 113, 5, 3
+ 57, CSE 4539 , Web Programming                               , 114, 5, 3
+ 58, CSE 4543 , Geographical Information Systems              , 115, 5, 3
+ 59, CSE 4549 , Simulation and Modeling                       , 116, 5, 3
+ 60, CSE 4551 , Computer Graphics and Multimedia Systems      , 117, 5, 3
+ 61, CSE 4540 , Web Programming Lab                           , 118, 5, 1
+ 62, CSE 4544 , Geographical Information Systems Lab          , 119, 5, 1
+ 63, CSE 4550 , Simulation and Modeling Lab                   , 120, 5, 1
+ 64, CSE 4552 , Computer Graphics and Multimedia Systems Lab  , 101, 5, 1
+ 65, Hum 4641 , Accounting                                    , 102, 6, 3
+ 66, CSE 4615 , Wireless Networks                             , 103, 6, 2
+ 67, CSE 4619 , Peripherals and Interfacing                   , 104, 6, 3
+ 68, CSE 4621 , Machine Learning                              , 105, 6, 3
+ 69, CSE 4610 , Design Project                                , 106, 6, 2
+ 70, CSE 4614 , Technical Report Writing                      , 107, 6, 1
+ 71, CSE 4616 , Wireless Networks Lab                         , 108, 6, 1
+ 72, CSE 4620 , Peripherals and Interfacing Lab               , 109, 6, 1
+ 73, CSE 4622 , Machine Learning Lab                          , 110, 6, 1
+ 74, Math 4641, Numerical Methods                             , 111, 6, 3
+ 75, CSE 4641 , Distributed Operating Systems                 , 112, 6, 3
+ 76, CSE 4643 , Mobile Application Development                , 113, 6, 3
+ 77, CSE 4647 , Distributed Database Systems                  , 114, 6, 3
+ 78, Math 4642, Numerical Methods Lab                         , 115, 6, 1
+ 79, CSE 4642 , Distributed Operating Systems Lab             , 116, 6, 1
+ 80, CSE 4644 , Mobile Application Development Lab            , 117, 6, 1
+ 81, CSE 4648 , Distributed Database Systems Lab              , 118, 6, 1
+ 82, CSE 4631 , Digital Signal Processing                     , 119, 6, 3
+ 83, CSE 4635 , Web Architecture                              , 120, 6, 3
+ 84, CSE 4649 , Systems Programming                           , 101, 6, 3
+ 85, CSE 4651 , Unix Programming                              , 102, 6, 3
+ 86, CSE 4632 , Digital Signal Processing Lab                 , 103, 6, 1
+ 87, CSE 4636 , Web Architecture Lab                          , 104, 6, 1
+ 88, CSE 4650 , Systems Programming Lab                       , 105, 6, 1
+ 89, CSE 4652 , Unix Programming Lab                          , 106, 6, 1
+ 90, Hum 4741 , Business Communication and Law                , 107, 7, 2
+ 91, Hum 4743 , Engineering Economics                         , 108, 7, 2
+ 92, Hum 4745 , International Relationship                    , 109, 7, 2
+ 93, Math 4741, Mathematical Analysis                         , 110, 7, 3
+ 94, CSE 4703 , Theory of Computing                           , 111, 7, 3
+ 95, CSE 4711 , Artificial Intelligence                       , 112, 7, 3
+ 96, CSE 4712 , Artificial Intelligence Lab                   , 113, 7, 1
+ 97, CSE 4700 , Project/Thesis                                , 114, 7, 3
+ 98, CSE 4790 , Industrial Training                           , 115, 7, 1
+ 99, CSE 4739 , Data Mining                                   , 116, 7, 3
+100, CSE 4743 , Cryptography and Network Security             , 117, 7, 3
+101, CSE 4745 , Embedded Systems Design                       , 118, 7, 3
+102, CSE 4747 , Computational Biology                         , 119, 7, 3
+103, CSE 4733 , Digital Image Processing                      , 120, 7, 3
+104, CSE 4735 , Digital Systems Design                        , 101, 7, 3
+105, CSE 4749 , Introduction to Cloud Computing               , 102, 7, 3
+106, CSE 4751 , Network Programming                           , 103, 7, 3
+107, CSE 4753 , Bioinformatics                                , 104, 7, 3
+108, CSE 4734 , Digital Image Processing Lab                  , 105, 7, 1
+109, CSE 4736 , Digital Systems Design Lab                    , 106, 7, 1
+110, CSE 4750 , Introduction to Cloud Computing Lab           , 107, 7, 1
+111, CSE 4752 , Network Programming Lab                       , 108, 7, 1
+112, CSE 4754 , Bioinformatics Lab                            , 109, 7, 1
+113, CSE 4801 , Compiler Design                               , 110, 8, 3
+114, CSE 4803 , Graph Theory                                  , 111, 8, 3
+115, CSE 4807 , IT Organization and Management                , 112, 8, 3
+116, CSE 4809 , Algorithm Engineering                         , 113, 8, 2
+117, CSE 4802 , Compiler Design Lab                           , 114, 8, 1
+118, CSE 4810 , Algorithm Engineering Lab                     , 115, 8, 1
+119, CSE 4800 , Project/Thesis                                , 116, 8, 3
+120, CSE 4841 , Introduction to Optimization                  , 117, 8, 3
+121, CSE 4845 , Introduction to Information Retrieval         , 118, 8, 3
+122, CSE 4847 , Information and OS Security                   , 119, 8, 3
+123, CSE 4849 , Human Computer Interaction                    , 120, 8, 3
+124, CSE 4851 , Design Pattern                                , 101, 8, 3
+125, CSE 4833 , VLSI Design and Testing                       , 102, 8, 3
+126, CSE 4835 , Pattern Recognition                           , 103, 8, 3
+127, CSE 4839 , Internetworking Protocols                     , 104, 8, 3
+128, CSE 4834 , VLSI Design and Testing Lab                   , 105, 8, 1
+129, CSE 4836 , Pattern Recognition Lab                       , 106, 8, 1
+130, CSE 4840 , Internetworking Protocols Lab                 , 107, 8, 1

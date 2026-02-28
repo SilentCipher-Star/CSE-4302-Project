@@ -23,7 +23,7 @@ private:
     QLineEdit *passEdit;
     QPushButton *themeBtn;
 
-    AcadenceManager authManager;
+    AcadenceManager Manager;
 
     QString role;
     int userId;

@@ -127,7 +127,6 @@ public:
 
     QVector<Notice> getNotices();
     void addNotice(const QString &content, const QString &author);
-    QString getNextClass(int userId);
     QString getDashboardStats(int userId, QString role);
 
     Student *getStudent(int id);
@@ -136,6 +135,7 @@ public:
     QVector<Task> getTasks(int userId);
     void addTask(int userId, const QString &description);
     void completeTask(int taskId, bool status);
+    void deleteTask(int taskId);
 
     DailyPrayerStatus getDailyPrayers(int userId, QString date);
     void updateDailyPrayer(int userId, QString date, QString prayer, bool status);
