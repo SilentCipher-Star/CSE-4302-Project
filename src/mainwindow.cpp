@@ -955,11 +955,11 @@ void MainWindow::refreshQueries()
         QString label;
         if (userRole == "Student")
         {
-            label = "Q: " + q.getQuestion() + "\n   A: " + (q.getAnswer().isEmpty() ? "(Waiting...)" : q.getAnswer());
+            label = QString("To: %1 [%2]\nQ: %3\nA: %4").arg(q.getTeacherName(), q.getTimestamp(), q.getQuestion(), q.getAnswer().isEmpty() ? "(Waiting...)" : q.getAnswer());
         }
         else
         {
-            label = "[" + q.getStudentName() + "] Q: " + q.getQuestion() + "\n   A: " + (q.getAnswer().isEmpty() ? "(Select to Reply)" : q.getAnswer());
+            label = QString("From: %1 [%2]\nQ: %3\nA: %4").arg(q.getStudentName(), q.getTimestamp(), q.getQuestion(), q.getAnswer().isEmpty() ? "(Select to Reply)" : q.getAnswer());
         }
 
         QListWidgetItem *item = new QListWidgetItem(label);
@@ -978,9 +978,26 @@ void MainWindow::on_btnQueryAction_clicked()
 
     if (userRole == "Student")
     {
-        myManager.addQuery(userId, text);
-        ui->editQueryInput->clear();
-        refreshQueries();
+        QVector<QPair<int, QString>> teachers = myManager.getTeacherList();
+        if (teachers.isEmpty())
+        {
+            QMessageBox::warning(this, "Error", "No teachers found to ask.");
+            return;
+        }
+
+        QStringList teacherNames;
+        for (const auto &t : teachers)
+            teacherNames << (t.second + " (ID: " + QString::number(t.first) + ")");
+
+        bool ok;
+        QString selected = QInputDialog::getItem(this, "Ask Question", "Select Teacher:", teacherNames, 0, false, &ok);
+        if (ok && !selected.isEmpty())
+        {
+            int teacherId = teachers[teacherNames.indexOf(selected)].first;
+            myManager.addQuery(userId, teacherId, text);
+            ui->editQueryInput->clear();
+            refreshQueries();
+        }
     }
     else
     {

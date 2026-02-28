@@ -581,9 +581,13 @@ Acadence_autogen/timestamp: \
 	/usr/lib64/cmake/Qt6/QtPublicPluginHelpers.cmake \
 	/usr/lib64/cmake/Qt6/QtPublicPluginHelpers_v2.cmake \
 	/usr/lib64/cmake/Qt6/QtPublicSbomAttributionHelpers.cmake \
+	/usr/lib64/cmake/Qt6/QtPublicSbomCommonGenerationHelpers.cmake \
 	/usr/lib64/cmake/Qt6/QtPublicSbomCpeHelpers.cmake \
+	/usr/lib64/cmake/Qt6/QtPublicSbomCycloneDXHelpers.cmake \
 	/usr/lib64/cmake/Qt6/QtPublicSbomDepHelpers.cmake \
+	/usr/lib64/cmake/Qt6/QtPublicSbomDocumentNamespaceHelpers.cmake \
 	/usr/lib64/cmake/Qt6/QtPublicSbomFileHelpers.cmake \
+	/usr/lib64/cmake/Qt6/QtPublicSbomGenerationCycloneDXHelpers.cmake \
 	/usr/lib64/cmake/Qt6/QtPublicSbomGenerationHelpers.cmake \
 	/usr/lib64/cmake/Qt6/QtPublicSbomHelpers.cmake \
 	/usr/lib64/cmake/Qt6/QtPublicSbomLicenseHelpers.cmake \

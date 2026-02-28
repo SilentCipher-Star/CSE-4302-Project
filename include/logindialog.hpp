@@ -1,5 +1,4 @@
-#ifndef LOGINDIALOG_HPP
-#define LOGINDIALOG_HPP
+#pragma once
 
 #include <QDialog>
 #include <QLineEdit>
@@ -37,5 +36,3 @@ private:
     void onLoginClicked();
     void onThemeClicked();
 };
-
-#endif // LOGINDIALOG_HPP

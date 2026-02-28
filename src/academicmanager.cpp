@@ -5,6 +5,7 @@
 #include <QMap>
 #include <QDir>
 #include <QCoreApplication>
+#include <QDateTime>
 
 AcadenceManager::AcadenceManager()
 {
@@ -743,28 +744,48 @@ QVector<Query> AcadenceManager::getQueries(int userId, QString role)
 {
     QVector<Query> list;
     QVector<QStringList> data = CsvHandler::readCsv("queries.csv");
+
+    // Pre-load names for display
+    QMap<int, QString> studentNames;
+    QVector<QStringList> sData = CsvHandler::readCsv("students.csv");
+    for (const auto &row : sData)
+        if (row.size() >= 2)
+            studentNames[row[0].toInt()] = row[1];
+
+    QMap<int, QString> teacherNames;
+    QVector<QStringList> tData = CsvHandler::readCsv("teachers.csv");
+    for (const auto &row : tData)
+        if (row.size() >= 2)
+            teacherNames[row[0].toInt()] = row[1];
+
     for (const auto &row : data)
     {
-        if (row.size() >= 4)
+        if (row.size() >= 6)
         {
-            if (role == "Teacher" || role == "Admin" || row[1].toInt() == userId)
-            {
-                QString sName = "Student";
-                Student *s = getStudent(row[1].toInt());
-                if (s)
-                {
-                    sName = s->getName();
-                    delete s;
-                }
+            int qId = row[0].toInt();
+            int sId = row[1].toInt();
+            int tId = row[2].toInt();
 
-                list.append(Query(row[0].toInt(), row[1].toInt(), sName, row[2], row[3]));
+            bool isVisible = false;
+            if (role == "Admin")
+                isVisible = true;
+            else if (role == "Student" && sId == userId)
+                isVisible = true;
+            else if (role == "Teacher" && tId == userId)
+                isVisible = true;
+
+            if (isVisible)
+            {
+                QString sName = studentNames.value(sId, "Unknown Student");
+                QString tName = teacherNames.value(tId, "Unknown Teacher");
+                list.append(Query(qId, sId, tId, sName, tName, row[3], row[4], row[5]));
             }
         }
     }
     return list;
 }
 
-void AcadenceManager::addQuery(int userId, QString question)
+void AcadenceManager::addQuery(int userId, int teacherId, QString question)
 {
     QVector<QStringList> data = CsvHandler::readCsv("queries.csv");
     int maxId = 0;
@@ -772,7 +793,8 @@ void AcadenceManager::addQuery(int userId, QString question)
         if (row.size() > 0)
             maxId = std::max(maxId, row[0].toInt());
 
-    CsvHandler::appendCsv("queries.csv", {QString::number(maxId + 1), QString::number(userId), question, ""});
+    QString ts = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm");
+    CsvHandler::appendCsv("queries.csv", {QString::number(maxId + 1), QString::number(userId), QString::number(teacherId), question, "", ts});
 }
 
 void AcadenceManager::answerQuery(int queryId, QString answer)
@@ -781,10 +803,22 @@ void AcadenceManager::answerQuery(int queryId, QString answer)
     QVector<QString> lines;
     for (auto &row : data)
     {
-        if (row.size() >= 4 && row[0].toInt() == queryId)
+        if (row.size() >= 6 && row[0].toInt() == queryId)
         {
-            row[3] = answer;
+            row[4] = answer;
         }
     }
     CsvHandler::writeCsv("queries.csv", data);
+}
+
+QVector<QPair<int, QString>> AcadenceManager::getTeacherList()
+{
+    QVector<QPair<int, QString>> list;
+    QVector<QStringList> data = CsvHandler::readCsv("teachers.csv");
+    for (const auto &row : data)
+    {
+        if (row.size() >= 2)
+            list.append({row[0].toInt(), row[1]});
+    }
+    return list;
 }

@@ -96,19 +96,25 @@ class Query
 private:
     int id;
     int studentId;
+    int teacherId;
     QString studentName;
+    QString teacherName;
     QString question;
     QString answer;
+    QString timestamp;
 
 public:
-    Query(int id, int sid, QString sname, QString q, QString a)
-        : id(id), studentId(sid), studentName(sname), question(q), answer(a) {}
+    Query(int id, int sid, int tid, QString sname, QString tname, QString q, QString a, QString ts)
+        : id(id), studentId(sid), teacherId(tid), studentName(sname), teacherName(tname), question(q), answer(a), timestamp(ts) {}
 
     int getId() const { return id; }
     int getStudentId() const { return studentId; }
+    int getTeacherId() const { return teacherId; }
     QString getStudentName() const { return studentName; }
+    QString getTeacherName() const { return teacherName; }
     QString getQuestion() const { return question; }
     QString getAnswer() const { return answer; }
+    QString getTimestamp() const { return timestamp; }
 };
 
 class AcadenceManager
@@ -157,8 +163,9 @@ public:
     void markAttendance(int courseId, int studentId, QString date, bool present);
 
     QVector<Query> getQueries(int userId, QString role);
-    void addQuery(int userId, QString question);
+    void addQuery(int userId, int teacherId, QString question);
     void answerQuery(int queryId, QString answer);
+    QVector<QPair<int, QString>> getTeacherList();
 };
 
 template <typename T>

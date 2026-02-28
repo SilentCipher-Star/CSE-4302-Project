@@ -11,7 +11,7 @@
 LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     : QDialog(parent), m_app(app), userId(-1), currentThemeIdx(0)
 {
-    setWindowTitle("Welcome to Acadence");
+    setWindowTitle("Acadence");
     setModal(true);
     setFixedSize(1280, 720);
 

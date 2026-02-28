@@ -125,3 +125,35 @@ void CsvHandler::appendCsv(const QString &filename, const QStringList &fields)
         file.close();
     }
 }
+
+void CsvHandler::initialize()
+{
+    QString dataDir = getDataDirectory();
+    QFile adminsFile(dataDir + "admins.csv");
+    if (!adminsFile.exists())
+    {
+        if (adminsFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QTextStream out(&adminsFile);
+            out << "1,admin,admin,System Administrator,admin@school.edu\n";
+            adminsFile.close();
+        }
+    }
+
+    QVector<QString> otherFiles = {
+        "students.csv", "teachers.csv", "courses.csv", "enrollments.csv",
+        "routine.csv", "attendance.csv", "grades.csv", "notices.csv",
+        "tasks.csv", "habits.csv", "queries.csv", "assessments.csv", "prayers.csv"};
+
+    for (const QString &fileName : otherFiles)
+    {
+        QFile file(dataDir + fileName);
+        if (!file.exists() && !file.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+        }
+        else
+        {
+            file.close();
+        }
+    }
+}

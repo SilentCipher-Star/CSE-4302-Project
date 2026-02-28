@@ -1,5 +1,8 @@
 #include "../include/utils.hpp"
 #include <QRegularExpression>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFontDatabase>
 
 QString Utils::validatePassword(const QString &password)
 {
@@ -38,4 +41,20 @@ QString Utils::validateUsername(const QString &username)
         return "Username can only contain letters, numbers, and underscores.";
     }
     return "";
+}
+
+void Utils::loadFonts()
+{
+    QString fontDir = QCoreApplication::applicationDirPath() + "/../fonts";
+    QDir dir(fontDir);
+    if (dir.exists())
+    {
+        QStringList filters;
+        filters << "*.ttf" << "*.otf";
+        dir.setNameFilters(filters);
+        for (const QFileInfo &info : dir.entryInfoList())
+        {
+            QFontDatabase::addApplicationFont(info.absoluteFilePath());
+        }
+    }
 }
