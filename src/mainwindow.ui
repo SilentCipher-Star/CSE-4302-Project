@@ -38,6 +38,9 @@
             <bold>true</bold>
            </font>
           </property>
+         <property name="styleSheet">
+          <string notr="true">font-size: 36px; font-weight: bold;</string>
+         </property>
          </widget>
         </item>
         <item>
@@ -76,17 +79,17 @@
            <item row="4" column="1">
             <widget class="QLabel" name="val_p_email"><property name="text"><string>-</string></property></widget>
            </item>
+           <item row="5" column="1">
+            <widget class="QPushButton" name="btnChangePassword">
+             <property name="text">
+              <string>Change Password</string>
+             </property>
+             <property name="fixedWidth">
+              <number>200</number>
+             </property>
+            </widget>
+           </item>
           </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_nextClass">
-          <property name="text">
-           <string>Next Class: --</string>
-          </property>
-          <property name="styleSheet">
-           <string>font-weight: bold; color: #2c3e50; font-size: 14px; margin-bottom: 10px;</string>
-          </property>
          </widget>
         </item>
         <item>
@@ -110,6 +113,12 @@
          <widget class="QPushButton" name="logoutButton">
           <property name="text">
            <string>Logout</string>
+          </property>
+          <property name="fixedSize">
+           <size>
+            <width>90</width>
+            <height>36</height>
+           </size>
           </property>
          </widget>
         </item>
@@ -139,6 +148,17 @@
             <property name="text">
              <string>Add Task</string>
             </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnDeleteTask">
+            <property name="text">
+             <string>Delete Task</string>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="toolTip"><string>Delete Selected Task</string></property>
            </widget>
           </item>
          </layout>
@@ -358,6 +378,9 @@
            <set>QAbstractItemView::NoEditTriggers</set>
           </property>
           <property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -384,6 +407,9 @@
           <column><property name="text"><string>Attendance %</string></property></column>
           <column><property name="text"><string>Score</string></property></column>
           <column><property name="text"><string>Status</string></property></column>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -421,6 +447,18 @@
             <property name="placeholderText"><string>Room</string></property>
            </widget></item>
            <item><widget class="QPushButton" name="btnAddRoutine_Teacher"><property name="text"><string>Add</string></property></widget></item>
+           <item>
+            <widget class="QPushButton" name="btnCancelClass">
+             <property name="text"><string>Cancel Selected Class</string></property>
+             <property name="visible"><bool>false</bool></property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btnRescheduleClass">
+             <property name="text"><string>Exchange / Reschedule</string></property>
+             <property name="visible"><bool>false</bool></property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -434,6 +472,9 @@
            <set>QAbstractItemView::NoEditTriggers</set>
           </property>
           <property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -490,6 +531,9 @@
              <column><property name="text"><string>Student ID</string></property></column>
              <column><property name="text"><string>Name</string></property></column>
              <column><property name="text"><string>Marks</string></property></column>
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
             </widget>
            </item>
           </layout>
@@ -516,6 +560,9 @@
         <item>
          <widget class="QTableWidget" name="tableAttendance">
           <property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -577,6 +624,9 @@
        <enum>QAbstractItemView::SelectRows</enum>
       </property>
       <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+      <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
      </widget>

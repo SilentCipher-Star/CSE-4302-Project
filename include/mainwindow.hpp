@@ -73,14 +73,14 @@ private slots:
     // Routine/Schedule Slots
     void on_comboRoutineDay_currentIndexChanged(int index);
     void on_comboRoutineDayInput_currentIndexChanged(int index);
-    void on_btnAddRoutine_Teacher_clicked();
+    void on_btnCancelClass_clicked();
+    void on_btnRescheduleClass_clicked();
 
     // Teacher Academic Tools Slots
     void on_btnCreateAssessment_clicked();
     void on_comboTeacherAssessment_currentIndexChanged(int index);
     void on_btnSaveGrades_clicked();
     void on_comboAttendanceCourse_currentIndexChanged(int index);
-    void on_btnAddClassDate_clicked();
     void on_btnSaveAttendance_clicked();
 
     // Q&A Slots
@@ -113,7 +113,6 @@ private:
     Timer *m_focusTimer;
     Timer *m_workoutTimer;
     DurationHabit *activeTimerHabit;
-    QPushButton *btnDeleteTask;
 
     // Admin View Models
     QStandardItemModel *adminModel;
@@ -141,4 +140,5 @@ private:
     void refreshTeacherGrades();
     void refreshTeacherAttendance();
     void refreshQueries();
+    QDate getDateForDay(QString dayName);
 };

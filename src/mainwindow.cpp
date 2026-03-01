@@ -7,15 +7,12 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QDate>
-#include <QTime>
 #include <algorithm>
+#include <cmath>
 #include <QStandardItemModel>
-#include <QFile>
-#include <QTextStream>
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QDateEdit>
-#include <QTimeEdit>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QDialogButtonBox>
@@ -23,51 +20,10 @@
 #include <QGraphicsDropShadowEffect>
 #include <QHeaderView>
 #include <QResizeEvent>
-
-static void adjustColumnWidths(QTableView *table)
-{
-    if (!table || !table->model())
-        return;
-    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-    table->horizontalHeader()->setStretchLastSection(false);
-    table->resizeColumnsToContents();
-
-    int colCount = table->model()->columnCount();
-    int totalWidth = 0;
-    for (int i = 0; i < colCount; ++i)
-        totalWidth += table->columnWidth(i);
-
-    int availableWidth = table->viewport()->width();
-    if (availableWidth < 100)
-        availableWidth = 1900; // Fallback for initialization if viewport not ready
-
-    if (totalWidth > 0 && totalWidth < availableWidth)
-    {
-        double factor = (double)availableWidth / totalWidth;
-        for (int i = 0; i < colCount; ++i)
-        {
-            table->setColumnWidth(i, int(table->columnWidth(i) * factor));
-        }
-    }
-}
-
-// Dynamically resize table columns
-void MainWindow::resizeEvent(QResizeEvent *event)
-{
-    QMainWindow::resizeEvent(event);
-    if (ui->adminTableView->isVisible())
-        adjustColumnWidths(ui->adminTableView);
-    if (ui->tableRoutine->isVisible())
-        adjustColumnWidths(ui->tableRoutine);
-    if (ui->tableTeacherRoutine->isVisible())
-        adjustColumnWidths(ui->tableTeacherRoutine);
-    if (ui->tableAcademics->isVisible())
-        adjustColumnWidths(ui->tableAcademics);
-    if (ui->tableGrading->isVisible())
-        adjustColumnWidths(ui->tableGrading);
-    if (ui->tableAttendance->isVisible())
-        adjustColumnWidths(ui->tableAttendance);
-}
+#include <QScrollBar>
+#include <QStyle>
+#include <QTimer>
+#include <QVector>
 
 MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), userRole(role), userId(uid), userName(name)
@@ -76,19 +32,18 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     ui->setupUi(this);
 
     // Logout button in the top right corner of the tab widget
-    ui->logoutButton->setFixedSize(90, 36);
     ui->tabWidget->setCornerWidget(ui->logoutButton, Qt::TopRightCorner);
 
     // Start in Full Screen
     setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
     setWindowState(Qt::WindowMaximized);
 
+    // Initialize UI components
     setupTables();
     setupTimers();
     setupConnections();
 
     ui->label_welcome->setText("Welcome, " + name);
-    ui->label_welcome->setStyleSheet("font-size: 36px; font-weight: bold;");
 
     // Add shadow effect to profile box
     QGraphicsDropShadowEffect *profileShadow = new QGraphicsDropShadowEffect(ui->groupBox_profile);
@@ -98,6 +53,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     profileShadow->setColor(QColor(0, 0, 0, 40));
     ui->groupBox_profile->setGraphicsEffect(profileShadow);
 
+    // Setup Admin View Model with Proxy for filtering
     adminModel = new QStandardItemModel(this);
 
     adminProxyModel = new QSortFilterProxyModel(this);
@@ -107,15 +63,15 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     ui->adminTableView->setModel(adminProxyModel);
     csvDelegate = new CsvDelegate(this);
     ui->adminTableView->setItemDelegate(csvDelegate);
-    ui->adminTableView->setAlternatingRowColors(true);
 
     QStringList tables = {
-        "admins", "students", "teachers", "courses", "routine", "grades", "notices"};
+        "admins", "students", "teachers", "courses", "routine", "routine_adjustments", "grades", "notices"};
     ui->tableComboBox->addItems(tables);
 
     if (!tables.isEmpty())
         on_tableComboBox_currentTextChanged(tables.first());
 
+    // Adjust UI based on User Role
     if (role == "Student")
     {
         ui->addNoticeButton->setVisible(false);
@@ -151,6 +107,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         ui->noticeListWidget->setVisible(false);
     }
 
+    // Load initial data
     try
     {
         refreshDashboard();
@@ -162,12 +119,6 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
 
             int currentDayIndex = QDate::currentDate().dayOfWeek() % 7;
             ui->comboRoutineDay->setCurrentIndex(currentDayIndex);
-
-            ui->tableRoutine->setAlternatingRowColors(true);
-            ui->tableTeacherRoutine->setAlternatingRowColors(true);
-            ui->tableAcademics->setAlternatingRowColors(true);
-            ui->tableGrading->setAlternatingRowColors(true);
-            ui->tableAttendance->setAlternatingRowColors(true);
 
             refreshAcademics();
         }
@@ -184,6 +135,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+// Configures table headers to be interactive
 void MainWindow::setupTables()
 {
     // Configure all tables to have interactive resizing
@@ -198,6 +150,7 @@ void MainWindow::setupTables()
     }
 }
 
+// Initializes Focus and Workout timers with signal connections
 void MainWindow::setupTimers()
 {
     // Focus Timer
@@ -246,56 +199,39 @@ void MainWindow::setupTimers()
         } });
 }
 
+// Connects dynamic UI elements and signals
 void MainWindow::setupConnections()
 {
-    QPushButton *btnChangePass = new QPushButton("Change Password", this);
-    btnChangePass->setFixedWidth(200);
-    if (ui->groupBox_profile->layout())
-    {
-        ui->groupBox_profile->layout()->addWidget(btnChangePass);
-    }
-    connect(btnChangePass, &QPushButton::clicked, this, &MainWindow::onChangePasswordClicked);
+    connect(ui->btnChangePassword, &QPushButton::clicked, this, &MainWindow::onChangePasswordClicked);
 
     // Study Planner UI Setup
     ui->completeTaskButton->setVisible(false);
 
-    btnDeleteTask = new QPushButton("Delete Task", this);
-    btnDeleteTask->setCursor(Qt::PointingHandCursor);
-    btnDeleteTask->setToolTip("Delete Selected Task");
-
-    // Add task and Delete Task buttons fit content
     ui->addTaskButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    btnDeleteTask->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    ui->btnDeleteTask->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    QWidget *parent = ui->taskLineEdit->parentWidget();
-    if (parent && parent->layout())
+    connect(ui->btnDeleteTask, &QPushButton::clicked, this, &MainWindow::on_btnDeleteTask_clicked);
+    connect(ui->taskListWidget, &QListWidget::itemChanged, this, &MainWindow::on_taskItemChanged);
+
+    // --- Teacher Routine UI Adjustments ---
+    if (userRole == "Teacher")
     {
-        QLayout *parentLayout = parent->layout();
-        int index = parentLayout->indexOf(ui->taskLineEdit);
+        // Hide old inputs
+        ui->editRoutineTime->setVisible(false);
+        ui->editRoutineEndTime->setVisible(false);
+        ui->editRoutineRoom->setVisible(false);
+        ui->comboRoutineCourse->setVisible(false);
+        ui->btnAddRoutine_Teacher->setVisible(false);
 
-        // Create a container for the buttons
-        QWidget *buttonContainer = new QWidget(parent);
-        QHBoxLayout *hLayout = new QHBoxLayout(buttonContainer);
-        hLayout->setContentsMargins(0, 0, 0, 0);
-        hLayout->setSpacing(5);
-
-        parentLayout->removeWidget(ui->taskLineEdit);
-        parentLayout->removeWidget(ui->addTaskButton);
-
-        hLayout->addWidget(ui->taskLineEdit);
-        hLayout->addWidget(ui->addTaskButton);
-        hLayout->addWidget(btnDeleteTask);
-
-        if (QBoxLayout *box = qobject_cast<QBoxLayout *>(parentLayout))
-            box->insertWidget(index, buttonContainer);
-        else
-            parentLayout->addWidget(buttonContainer);
+        ui->btnCancelClass->setVisible(true);
+        ui->btnRescheduleClass->setVisible(true);
     }
 
-    connect(btnDeleteTask, &QPushButton::clicked, this, &MainWindow::on_btnDeleteTask_clicked);
-    connect(ui->taskListWidget, &QListWidget::itemChanged, this, &MainWindow::on_taskItemChanged);
+    connect(ui->btnCancelClass, &QPushButton::clicked, this, &MainWindow::on_btnCancelClass_clicked);
+    connect(ui->btnRescheduleClass, &QPushButton::clicked, this, &MainWindow::on_btnRescheduleClass_clicked);
 }
 
+// Handles password change dialog and validation
 void MainWindow::onChangePasswordClicked()
 {
     QDialog dlg(this);
@@ -350,6 +286,7 @@ void MainWindow::onChangePasswordClicked()
     }
 }
 
+// Reloads dashboard notices and profile information
 void MainWindow::refreshDashboard()
 {
     ui->noticeListWidget->clear();
@@ -412,6 +349,7 @@ void MainWindow::refreshDashboard()
     }
 }
 
+// Opens dialog to post a new notice
 void MainWindow::on_addNoticeButton_clicked()
 {
     bool ok;
@@ -430,12 +368,13 @@ void MainWindow::on_addNoticeButton_clicked()
     }
 }
 
-// Logout
+// Exits the application with a specific code to trigger re-login
 void MainWindow::on_logoutButton_clicked()
 {
     QApplication::exit(99);
 }
 
+// Reloads the To-Do list
 void MainWindow::refreshPlanner()
 {
     ui->taskListWidget->blockSignals(true); // Prevent triggering itemChanged during reload
@@ -460,6 +399,7 @@ void MainWindow::refreshPlanner()
     ui->taskListWidget->blockSignals(false);
 }
 
+// Adds a new task to the planner
 void MainWindow::on_addTaskButton_clicked()
 {
     QString desc = ui->taskLineEdit->text();
@@ -471,6 +411,7 @@ void MainWindow::on_addTaskButton_clicked()
     }
 }
 
+// Deletes the selected task
 void MainWindow::on_btnDeleteTask_clicked()
 {
     QListWidgetItem *item = ui->taskListWidget->currentItem();
@@ -482,19 +423,21 @@ void MainWindow::on_btnDeleteTask_clicked()
     }
 }
 
+// Updates task completion status when checkbox is toggled
 void MainWindow::on_taskItemChanged(QListWidgetItem *item)
 {
     int id = item->data(Qt::UserRole).toInt();
     bool isChecked = (item->checkState() == Qt::Checked);
     myManager.completeTask(id, isChecked);
 
-    // Update visual style
+    // Update visual style for checked boxes
     QFont f = item->font();
     f.setStrikeOut(isChecked);
     item->setFont(f);
     item->setForeground(isChecked ? Qt::gray : QPalette().color(QPalette::Text));
 }
 
+// Focus Timer Controls
 void MainWindow::on_btnTimerStart_clicked()
 {
     m_focusTimer->start(ui->spinTimerMinutes->value());
@@ -510,6 +453,7 @@ void MainWindow::on_btnTimerStop_clicked()
     m_focusTimer->stop();
 }
 
+// Reloads habits and prayer status
 void MainWindow::refreshHabits()
 {
     DailyPrayerStatus prayers = myManager.getDailyPrayers(userId, QDate::currentDate().toString(Qt::ISODate));
@@ -540,7 +484,7 @@ void MainWindow::refreshHabits()
     }
 }
 
-// Add Habit
+// Opens dialog to create a new habit
 void MainWindow::on_btnAddHabit_clicked()
 {
     QStringList types = {"Duration (Timer)", "Count (Counter)"};
@@ -571,7 +515,7 @@ void MainWindow::on_btnAddHabit_clicked()
         int target = QInputDialog::getInt(this, "Create Habit", "Target Count:", 5, 1, 1000, 1, &ok);
         if (!ok)
             return;
-        QString unit = QInputDialog::getText(this, "Create Habit", "Unit (e.g. glasses):", QLineEdit::Normal, "", &ok);
+        QString unit = QInputDialog::getText(this, "Create Habit", "Unit:", QLineEdit::Normal, "", &ok);
         CountHabit *h = new CountHabit(0, userId, name, f, target, unit);
         myManager.addHabit(h);
         delete h;
@@ -579,7 +523,7 @@ void MainWindow::on_btnAddHabit_clicked()
     refreshHabits();
 }
 
-// Perform Habit
+// Increments habit progress or sets up the workout timer
 void MainWindow::on_btnPerformHabit_clicked()
 {
     int row = ui->habitListWidget->currentRow();
@@ -619,7 +563,7 @@ void MainWindow::on_btnPerformHabit_clicked()
     }
 }
 
-// Delete Habit
+// Deletes the selected habit
 void MainWindow::on_btnDeleteHabit_clicked()
 {
     int row = ui->habitListWidget->currentRow();
@@ -631,30 +575,58 @@ void MainWindow::on_btnDeleteHabit_clicked()
     refreshHabits();
 }
 
-// Start timer
+// Workout Timer Controls
 void MainWindow::on_btnWorkoutStart_clicked()
 {
     m_workoutTimer->start(ui->spinWorkoutMinutes->value());
 }
 
-// Pause timer
 void MainWindow::on_btnWorkoutPause_clicked()
 {
     m_workoutTimer->pause();
 }
 
-// Stop timer
 void MainWindow::on_btnWorkoutStop_clicked()
 {
     m_workoutTimer->stop();
 }
 
-void MainWindow::on_chkFajr_toggled(bool checked) { myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "fajr", checked); }
-void MainWindow::on_chkDhuhr_toggled(bool checked) { myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "dhuhr", checked); }
-void MainWindow::on_chkAsr_toggled(bool checked) { myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "asr", checked); }
-void MainWindow::on_chkMaghrib_toggled(bool checked) { myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "maghrib", checked); }
-void MainWindow::on_chkIsha_toggled(bool checked) { myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "isha", checked); }
+// Prayer Tracker Toggles
+void MainWindow::on_chkFajr_toggled(bool checked)
+{
+    myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "fajr", checked);
+}
+void MainWindow::on_chkDhuhr_toggled(bool checked)
+{
+    myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "dhuhr", checked);
+}
+void MainWindow::on_chkAsr_toggled(bool checked)
+{
+    myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "asr", checked);
+}
+void MainWindow::on_chkMaghrib_toggled(bool checked)
+{
+    myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "maghrib", checked);
+}
+void MainWindow::on_chkIsha_toggled(bool checked)
+{
+    myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "isha", checked);
+}
 
+// Calculates the date for a specific day of the current week
+QDate MainWindow::getDateForDay(QString dayName)
+{
+    QDate today = QDate::currentDate();
+    int currentDayOfWeek = today.dayOfWeek(); // 1=Mon, 7=Sun
+
+    QStringList days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    int targetDayOfWeek = days.indexOf(dayName) + 1;
+
+    int diff = targetDayOfWeek - currentDayOfWeek;
+    return today.addDays(diff);
+}
+
+// Reloads the student routine table
 void MainWindow::refreshRoutine()
 {
     ui->tableRoutine->setRowCount(0);
@@ -670,38 +642,23 @@ void MainWindow::refreshRoutine()
             delete s;
         }
     }
-    QVector<RoutineSession> items = myManager.getRoutineForDay(day, semester);
 
-    QTime currentTime = QTime::currentTime();
-    QString currentDay = QDate::currentDate().toString("dddd");
-    bool isToday = (day == currentDay);
+    QVector<RoutineSession> items = myManager.getEffectiveRoutine(getDateForDay(day), semester);
+
+    ui->tableRoutine->setColumnCount(4);
+    QStringList headers = {"Time", "Course", "Room", "Instructor"};
+    ui->tableRoutine->setHorizontalHeaderLabels(headers);
 
     for (const auto &i : items)
     {
-        QString status = "Upcoming";
-
-        if (isToday)
-        {
-            QTime classTime = QTime::fromString(i.getStartTime(), "HH:mm");
-            int diff = currentTime.secsTo(classTime) / 60;
-
-            if (diff < -90)
-                status = "Completed";
-            else if (diff <= 0)
-                status = "In Progress";
-            else if (diff <= 15)
-                status = "Starting Soon";
-        }
-
         int row = ui->tableRoutine->rowCount();
         ui->tableRoutine->insertRow(row);
         ui->tableRoutine->setItem(row, 0, new QTableWidgetItem(i.getStartTime() + " - " + i.getEndTime()));
         ui->tableRoutine->setItem(row, 1, new QTableWidgetItem(i.getCourseCode() + ": " + i.getCourseName()));
         ui->tableRoutine->setItem(row, 2, new QTableWidgetItem(i.getRoom()));
         ui->tableRoutine->setItem(row, 3, new QTableWidgetItem(i.getInstructor()));
-        ui->tableRoutine->setItem(row, 4, new QTableWidgetItem(status));
     }
-    adjustColumnWidths(ui->tableRoutine);
+    Utils::adjustColumnWidths(ui->tableRoutine);
 }
 
 void MainWindow::on_comboRoutineDay_currentIndexChanged(int index)
@@ -709,11 +666,33 @@ void MainWindow::on_comboRoutineDay_currentIndexChanged(int index)
     refreshRoutine();
 }
 
+// Reloads the teacher routine table, filtering by assigned courses
 void MainWindow::refreshTeacherRoutine()
 {
     ui->tableTeacherRoutine->setRowCount(0);
     QString day = ui->comboRoutineDayInput->currentText();
-    QVector<RoutineSession> items = myManager.getRoutineForDay(day);
+    QVector<RoutineSession> items = myManager.getEffectiveRoutine(getDateForDay(day));
+
+    if (userRole == "Teacher")
+    {
+        QVector<Course *> courses = myManager.getTeacherCourses(userId);
+        QStringList myCodes;
+        for (Course *c : courses)
+        {
+            myCodes << c->getCode();
+        }
+        qDeleteAll(courses);
+
+        QVector<RoutineSession> filtered;
+        for (const auto &item : items)
+        {
+            if (myCodes.contains(item.getCourseCode()))
+            {
+                filtered.append(item);
+            }
+        }
+        items = filtered;
+    }
 
     for (const auto &i : items)
     {
@@ -723,8 +702,12 @@ void MainWindow::refreshTeacherRoutine()
         ui->tableTeacherRoutine->setItem(row, 1, new QTableWidgetItem(i.getCourseCode() + ": " + i.getCourseName()));
         ui->tableTeacherRoutine->setItem(row, 2, new QTableWidgetItem(i.getRoom()));
         ui->tableTeacherRoutine->setItem(row, 3, new QTableWidgetItem(QString::number(i.getSemester())));
+
+        // Store hidden data for logic
+        ui->tableTeacherRoutine->item(row, 0)->setData(Qt::UserRole, i.getStartTime());
+        ui->tableTeacherRoutine->item(row, 1)->setData(Qt::UserRole, i.getCourseCode());
     }
-    adjustColumnWidths(ui->tableTeacherRoutine);
+    Utils::adjustColumnWidths(ui->tableTeacherRoutine);
 }
 
 void MainWindow::on_comboRoutineDayInput_currentIndexChanged(int index)
@@ -732,44 +715,193 @@ void MainWindow::on_comboRoutineDayInput_currentIndexChanged(int index)
     refreshTeacherRoutine();
 }
 
-void MainWindow::on_btnAddRoutine_Teacher_clicked()
+// Cancels a selected class for the teacher
+void MainWindow::on_btnCancelClass_clicked()
 {
+    int row = ui->tableTeacherRoutine->currentRow();
+    if (row < 0)
+    {
+        QMessageBox::warning(this, "Selection", "Please select a class to cancel.");
+        return;
+    }
+
     QString day = ui->comboRoutineDayInput->currentText();
-    QString startTime = ui->editRoutineTime->text();
-    QString endTime = ui->editRoutineEndTime->text();
-    QString room = ui->editRoutineRoom->text();
+    QDate date = getDateForDay(day);
+    QString startTimeStr = ui->tableTeacherRoutine->item(row, 0)->data(Qt::UserRole).toString();
+    int serial = 0;
+    if (startTimeStr == "09:00")
+        serial = 1;
+    else if (startTimeStr == "10:00")
+        serial = 2;
+    else if (startTimeStr == "11:00")
+        serial = 3;
+    else if (startTimeStr == "12:00")
+        serial = 4;
+    else if (startTimeStr == "14:00")
+        serial = 5;
 
-    int courseId = ui->comboRoutineCourse->currentData().toInt();
-    Course *c = myManager.getCourse(courseId);
+    QString code = ui->tableTeacherRoutine->item(row, 1)->data(Qt::UserRole).toString();
+    int semester = ui->tableTeacherRoutine->item(row, 3)->text().toInt();
 
-    if (!c)
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Confirm Cancellation",
+                                  "Are you sure you want to cancel the class on " + date.toString("yyyy-MM-dd") + "?",
+                                  QMessageBox::Yes | QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
     {
-        QMessageBox::warning(this, "Error", "Please select a valid course.");
-        return;
+        RoutineAdjustment adj;
+        adj.originalDate = date.toString(Qt::ISODate);
+        adj.originalSerial = serial;
+        adj.type = "CANCEL";
+        adj.courseCode = code;
+        adj.semester = semester;
+
+        myManager.addRoutineAdjustment(adj);
+        refreshTeacherRoutine();
+        QMessageBox::information(this, "Success", "Class cancelled.");
     }
-
-    if (startTime.isEmpty() || room.isEmpty())
-    {
-        QMessageBox::warning(this, "Error", "Time and Room are required.");
-        delete c;
-        return;
-    }
-
-    Teacher *t = myManager.getTeacher(userId);
-    QString instructorName = t ? t->getName() : "Unknown";
-    if (t)
-        delete t;
-
-    myManager.addRoutineItem(day, startTime, endTime, c->getCode(), c->getName(), room, instructorName, c->getSemester());
-    delete c;
-
-    refreshTeacherRoutine();
-    QMessageBox::information(this, "Success", "Routine item added.");
-    ui->editRoutineTime->clear();
-    ui->editRoutineEndTime->clear();
-    ui->editRoutineRoom->clear();
 }
 
+// Reschedules or exchanges a selected class
+void MainWindow::on_btnRescheduleClass_clicked()
+{
+    int row = ui->tableTeacherRoutine->currentRow();
+    if (row < 0)
+    {
+        QMessageBox::warning(this, "Selection", "Please select a class to exchange/reschedule.");
+        return;
+    }
+
+    QString currentDayStr = ui->comboRoutineDayInput->currentText();
+    QDate originDate = getDateForDay(currentDayStr);
+    QString originStartStr = ui->tableTeacherRoutine->item(row, 0)->data(Qt::UserRole).toString();
+    int originSerial = 0;
+    if (originStartStr == "09:00")
+        originSerial = 1;
+    else if (originStartStr == "10:00")
+        originSerial = 2;
+    else if (originStartStr == "11:00")
+        originSerial = 3;
+    else if (originStartStr == "12:00")
+        originSerial = 4;
+    else if (originStartStr == "14:00")
+        originSerial = 5;
+
+    QString originCode = ui->tableTeacherRoutine->item(row, 1)->data(Qt::UserRole).toString();
+    QString originRoom = ui->tableTeacherRoutine->item(row, 2)->text();
+    int semester = ui->tableTeacherRoutine->item(row, 3)->text().toInt();
+
+    // Find available slots or exchangeable slots for next 2 weeks
+    QStringList options;
+    QVector<RoutineAdjustment> potentialAdjustments;
+    QVector<RoutineAdjustment> secondaryAdjustments;
+
+    QDate d = QDate::currentDate();
+    for (int i = 0; i < 14; ++i)
+    {
+        QDate targetDate = d.addDays(i);
+        if (targetDate.dayOfWeek() > 5)
+            continue; // Skip weekends
+
+        QVector<RoutineSession> daily = myManager.getEffectiveRoutine(targetDate, semester);
+
+        // Check standard slots: 09:00, 10:00, 11:00, 12:00
+        QList<int> serials = {1, 2, 3, 4, 5};
+        for (int s : serials)
+        {
+            QString slotTime;
+            if (s == 1)
+                slotTime = "09:00";
+            else if (s == 2)
+                slotTime = "10:00";
+            else if (s == 3)
+                slotTime = "11:00";
+            else if (s == 4)
+                slotTime = "12:00";
+            else if (s == 5)
+                slotTime = "14:00";
+
+            if (targetDate == originDate && s == originSerial)
+                continue;
+
+            bool occupied = false;
+            RoutineSession occupiedSession("", "", "", "", "", "", "", 0);
+
+            for (const auto &sess : daily)
+            {
+                if (sess.getStartTime() == slotTime)
+                {
+                    occupied = true;
+                    occupiedSession = sess;
+                    break;
+                }
+            }
+
+            RoutineAdjustment adj;
+            adj.originalDate = originDate.toString(Qt::ISODate);
+            adj.originalSerial = originSerial;
+            adj.type = "RESCHEDULE";
+            adj.newDate = targetDate.toString(Qt::ISODate);
+            adj.newSerial = s;
+            adj.courseCode = originCode;
+            adj.courseName = ui->tableTeacherRoutine->item(row, 1)->text() + "(Rescheduled)";
+            adj.room = originRoom;
+            adj.instructor = userName;
+            adj.semester = semester;
+
+            RoutineAdjustment adj2;
+
+            if (!occupied)
+            {
+                options << targetDate.toString("ddd MMM dd") + " at " + slotTime + " (Empty Slot)";
+                potentialAdjustments.append(adj);
+                secondaryAdjustments.append(adj2);
+            }
+            else
+            {
+                // Exchange option
+                options << targetDate.toString("ddd MMM dd") + " at " + slotTime + " (Exchange with " + occupiedSession.getCourseCode() + ")";
+
+                adj2.originalDate = targetDate.toString(Qt::ISODate);
+                adj2.originalSerial = s;
+                adj2.type = "RESCHEDULE";
+                adj2.newDate = originDate.toString(Qt::ISODate);
+                adj2.newSerial = originSerial;
+                adj2.courseCode = occupiedSession.getCourseCode();
+                adj2.courseName = occupiedSession.getCourseName();
+                adj2.room = occupiedSession.getRoom();
+                adj2.instructor = occupiedSession.getInstructor();
+                adj2.semester = occupiedSession.getSemester();
+
+                potentialAdjustments.append(adj);
+                secondaryAdjustments.append(adj2);
+            }
+        }
+    }
+
+    bool ok;
+    QString choice = QInputDialog::getItem(this, "Select New Slot", "Available Options (Next 2 Weeks):", options, 0, false, &ok);
+    if (ok && !choice.isEmpty())
+    {
+        int idx = options.indexOf(choice);
+        if (idx >= 0 && idx < potentialAdjustments.size())
+        {
+            // Apply the adjustment
+            myManager.addRoutineAdjustment(potentialAdjustments[idx]);
+
+            if (!secondaryAdjustments[idx].courseCode.isEmpty())
+            {
+                myManager.addRoutineAdjustment(secondaryAdjustments[idx]);
+            }
+
+            refreshTeacherRoutine();
+            QMessageBox::information(this, "Success", "Class rescheduled/exchanged successfully.");
+        }
+    }
+}
+
+// Reloads student academic data (attendance, assessments)
 void MainWindow::refreshAcademics()
 {
     ui->listAssessments->clear();
@@ -798,9 +930,10 @@ void MainWindow::refreshAcademics()
         QString status = (pct < 85.0) ? "Low Attendance" : "Good";
         ui->tableAcademics->setItem(i, 3, new QTableWidgetItem(status));
     }
-    adjustColumnWidths(ui->tableAcademics);
+    Utils::adjustColumnWidths(ui->tableAcademics);
 }
 
+// Refreshes dropdowns and tables for teacher tools
 void MainWindow::refreshTeacherTools()
 {
     ui->comboTeacherCourse->clear();
@@ -826,6 +959,7 @@ void MainWindow::refreshTeacherTools()
     refreshTeacherAttendance();
 }
 
+// Creates a new assessment
 void MainWindow::on_btnCreateAssessment_clicked()
 {
     int courseId = ui->comboTeacherCourse->currentData().toInt();
@@ -845,6 +979,7 @@ void MainWindow::on_comboTeacherAssessment_currentIndexChanged(int index)
     refreshTeacherGrades();
 }
 
+// Reloads the grading table for the selected assessment
 void MainWindow::refreshTeacherGrades()
 {
     ui->tableGrading->setRowCount(0);
@@ -885,17 +1020,14 @@ void MainWindow::refreshTeacherGrades()
         ui->tableGrading->setItem(i, 2, new QTableWidgetItem(gradeStr));
     }
     qDeleteAll(students);
-    adjustColumnWidths(ui->tableGrading);
+    Utils::adjustColumnWidths(ui->tableGrading);
 }
 
+// Saves entered grades to the database
 void MainWindow::on_btnSaveGrades_clicked()
 {
     int assessmentId = ui->comboTeacherAssessment->currentData().toInt();
     int rows = ui->tableGrading->rowCount();
-
-    double max = -1, min = 1000, sum = 0;
-    int count = 0;
-
     for (int i = 0; i < rows; ++i)
     {
         int sid = ui->tableGrading->item(i, 0)->text().toInt();
@@ -905,22 +1037,12 @@ void MainWindow::on_btnSaveGrades_clicked()
 
         double marks = text.toDouble();
         myManager.addGrade(sid, assessmentId, marks);
-
-        if (marks > max)
-            max = marks;
-        if (marks < min)
-            min = marks;
-        sum += marks;
-        count++;
     }
-
-    if (count > 0)
-    {
-        QMessageBox::information(this, "Grading Complete",
-                                 QString("Highest: %1\nLowest: %2\nAverage: %3").arg(max).arg(min).arg(sum / count));
-    }
+    QMessageBox::information(this, "Success", "Grades Saved");
+    refreshTeacherGrades();
 }
 
+// Reloads the attendance sheet for the selected course
 void MainWindow::refreshTeacherAttendance()
 {
     ui->tableAttendance->clear();
@@ -974,7 +1096,7 @@ void MainWindow::refreshTeacherAttendance()
 
     qDeleteAll(students);
     delete c;
-    adjustColumnWidths(ui->tableAttendance);
+    Utils::adjustColumnWidths(ui->tableAttendance);
 }
 
 void MainWindow::on_comboAttendanceCourse_currentIndexChanged(int index)
@@ -982,26 +1104,7 @@ void MainWindow::on_comboAttendanceCourse_currentIndexChanged(int index)
     refreshTeacherAttendance();
 }
 
-void MainWindow::on_btnAddClassDate_clicked()
-{
-    bool ok;
-    QString date = QInputDialog::getText(this, "Add Class", "Date (yyyy-MM-dd):", QLineEdit::Normal, QDate::currentDate().toString("yyyy-MM-dd"), &ok);
-    if (ok && !date.isEmpty())
-    {
-        int col = ui->tableAttendance->columnCount();
-        ui->tableAttendance->insertColumn(col);
-        ui->tableAttendance->setHorizontalHeaderItem(col, new QTableWidgetItem(date));
-
-        for (int i = 0; i < ui->tableAttendance->rowCount(); ++i)
-        {
-            QTableWidgetItem *checkItem = new QTableWidgetItem();
-            checkItem->setCheckState(Qt::Unchecked);
-            ui->tableAttendance->setItem(i, col, checkItem);
-        }
-        adjustColumnWidths(ui->tableAttendance);
-    }
-}
-
+// Saves marked attendance to the database
 void MainWindow::on_btnSaveAttendance_clicked()
 {
     int courseId = ui->comboAttendanceCourse->currentData().toInt();
@@ -1025,6 +1128,7 @@ void MainWindow::on_btnSaveAttendance_clicked()
     refreshTeacherAttendance();
 }
 
+// Reloads Q&A threads
 void MainWindow::refreshQueries()
 {
     ui->listQueries->clear();
@@ -1050,6 +1154,7 @@ void MainWindow::refreshQueries()
     }
 }
 
+// Handles asking a question (Student) or replying (Teacher)
 void MainWindow::on_btnQueryAction_clicked()
 {
     QString text = ui->editQueryInput->text();
@@ -1094,6 +1199,7 @@ void MainWindow::on_btnQueryAction_clicked()
     }
 }
 
+// Helper to write table model data to CSV
 void saveTableData(QStandardItemModel *model, const QString &tableName)
 {
     QVector<QStringList> data;
@@ -1110,6 +1216,7 @@ void saveTableData(QStandardItemModel *model, const QString &tableName)
     CsvHandler::writeCsv(tableName + ".csv", data);
 }
 
+// Loads data into the Admin table when selection changes
 void MainWindow::on_tableComboBox_currentTextChanged(const QString &tableName)
 {
     adminModel->clear();
@@ -1144,7 +1251,9 @@ void MainWindow::on_tableComboBox_currentTextChanged(const QString &tableName)
     else if (tableName == "courses")
         headers << "ID" << "Code" << "Name" << "Teacher ID" << "Semester" << "Credits";
     else if (tableName == "routine")
-        headers << "Day" << "Start" << "End" << "Code" << "Name" << "Room" << "Instructor" << "Semester";
+        headers << "Day" << "Serial" << "Code" << "Name" << "Room" << "Instructor" << "Semester";
+    else if (tableName == "routine_adjustments")
+        headers << "Orig Date" << "Orig Serial" << "Type" << "New Date" << "New Serial" << "Code" << "Name" << "Room" << "Instructor" << "Semester";
     else if (tableName == "grades")
         headers << "Student ID" << "Assessment ID" << "Marks";
     else if (tableName == "notices")
@@ -1154,9 +1263,11 @@ void MainWindow::on_tableComboBox_currentTextChanged(const QString &tableName)
     connect(adminModel, &QStandardItemModel::itemChanged, this, [this, tableName]()
             { saveTableData(adminModel, tableName); });
 
-    adjustColumnWidths(ui->adminTableView);
+    QTimer::singleShot(10, this, [this]()
+                       { Utils::adjustColumnWidths(ui->adminTableView); });
 }
 
+// Adds a new row to the Admin table
 void MainWindow::on_btnAddRow_clicked()
 {
     int row = adminModel->rowCount();
@@ -1189,6 +1300,7 @@ void MainWindow::on_btnAddRow_clicked()
     saveTableData(adminModel, currentTable);
 }
 
+// Deletes selected rows from the Admin table
 void MainWindow::on_btnDeleteRow_clicked()
 {
     QModelIndexList selected = ui->adminTableView->selectionModel()->selectedRows();
@@ -1215,6 +1327,7 @@ void MainWindow::on_btnDeleteRow_clicked()
     saveTableData(adminModel, ui->tableComboBox->currentText());
 }
 
+// Filters the Admin table
 void MainWindow::on_searchLineEdit_textChanged(const QString &arg1)
 {
     adminProxyModel->setFilterFixedString(arg1);
@@ -1222,6 +1335,7 @@ void MainWindow::on_searchLineEdit_textChanged(const QString &arg1)
 
 CsvDelegate::CsvDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
 
+// Creates appropriate editors (SpinBox, DateEdit, etc.) based on column type
 QWidget *CsvDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     int col = index.column();
@@ -1308,13 +1422,41 @@ QWidget *CsvDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     }
     else if (currentTable == "routine")
     {
-        if (col == 1 || col == 2)
+        if (col == 1)
         {
-            QTimeEdit *te = new QTimeEdit(parent);
-            te->setDisplayFormat("HH:mm");
-            return te;
+            QSpinBox *sb = new QSpinBox(parent);
+            sb->setRange(1, 5);
+            return sb;
         }
-        if (col == 7)
+        if (col == 6)
+        {
+            QSpinBox *sb = new QSpinBox(parent);
+            sb->setRange(1, 8);
+            return sb;
+        }
+    }
+    else if (currentTable == "routine_adjustments")
+    {
+        if (col == 0 || col == 3)
+        {
+            QDateEdit *de = new QDateEdit(parent);
+            de->setDisplayFormat("yyyy-MM-dd");
+            de->setCalendarPopup(true);
+            return de;
+        }
+        if (col == 1 || col == 4)
+        {
+            QSpinBox *sb = new QSpinBox(parent);
+            sb->setRange(1, 5);
+            return sb;
+        }
+        if (col == 2)
+        {
+            QComboBox *cb = new QComboBox(parent);
+            cb->addItems({"CANCEL", "RESCHEDULE"});
+            return cb;
+        }
+        if (col == 9)
         {
             QSpinBox *sb = new QSpinBox(parent);
             sb->setRange(1, 8);
@@ -1335,6 +1477,7 @@ QWidget *CsvDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
+// Populates the editor with data from the model
 void CsvDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
     QString val = index.model()->data(index, Qt::EditRole).toString();
@@ -1346,12 +1489,11 @@ void CsvDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
         cb->setCurrentText(val);
     else if (QDateEdit *de = qobject_cast<QDateEdit *>(editor))
         de->setDate(QDate::fromString(val, "yyyy-MM-dd"));
-    else if (QTimeEdit *te = qobject_cast<QTimeEdit *>(editor))
-        te->setTime(QTime::fromString(val, "HH:mm"));
     else
         QStyledItemDelegate::setEditorData(editor, index);
 }
 
+// Saves data from the editor to the model, with validation
 void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     int col = index.column();
@@ -1365,8 +1507,6 @@ void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
         newVal = cb->currentText();
     else if (QDateEdit *de = qobject_cast<QDateEdit *>(editor))
         newVal = de->date().toString("yyyy-MM-dd");
-    else if (QTimeEdit *te = qobject_cast<QTimeEdit *>(editor))
-        newVal = te->time().toString("HH:mm");
     else if (QLineEdit *le = qobject_cast<QLineEdit *>(editor))
         newVal = le->text();
     else
@@ -1375,6 +1515,7 @@ void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
         return;
     }
 
+    // Validate Unique ID
     if (col == 0 && (currentTable == "admins" || currentTable == "students" || currentTable == "teachers" || currentTable == "courses"))
     {
         for (int i = 0; i < model->rowCount(); ++i)
@@ -1390,6 +1531,7 @@ void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
     bool isUsernameCol = (currentTable == "admins" && col == 1) ||
                          ((currentTable == "students" || currentTable == "teachers") && col == 3);
 
+    // Validate Username format and uniqueness
     if (isUsernameCol)
     {
         QString error = Utils::validateUsername(newVal);
@@ -1421,7 +1563,7 @@ void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
                 {
                     data = CsvHandler::readCsv(table + ".csv");
                 }
-                catch (...)
+                catch (const std::exception &)
                 {
                     continue;
                 }
@@ -1441,6 +1583,7 @@ void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
     bool isPasswordCol = (currentTable == "admins" && col == 2) ||
                          ((currentTable == "students" || currentTable == "teachers") && col == 4);
 
+    // Validate Password strength
     if (isPasswordCol)
     {
         QString error = Utils::validatePassword(newVal);
@@ -1452,4 +1595,25 @@ void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
     }
 
     model->setData(index, newVal, Qt::EditRole);
+}
+
+// Event handler to resize columns when the window size changes
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+
+    QTimer::singleShot(0, this, [=]()
+                       {
+        if (ui->adminTableView->isVisible())
+            Utils::adjustColumnWidths(ui->adminTableView);
+        if (ui->tableRoutine->isVisible())
+            Utils::adjustColumnWidths(ui->tableRoutine);
+        if (ui->tableTeacherRoutine->isVisible())
+            Utils::adjustColumnWidths(ui->tableTeacherRoutine);
+        if (ui->tableAcademics->isVisible())
+            Utils::adjustColumnWidths(ui->tableAcademics);
+        if (ui->tableGrading->isVisible())
+            Utils::adjustColumnWidths(ui->tableGrading);
+        if (ui->tableAttendance->isVisible())
+            Utils::adjustColumnWidths(ui->tableAttendance); });
 }

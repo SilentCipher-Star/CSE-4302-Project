@@ -483,20 +483,179 @@ QVector<RoutineSession> AcadenceManager::getRoutineForDay(QString day, int semes
     QVector<QStringList> data = CsvHandler::readCsv("routine.csv");
     for (const auto &row : data)
     {
-        if (row.size() >= 8)
+        if (row.size() >= 7)
         {
-            if (semester == -1 || row[7].toInt() == semester)
+            if (semester == -1 || row[6].toInt() == semester)
             {
-                weeklyRoutine.addSession(RoutineSession(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7].toInt()));
+                int serial = row[1].toInt();
+                QString start, end;
+                if (serial == 1)
+                {
+                    start = "09:00";
+                    end = "10:00";
+                }
+                else if (serial == 2)
+                {
+                    start = "10:00";
+                    end = "11:00";
+                }
+                else if (serial == 3)
+                {
+                    start = "11:00";
+                    end = "12:00";
+                }
+                else if (serial == 4)
+                {
+                    start = "12:00";
+                    end = "13:00";
+                }
+                else if (serial == 5)
+                {
+                    start = "14:00";
+                    end = "15:00";
+                }
+                else
+                {
+                    start = "00:00";
+                    end = "00:00";
+                }
+
+                weeklyRoutine.addSession(RoutineSession(row[0], start, end, row[2], row[3], row[4], row[5], row[6].toInt()));
             }
         }
     }
     return weeklyRoutine.getSessionsForDay(day);
 }
 
-void AcadenceManager::addRoutineItem(QString day, QString start, QString end, QString code, QString name, QString room, QString instructor, int semester)
+void AcadenceManager::addRoutineItem(QString day, int serial, QString code, QString name, QString room, QString instructor, int semester)
 {
-    CsvHandler::appendCsv("routine.csv", {day, start, end, code, name, room, instructor, QString::number(semester)});
+    CsvHandler::appendCsv("routine.csv", {day, QString::number(serial), code, name, room, instructor, QString::number(semester)});
+}
+
+QVector<RoutineAdjustment> AcadenceManager::getRoutineAdjustments()
+{
+    QVector<RoutineAdjustment> list;
+    QVector<QStringList> data = CsvHandler::readCsv("routine_adjustments.csv");
+    for (const auto &row : data)
+    {
+        if (row.size() >= 10)
+        {
+            RoutineAdjustment adj;
+            adj.originalDate = row[0];
+            adj.originalSerial = row[1].toInt();
+            adj.type = row[2];
+            adj.newDate = row[3];
+            adj.newSerial = row[4].toInt();
+            adj.courseCode = row[5];
+            adj.courseName = row[6];
+            adj.room = row[7];
+            adj.instructor = row[8];
+            adj.semester = row[9].toInt();
+            list.append(adj);
+        }
+    }
+    return list;
+}
+
+void AcadenceManager::addRoutineAdjustment(const RoutineAdjustment &adj)
+{
+    CsvHandler::appendCsv("routine_adjustments.csv", {adj.originalDate, QString::number(adj.originalSerial), adj.type,
+                                                      adj.newDate, QString::number(adj.newSerial),
+                                                      adj.courseCode, adj.courseName, adj.room, adj.instructor,
+                                                      QString::number(adj.semester)});
+}
+
+QVector<RoutineSession> AcadenceManager::getEffectiveRoutine(QDate date, int semester)
+{
+    QString dayName = date.toString("dddd");
+    QVector<RoutineSession> baseRoutine = getRoutineForDay(dayName, semester);
+    QVector<RoutineAdjustment> adjustments = getRoutineAdjustments();
+    QVector<RoutineSession> effectiveRoutine;
+
+    // 1. Process base routine: exclude if cancelled or moved FROM this date
+    for (const auto &session : baseRoutine)
+    {
+        bool modified = false;
+        for (const auto &adj : adjustments)
+        {
+            QString start;
+            if (adj.originalSerial == 1)
+                start = "09:00";
+            else if (adj.originalSerial == 2)
+                start = "10:00";
+            else if (adj.originalSerial == 3)
+                start = "11:00";
+            else if (adj.originalSerial == 4)
+                start = "12:00";
+            else if (adj.originalSerial == 5)
+                start = "14:00";
+
+            if (adj.originalDate == date.toString(Qt::ISODate) &&
+                start == session.getStartTime() &&
+                adj.courseCode == session.getCourseCode())
+            {
+                modified = true; // It's either cancelled or moved away
+                break;
+            }
+        }
+        if (!modified)
+        {
+            effectiveRoutine.append(session);
+        }
+    }
+
+    // 2. Add sessions moved TO this date
+    for (const auto &adj : adjustments)
+    {
+        if (adj.type == "RESCHEDULE" && adj.newDate == date.toString(Qt::ISODate))
+        {
+            if (semester == -1 || adj.semester == semester)
+            {
+                // Calculate end time (assuming 1 hour duration for simplicity if not stored)
+                QString start, end;
+                if (adj.newSerial == 1)
+                {
+                    start = "09:00";
+                    end = "10:00";
+                }
+                else if (adj.newSerial == 2)
+                {
+                    start = "10:00";
+                    end = "11:00";
+                }
+                else if (adj.newSerial == 3)
+                {
+                    start = "11:00";
+                    end = "12:00";
+                }
+                else if (adj.newSerial == 4)
+                {
+                    start = "12:00";
+                    end = "13:00";
+                }
+                else if (adj.newSerial == 5)
+                {
+                    start = "14:00";
+                    end = "15:00";
+                }
+                else
+                {
+                    start = "00:00";
+                    end = "00:00";
+                }
+
+                effectiveRoutine.append(RoutineSession(
+                    dayName, start, end,
+                    adj.courseCode, adj.courseName, adj.room, adj.instructor, adj.semester));
+            }
+        }
+    }
+
+    // Sort by start time
+    std::sort(effectiveRoutine.begin(), effectiveRoutine.end(), [](const RoutineSession &a, const RoutineSession &b)
+              { return QTime::fromString(a.getStartTime(), "HH:mm") < QTime::fromString(b.getStartTime(), "HH:mm"); });
+
+    return effectiveRoutine;
 }
 
 QVector<Course *> AcadenceManager::getTeacherCourses(int teacherId)

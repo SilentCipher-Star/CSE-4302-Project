@@ -29,6 +29,20 @@ public:
     int getSemester() const;
 };
 
+struct RoutineAdjustment
+{
+    QString originalDate;
+    int originalSerial = 0;
+    QString type; // "CANCEL" or "RESCHEDULE"
+    QString newDate;
+    int newSerial = 0;
+    QString courseCode;
+    QString courseName;
+    QString room;
+    QString instructor;
+    int semester = 0;
+};
+
 class WeeklyRoutine
 {
 private:

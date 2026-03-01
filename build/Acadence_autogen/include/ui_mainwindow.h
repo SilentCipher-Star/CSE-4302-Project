@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 6.10.1
+** Created by: Qt User Interface Compiler version 6.10.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -55,6 +55,7 @@ public:
     QLabel *val_p_sem;
     QLabel *lbl_p_email;
     QLabel *val_p_email;
+    QPushButton *btnChangePassword;
     QLabel *label_notices;
     QListWidget *noticeListWidget;
     QPushButton *addNoticeButton;
@@ -65,6 +66,7 @@ public:
     QHBoxLayout *horizontalLayout_task;
     QLineEdit *taskLineEdit;
     QPushButton *addTaskButton;
+    QPushButton *btnDeleteTask;
     QPushButton *completeTaskButton;
     QGroupBox *groupBox_timer;
     QVBoxLayout *verticalLayout_timer;
@@ -118,6 +120,8 @@ public:
     QComboBox *comboRoutineCourse;
     QLineEdit *editRoutineRoom;
     QPushButton *btnAddRoutine_Teacher;
+    QPushButton *btnCancelClass;
+    QPushButton *btnRescheduleClass;
     QTableWidget *tableTeacherRoutine;
     QWidget *tab_teacher_assessment;
     QVBoxLayout *verticalLayout_teacher_assessment;
@@ -182,6 +186,7 @@ public:
         font.setPointSize(16);
         font.setBold(true);
         label_welcome->setFont(font);
+        label_welcome->setStyleSheet(QString::fromUtf8("font-size: 36px; font-weight: bold;"));
 
         verticalLayout_dash->addWidget(label_welcome);
 
@@ -239,6 +244,13 @@ public:
 
         formLayout_profile->setWidget(4, QFormLayout::ItemRole::FieldRole, val_p_email);
 
+        btnChangePassword = new QPushButton(groupBox_profile);
+        btnChangePassword->setObjectName("btnChangePassword");
+        btnChangePassword->setFixedWidth(200);
+
+        formLayout_profile->setWidget(5, QFormLayout::ItemRole::FieldRole, btnChangePassword);
+
+
         verticalLayout_dash->addWidget(groupBox_profile);
 
         label_notices = new QLabel(tab_dashboard);
@@ -258,6 +270,7 @@ public:
 
         logoutButton = new QPushButton(tab_dashboard);
         logoutButton->setObjectName("logoutButton");
+        logoutButton->setFixedSize(QSize(90, 36));
 
         verticalLayout_dash->addWidget(logoutButton);
 
@@ -282,6 +295,13 @@ public:
         addTaskButton->setObjectName("addTaskButton");
 
         horizontalLayout_task->addWidget(addTaskButton);
+
+        btnDeleteTask = new QPushButton(tab_planner);
+        btnDeleteTask->setObjectName("btnDeleteTask");
+        btnDeleteTask->setCursor(QCursor(Qt::CursorShape::PointingHandCursor));
+
+        horizontalLayout_task->addWidget(btnDeleteTask);
+
 
         verticalLayout_plan->addLayout(horizontalLayout_task);
 
@@ -332,7 +352,9 @@ public:
 
         horizontalLayout_timerControls->addWidget(btnTimerStop);
 
+
         verticalLayout_timer->addLayout(horizontalLayout_timerControls);
+
 
         verticalLayout_plan->addWidget(groupBox_timer);
 
@@ -370,6 +392,7 @@ public:
 
         hbox_prayers->addWidget(chkIsha);
 
+
         verticalLayout_habit->addWidget(groupBox_prayers);
 
         habitListWidget = new QListWidget(tab_habits);
@@ -393,6 +416,7 @@ public:
         btnDeleteHabit->setObjectName("btnDeleteHabit");
 
         horizontalLayout_habitButtons->addWidget(btnDeleteHabit);
+
 
         verticalLayout_habit->addLayout(horizontalLayout_habitButtons);
 
@@ -435,7 +459,9 @@ public:
 
         horizontalLayout_workoutTimerControls->addWidget(btnWorkoutStop);
 
+
         verticalLayout_workoutTimer->addLayout(horizontalLayout_workoutTimerControls);
+
 
         verticalLayout_habit->addWidget(groupBox_workoutTimer);
 
@@ -472,6 +498,7 @@ public:
         tableRoutine->setObjectName("tableRoutine");
         tableRoutine->setEditTriggers(QAbstractItemView::NoEditTriggers);
         tableRoutine->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tableRoutine->setAlternatingRowColors(true);
 
         verticalLayout_routine->addWidget(tableRoutine);
 
@@ -507,6 +534,7 @@ public:
         QTableWidgetItem *__qtablewidgetitem8 = new QTableWidgetItem();
         tableAcademics->setHorizontalHeaderItem(3, __qtablewidgetitem8);
         tableAcademics->setObjectName("tableAcademics");
+        tableAcademics->setAlternatingRowColors(true);
 
         verticalLayout_academics->addWidget(tableAcademics);
 
@@ -556,6 +584,19 @@ public:
 
         hbox_routine_manage->addWidget(btnAddRoutine_Teacher);
 
+        btnCancelClass = new QPushButton(grp_routine_manage);
+        btnCancelClass->setObjectName("btnCancelClass");
+        btnCancelClass->setVisible(false);
+
+        hbox_routine_manage->addWidget(btnCancelClass);
+
+        btnRescheduleClass = new QPushButton(grp_routine_manage);
+        btnRescheduleClass->setObjectName("btnRescheduleClass");
+        btnRescheduleClass->setVisible(false);
+
+        hbox_routine_manage->addWidget(btnRescheduleClass);
+
+
         verticalLayout_teacher_routine->addWidget(grp_routine_manage);
 
         tableTeacherRoutine = new QTableWidget(tab_teacher_routine);
@@ -572,6 +613,7 @@ public:
         tableTeacherRoutine->setObjectName("tableTeacherRoutine");
         tableTeacherRoutine->setEditTriggers(QAbstractItemView::NoEditTriggers);
         tableTeacherRoutine->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tableTeacherRoutine->setAlternatingRowColors(true);
 
         verticalLayout_teacher_routine->addWidget(tableTeacherRoutine);
 
@@ -612,6 +654,7 @@ public:
 
         hbox_assessment->addWidget(btnCreateAssessment);
 
+
         verticalLayout_teacher_assessment->addWidget(grp_assessment);
 
         verticalSpacer_assessment = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
@@ -639,6 +682,7 @@ public:
 
         hbox_grading_controls->addWidget(btnSaveGrades);
 
+
         vbox_grading->addLayout(hbox_grading_controls);
 
         tableGrading = new QTableWidget(grp_grading);
@@ -651,8 +695,10 @@ public:
         QTableWidgetItem *__qtablewidgetitem15 = new QTableWidgetItem();
         tableGrading->setHorizontalHeaderItem(2, __qtablewidgetitem15);
         tableGrading->setObjectName("tableGrading");
+        tableGrading->setAlternatingRowColors(true);
 
         vbox_grading->addWidget(tableGrading);
+
 
         verticalLayout_teacher_grades->addWidget(grp_grading);
 
@@ -678,11 +724,13 @@ public:
 
         hbox_attendance_controls->addWidget(btnSaveAttendance);
 
+
         verticalLayout_teacher_attendance->addLayout(hbox_attendance_controls);
 
         tableAttendance = new QTableWidget(tab_teacher_attendance);
         tableAttendance->setObjectName("tableAttendance");
         tableAttendance->setSelectionBehavior(QAbstractItemView::SelectRows);
+        tableAttendance->setAlternatingRowColors(true);
 
         verticalLayout_teacher_attendance->addWidget(tableAttendance);
 
@@ -708,6 +756,7 @@ public:
 
         hbox_queries->addWidget(btnQueryAction);
 
+
         verticalLayout_queries->addLayout(hbox_queries);
 
         tabWidget->addTab(tab_queries, QString());
@@ -729,6 +778,7 @@ public:
         adminTableView->setObjectName("adminTableView");
         adminTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         adminTableView->setSortingEnabled(true);
+        adminTableView->setAlternatingRowColors(true);
 
         verticalLayout_admin->addWidget(adminTableView);
 
@@ -743,6 +793,7 @@ public:
         btnDeleteRow->setObjectName("btnDeleteRow");
 
         horizontalLayout_buttons->addWidget(btnDeleteRow);
+
 
         verticalLayout_admin->addLayout(horizontalLayout_buttons);
 
@@ -762,6 +813,7 @@ public:
 
         tabWidget->setCurrentIndex(0);
 
+
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
 
@@ -780,12 +832,17 @@ public:
         val_p_sem->setText(QCoreApplication::translate("MainWindow", "-", nullptr));
         lbl_p_email->setText(QCoreApplication::translate("MainWindow", "Email:", nullptr));
         val_p_email->setText(QCoreApplication::translate("MainWindow", "-", nullptr));
+        btnChangePassword->setText(QCoreApplication::translate("MainWindow", "Change Password", nullptr));
         label_notices->setText(QCoreApplication::translate("MainWindow", "Class Notices:", nullptr));
         addNoticeButton->setText(QCoreApplication::translate("MainWindow", "Post Notice (Teacher Only)", nullptr));
         logoutButton->setText(QCoreApplication::translate("MainWindow", "Logout", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_dashboard), QCoreApplication::translate("MainWindow", "Dashboard", nullptr));
         taskLineEdit->setPlaceholderText(QCoreApplication::translate("MainWindow", "New Task Description...", nullptr));
         addTaskButton->setText(QCoreApplication::translate("MainWindow", "Add Task", nullptr));
+        btnDeleteTask->setText(QCoreApplication::translate("MainWindow", "Delete Task", nullptr));
+#if QT_CONFIG(tooltip)
+        btnDeleteTask->setToolTip(QCoreApplication::translate("MainWindow", "Delete Selected Task", nullptr));
+#endif // QT_CONFIG(tooltip)
         completeTaskButton->setText(QCoreApplication::translate("MainWindow", "Mark Selected as Completed", nullptr));
         groupBox_timer->setTitle(QCoreApplication::translate("MainWindow", "Focus Timer", nullptr));
         label_timerDisplay->setText(QCoreApplication::translate("MainWindow", "00:00", nullptr));
@@ -856,6 +913,8 @@ public:
 #endif // QT_CONFIG(tooltip)
         editRoutineRoom->setPlaceholderText(QCoreApplication::translate("MainWindow", "Room", nullptr));
         btnAddRoutine_Teacher->setText(QCoreApplication::translate("MainWindow", "Add", nullptr));
+        btnCancelClass->setText(QCoreApplication::translate("MainWindow", "Cancel Selected Class", nullptr));
+        btnRescheduleClass->setText(QCoreApplication::translate("MainWindow", "Exchange / Reschedule", nullptr));
         QTableWidgetItem *___qtablewidgetitem9 = tableTeacherRoutine->horizontalHeaderItem(0);
         ___qtablewidgetitem9->setText(QCoreApplication::translate("MainWindow", "Time", nullptr));
         QTableWidgetItem *___qtablewidgetitem10 = tableTeacherRoutine->horizontalHeaderItem(1);
@@ -898,13 +957,11 @@ public:
         btnDeleteRow->setText(QCoreApplication::translate("MainWindow", "Delete Selected Row", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_admin), QCoreApplication::translate("MainWindow", "Admin Panel", nullptr));
     } // retranslateUi
+
 };
 
-namespace Ui
-{
-    class MainWindow : public Ui_MainWindow
-    {
-    };
+namespace Ui {
+    class MainWindow: public Ui_MainWindow {};
 } // namespace Ui
 
 QT_END_NAMESPACE

@@ -145,7 +145,11 @@ public:
     void deleteHabit(int id);
 
     QVector<RoutineSession> getRoutineForDay(QString day, int semester = -1);
-    void addRoutineItem(QString day, QString start, QString end, QString code, QString name, QString room, QString instructor, int semester);
+    void addRoutineItem(QString day, int serial, QString code, QString name, QString room, QString instructor, int semester);
+
+    QVector<RoutineAdjustment> getRoutineAdjustments();
+    void addRoutineAdjustment(const RoutineAdjustment &adj);
+    QVector<RoutineSession> getEffectiveRoutine(QDate date, int semester = -1);
 
     QVector<Course *> getTeacherCourses(int teacherId);
     Course *getCourse(int id);
