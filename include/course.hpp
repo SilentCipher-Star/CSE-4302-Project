@@ -1,6 +1,4 @@
-#ifndef COURSE_H
-#define COURSE_H
-
+#pragma once
 #include <QString>
 #include <iostream>
 
@@ -26,5 +24,3 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const Course &c);
 };
-
-#endif // COURSE_H

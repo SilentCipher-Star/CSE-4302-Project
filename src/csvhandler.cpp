@@ -141,7 +141,7 @@ void CsvHandler::initialize()
     }
 
     QVector<QString> otherFiles = {
-        "students.csv", "teachers.csv", "courses.csv", "enrollments.csv",
+        "students.csv", "teachers.csv", "courses.csv", "themes.csv",
         "routine.csv", "attendance.csv", "grades.csv", "notices.csv",
         "tasks.csv", "habits.csv", "queries.csv", "assessments.csv", "prayers.csv"};
 

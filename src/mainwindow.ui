@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Academic Manager</string>
+   <string>Acadence</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -38,9 +38,6 @@
             <bold>true</bold>
            </font>
           </property>
-         <property name="styleSheet">
-          <string notr="true">font-size: 36px; font-weight: bold;</string>
-         </property>
          </widget>
         </item>
         <item>
@@ -114,12 +111,6 @@
           <property name="text">
            <string>Logout</string>
           </property>
-          <property name="fixedSize">
-           <size>
-            <width>90</width>
-            <height>36</height>
-           </size>
-          </property>
          </widget>
         </item>
        </layout>
@@ -163,13 +154,7 @@
           </item>
          </layout>
         </item>
-        <item>
-         <widget class="QPushButton" name="completeTaskButton">
-          <property name="text">
-           <string>Mark Selected as Completed</string>
-          </property>
-         </widget>
-        </item>
+        
         <item>
          <widget class="QGroupBox" name="groupBox_timer">
           <property name="title">
@@ -434,30 +419,28 @@
             <item><property name="text"><string>Friday</string></property></item>
             <item><property name="text"><string>Saturday</string></property></item>
            </widget></item>
-           <item><widget class="QLineEdit" name="editRoutineTime">
-            <property name="placeholderText"><string>Start (09:00)</string></property>
-           </widget></item>
-           <item><widget class="QLineEdit" name="editRoutineEndTime">
-            <property name="placeholderText"><string>End (10:30)</string></property>
-           </widget></item>
-           <item><widget class="QComboBox" name="comboRoutineCourse">
-            <property name="toolTip"><string>Select Course</string></property>
-           </widget></item>
-           <item><widget class="QLineEdit" name="editRoutineRoom">
-            <property name="placeholderText"><string>Room</string></property>
-           </widget></item>
-           <item><widget class="QPushButton" name="btnAddRoutine_Teacher"><property name="text"><string>Add</string></property></widget></item>
            <item>
             <widget class="QPushButton" name="btnCancelClass">
              <property name="text"><string>Cancel Selected Class</string></property>
-             <property name="visible"><bool>false</bool></property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="btnRescheduleClass">
              <property name="text"><string>Exchange / Reschedule</string></property>
-             <property name="visible"><bool>false</bool></property>
             </widget>
+           </item>
+            <item>
+            <spacer name="horizontalSpacer_routine">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
           </layout>
          </widget>

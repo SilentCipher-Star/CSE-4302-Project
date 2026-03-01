@@ -1,6 +1,4 @@
-#ifndef TEACHER_H
-#define TEACHER_H
-
+#pragma once
 #include "person.hpp"
 
 class Teacher : public Person
@@ -20,6 +18,6 @@ public:
     double getSalary() const { return salary; }
 
     void setSalary(double s) { salary = s; }
+    void setDesignation(QString d) { designation = d; }
+    void setDepartment(QString d) { department = d; }
 };
-
-#endif // TEACHER_H

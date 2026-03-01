@@ -1,6 +1,4 @@
-#ifndef PERSON_H
-#define PERSON_H
-
+#pragma once
 #include <QString>
 
 class Person
@@ -30,5 +28,3 @@ public:
 
     static int getPersonCount();
 };
-
-#endif // PERSON_H

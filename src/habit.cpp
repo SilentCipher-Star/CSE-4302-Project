@@ -49,27 +49,29 @@ QString Habit::getTypeString() const
         return "Duration";
     case HabitType::COUNT:
         return "Count";
+    case HabitType::WORKOUT:
+        return "Workout";
     default:
         return "Unknown";
     }
 }
 
 DurationHabit::DurationHabit(int id, int sid, QString n, Frequency f, int target)
-    : Habit(id, sid, n, HabitType::DURATION, f), targetMinutes(target), currentMinutes(0) {}
+    : Habit(id, sid, n, HabitType::DURATION, f), targetMinutes(target), currentMinutes(0.0) {}
 
 QString DurationHabit::getProgressString() const
 {
-    return QString("%1/%2 mins").arg(currentMinutes).arg(targetMinutes);
+    return QString("%1/%2 mins").arg(QString::number(currentMinutes, 'f', 2)).arg(targetMinutes);
 }
 
 QString DurationHabit::serializeValue() const
 {
-    return QString::number(currentMinutes);
+    return QString::number(currentMinutes, 'f', 4);
 }
 
 void DurationHabit::deserializeValue(const QString &val)
 {
-    currentMinutes = val.toInt();
+    currentMinutes = val.toDouble();
 }
 
 CountHabit::CountHabit(int id, int sid, QString n, Frequency f, int target, QString u)
@@ -88,4 +90,31 @@ QString CountHabit::serializeValue() const
 void CountHabit::deserializeValue(const QString &val)
 {
     currentCount = val.toInt();
+}
+
+WorkoutHabit::WorkoutHabit(int id, int sid, QString n, Frequency f, int targetMin, int targetCnt, QString u)
+    : Habit(id, sid, n, HabitType::WORKOUT, f),
+      DurationHabit(id, sid, n, f, targetMin),
+      CountHabit(id, sid, n, f, targetCnt, u)
+{
+}
+
+QString WorkoutHabit::getProgressString() const
+{
+    return QString("%1/%2 mins, %3/%4 %5").arg(QString::number(currentMinutes, 'f', 2)).arg(targetMinutes).arg(currentCount).arg(targetCount).arg(unit);
+}
+
+QString WorkoutHabit::serializeValue() const
+{
+    return QString("%1|%2").arg(QString::number(currentMinutes, 'f', 4)).arg(currentCount);
+}
+
+void WorkoutHabit::deserializeValue(const QString &val)
+{
+    QStringList parts = val.split('|');
+    if (parts.size() >= 2)
+    {
+        currentMinutes = parts[0].toDouble();
+        currentCount = parts[1].toInt();
+    }
 }

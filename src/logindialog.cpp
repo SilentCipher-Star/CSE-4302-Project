@@ -27,7 +27,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
 
     QLabel *welcomeLabel = new QLabel("Welcome to Acadence", this);
     welcomeLabel->setAlignment(Qt::AlignCenter);
-    welcomeLabel->setStyleSheet("font-size: 54pt; font-weight: bold; margin-bottom: 40px;");
+    welcomeLabel->setStyleSheet(QString("font-size: %1; font-weight: bold; margin-bottom: 40px;").arg(AppFonts::Title));
     mainLayout->addWidget(welcomeLabel, 0, Qt::AlignCenter);
 
     QFrame *centerFrame = new QFrame(this);
@@ -60,6 +60,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     frameLayout->addWidget(passEdit);
 
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, centerFrame);
+    buttonBox->button(QDialogButtonBox::Cancel)->setText("Exit");
     buttonBox->setCenterButtons(true);
     frameLayout->addWidget(buttonBox);
 

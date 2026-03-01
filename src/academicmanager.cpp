@@ -378,10 +378,15 @@ QVector<Habit *> AcadenceManager::getHabits(int userId)
         {
             int id = row[0].toInt();
             QString name = row[2];
-            HabitType type = (row[3] == "Duration") ? HabitType::DURATION : HabitType::COUNT;
+            HabitType type = HabitType::COUNT;
+            if (row[3] == "Duration")
+                type = HabitType::DURATION;
+            else if (row[3] == "Workout")
+                type = HabitType::WORKOUT;
+
             Frequency freq = (row[4] == "Daily") ? Frequency::DAILY : Frequency::WEEKLY;
-            int target = row[5].toInt();
-            int current = row[6].toInt();
+            QString targetStr = row[5];
+            QString currentStr = row[6];
             int streak = row[7].toInt();
             QDate lastDate = QDate::fromString(row[8], Qt::ISODate);
             bool isComp = (row[9] == "1");
@@ -390,15 +395,25 @@ QVector<Habit *> AcadenceManager::getHabits(int userId)
             Habit *h = nullptr;
             if (type == HabitType::DURATION)
             {
-                auto *dh = new DurationHabit(id, userId, name, freq, target);
-                dh->currentMinutes = current;
+                auto *dh = new DurationHabit(id, userId, name, freq, targetStr.toInt());
+                dh->currentMinutes = currentStr.toDouble();
                 h = dh;
             }
-            else
+            else if (type == HabitType::COUNT)
             {
-                auto *ch = new CountHabit(id, userId, name, freq, target, unit);
-                ch->currentCount = current;
+                auto *ch = new CountHabit(id, userId, name, freq, targetStr.toInt(), unit);
+                ch->currentCount = currentStr.toInt();
                 h = ch;
+            }
+            else if (type == HabitType::WORKOUT)
+            {
+                QStringList targets = targetStr.split('|');
+                int tMin = (targets.size() > 0) ? targets[0].toInt() : 0;
+                int tCnt = (targets.size() > 1) ? targets[1].toInt() : 0;
+
+                auto *wh = new WorkoutHabit(id, userId, name, freq, tMin, tCnt, unit);
+                wh->deserializeValue(currentStr);
+                h = wh;
             }
 
             h->streak = streak;
@@ -424,21 +439,32 @@ void AcadenceManager::addHabit(Habit *h)
             maxId = std::max(maxId, row[0].toInt());
     h->id = maxId + 1;
 
-    QString typeStr = (h->type == HabitType::DURATION) ? "Duration" : "Count";
+    QString typeStr = h->getTypeString();
     QString freqStr = (h->frequency == Frequency::DAILY) ? "Daily" : "Weekly";
     QString unit = "";
-    int target = 0;
+    QString targetStr = "0";
+    QString currentStr = "0";
 
-    if (auto *dh = dynamic_cast<DurationHabit *>(h))
-        target = dh->targetMinutes;
+    if (auto *wh = dynamic_cast<WorkoutHabit *>(h))
+    {
+        targetStr = QString("%1|%2").arg(wh->targetMinutes).arg(wh->targetCount);
+        currentStr = wh->serializeValue();
+        unit = wh->unit;
+    }
+    else if (auto *dh = dynamic_cast<DurationHabit *>(h))
+    {
+        targetStr = QString::number(dh->targetMinutes);
+        currentStr = QString::number(dh->currentMinutes, 'f', 4);
+    }
     else if (auto *ch = dynamic_cast<CountHabit *>(h))
     {
-        target = ch->targetCount;
+        targetStr = QString::number(ch->targetCount);
+        currentStr = QString::number(ch->currentCount);
         unit = ch->unit;
     }
 
     CsvHandler::appendCsv("habits.csv", {QString::number(h->id), QString::number(h->studentId), h->name, typeStr, freqStr,
-                                         QString::number(target), "0", "0", QDate::currentDate().toString(Qt::ISODate), "0", unit});
+                                         targetStr, currentStr, "0", QDate::currentDate().toString(Qt::ISODate), "0", unit});
 }
 
 void AcadenceManager::updateHabit(Habit *h)
@@ -448,13 +474,15 @@ void AcadenceManager::updateHabit(Habit *h)
     {
         if (row.size() >= 11 && row[0].toInt() == h->id)
         {
-            int current = 0;
-            if (auto *dh = dynamic_cast<DurationHabit *>(h))
-                current = dh->currentMinutes;
+            QString currentStr = "0";
+            if (auto *wh = dynamic_cast<WorkoutHabit *>(h))
+                currentStr = wh->serializeValue();
+            else if (auto *dh = dynamic_cast<DurationHabit *>(h))
+                currentStr = QString::number(dh->currentMinutes, 'f', 4);
             else if (auto *ch = dynamic_cast<CountHabit *>(h))
-                current = ch->currentCount;
+                currentStr = QString::number(ch->currentCount);
 
-            row[6] = QString::number(current);
+            row[6] = currentStr;
             row[7] = QString::number(h->streak);
             row[8] = h->lastUpdated.toString(Qt::ISODate);
             row[9] = h->isCompleted ? "1" : "0";
@@ -609,6 +637,22 @@ QVector<RoutineSession> AcadenceManager::getEffectiveRoutine(QDate date, int sem
     {
         if (adj.type == "RESCHEDULE" && adj.newDate == date.toString(Qt::ISODate))
         {
+            // Check if this rescheduled slot has been cancelled
+            bool isCancelled = false;
+            for (const auto &cancelAdj : adjustments)
+            {
+                if (cancelAdj.type == "CANCEL" &&
+                    cancelAdj.originalDate == adj.newDate &&
+                    cancelAdj.originalSerial == adj.newSerial &&
+                    cancelAdj.courseCode == adj.courseCode)
+                {
+                    isCancelled = true;
+                    break;
+                }
+            }
+            if (isCancelled)
+                continue;
+
             if (semester == -1 || adj.semester == semester)
             {
                 // Calculate end time (assuming 1 hour duration for simplicity if not stored)

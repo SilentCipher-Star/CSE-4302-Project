@@ -1,6 +1,4 @@
-#ifndef CSVHANDLER_HPP
-#define CSVHANDLER_HPP
-
+#pragma once
 #include <QString>
 #include <QVector>
 #include <QStringList>
@@ -14,5 +12,3 @@ public:
     static void appendCsv(const QString &filename, const QStringList &fields);
     static void initialize();
 };
-
-#endif // CSVHANDLER_HPP

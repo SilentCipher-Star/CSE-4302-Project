@@ -1,6 +1,4 @@
-#ifndef ADMIN_H
-#define ADMIN_H
-
+#pragma once
 #include "person.hpp"
 
 class Admin : public Person
@@ -10,5 +8,3 @@ public:
 
     QString getRole() const override;
 };
-
-#endif // ADMIN_H

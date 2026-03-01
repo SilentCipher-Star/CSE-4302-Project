@@ -1,6 +1,4 @@
-#ifndef ROUTINE_HPP
-#define ROUTINE_HPP
-
+#pragma once
 #include <QString>
 #include <QVector>
 
@@ -29,6 +27,7 @@ public:
     int getSemester() const;
 };
 
+// Using this as a Data Transer Object to hold data from CSV file
 struct RoutineAdjustment
 {
     QString originalDate;
@@ -54,5 +53,3 @@ public:
     QVector<RoutineSession> getSessionsForDay(const QString &day) const;
     QVector<RoutineSession> getAllSessions() const;
 };
-
-#endif // ROUTINE_HPP

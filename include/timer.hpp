@@ -1,6 +1,4 @@
-#ifndef TIMER_HPP
-#define TIMER_HPP
-
+#pragma once
 #include <QObject>
 #include <QTimer>
 
@@ -11,8 +9,10 @@ public:
     explicit Timer(QObject *parent = nullptr);
 
     void start(int minutes);
+    void startStopwatch(int targetMinutes = 0);
     void pause();
     void stop();
+    double getElapsedMinutes() const;
 
 signals:
     void timeUpdated(QString time, float progress);
@@ -23,8 +23,9 @@ private slots:
 
 private:
     QTimer *internalTimer;
-    int remainingTime;
-    int totalTime;
+    int remainingTime = 0;
+    int totalTime = 0;
+    int elapsedTime = 0;
     bool isPaused;
+    bool isStopwatch;
 };
-#endif // TIMER_HPP

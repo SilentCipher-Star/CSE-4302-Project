@@ -1,5 +1,6 @@
 #include "../include/mainwindow.hpp"
 #include "../include/utils.hpp"
+#include "../include/theme.hpp"
 #include "ui_mainwindow.h"
 #include "../include/csvhandler.hpp"
 #include <QInputDialog>
@@ -161,10 +162,11 @@ void MainWindow::setupTimers()
     connect(m_focusTimer, &Timer::timeUpdated, [this](QString time, float progress)
             {
         ui->label_timerDisplay->setText(time);
-        QString style = QString("QLabel { border: 2px solid palette(highlight); border-radius: 12px; color: palette(text); "
+        QString style = QString("QLabel { font-size: %1; border: 2px solid palette(base); border-radius: 12px; color: palette(text); "
                                 "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-                                "stop:0 palette(highlight), stop:%1 palette(highlight), "
-                                "stop:%2 transparent, stop:1 transparent); }")
+                                "stop:0 palette(base), stop:%2 palette(base), "
+                                "stop:%3 transparent, stop:1 transparent); }")
+                            .arg(AppFonts::Timer)
                             .arg(progress > 0.001 ? progress - 0.001 : 0)
                             .arg(progress);
         ui->label_timerDisplay->setStyleSheet(style); });
@@ -180,10 +182,11 @@ void MainWindow::setupTimers()
     connect(m_workoutTimer, &Timer::timeUpdated, [this](QString time, float progress)
             {
         ui->label_workoutTimerDisplay->setText(time);
-        QString style = QString("QLabel { border: 2px solid palette(highlight); border-radius: 12px; color: palette(text); "
+        QString style = QString("QLabel { font-size: %1; border: 2px solid palette(base); border-radius: 12px; color: palette(text); "
                                 "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-                                "stop:0 palette(highlight), stop:%1 palette(highlight), "
-                                "stop:%2 transparent, stop:1 transparent); }")
+                                "stop:0 palette(base), stop:%2 palette(base), "
+                                "stop:%3 transparent, stop:1 transparent); }")
+                            .arg(AppFonts::Timer)
                             .arg(progress > 0.001 ? progress - 0.001 : 0)
                             .arg(progress);
         ui->label_workoutTimerDisplay->setStyleSheet(style); });
@@ -192,9 +195,20 @@ void MainWindow::setupTimers()
             {
         QMessageBox::information(this, "Habit", "Session complete!");
         if (activeTimerHabit) {
-            activeTimerHabit->currentMinutes = activeTimerHabit->targetMinutes;
-            activeTimerHabit->markComplete();
-            myManager.updateHabit(activeTimerHabit);
+            if (auto wh = dynamic_cast<WorkoutHabit*>(activeTimerHabit)) {
+                bool ok;
+                int count = QInputDialog::getInt(this, "Workout Progress", "Session Done! Add Reps/Count:", 0, 0, 1000, 1, &ok);
+                if (ok && count > 0) {
+                    wh->currentCount += count;
+                }
+                wh->currentMinutes = wh->targetMinutes;
+                wh->markComplete();
+                myManager.updateHabit(wh);
+            } else if (auto dh = dynamic_cast<DurationHabit*>(activeTimerHabit)) {
+                dh->currentMinutes = dh->targetMinutes;
+                dh->markComplete();
+                myManager.updateHabit(dh);
+            }
             refreshHabits();
         } });
 }
@@ -205,30 +219,12 @@ void MainWindow::setupConnections()
     connect(ui->btnChangePassword, &QPushButton::clicked, this, &MainWindow::onChangePasswordClicked);
 
     // Study Planner UI Setup
-    ui->completeTaskButton->setVisible(false);
 
     ui->addTaskButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     ui->btnDeleteTask->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     connect(ui->btnDeleteTask, &QPushButton::clicked, this, &MainWindow::on_btnDeleteTask_clicked);
     connect(ui->taskListWidget, &QListWidget::itemChanged, this, &MainWindow::on_taskItemChanged);
-
-    // --- Teacher Routine UI Adjustments ---
-    if (userRole == "Teacher")
-    {
-        // Hide old inputs
-        ui->editRoutineTime->setVisible(false);
-        ui->editRoutineEndTime->setVisible(false);
-        ui->editRoutineRoom->setVisible(false);
-        ui->comboRoutineCourse->setVisible(false);
-        ui->btnAddRoutine_Teacher->setVisible(false);
-
-        ui->btnCancelClass->setVisible(true);
-        ui->btnRescheduleClass->setVisible(true);
-    }
-
-    connect(ui->btnCancelClass, &QPushButton::clicked, this, &MainWindow::on_btnCancelClass_clicked);
-    connect(ui->btnRescheduleClass, &QPushButton::clicked, this, &MainWindow::on_btnRescheduleClass_clicked);
 }
 
 // Handles password change dialog and validation
@@ -487,7 +483,7 @@ void MainWindow::refreshHabits()
 // Opens dialog to create a new habit
 void MainWindow::on_btnAddHabit_clicked()
 {
-    QStringList types = {"Duration (Timer)", "Count (Counter)"};
+    QStringList types = {"Duration (Timer)", "Count (Counter)", "Workout (Both)"};
     bool ok;
     QString typeStr = QInputDialog::getItem(this, "Create Habit", "Type:", types, 0, false, &ok);
     if (!ok)
@@ -510,13 +506,31 @@ void MainWindow::on_btnAddHabit_clicked()
         myManager.addHabit(h);
         delete h;
     }
-    else
+    else if (typeStr.startsWith("Count"))
     {
         int target = QInputDialog::getInt(this, "Create Habit", "Target Count:", 5, 1, 1000, 1, &ok);
         if (!ok)
             return;
         QString unit = QInputDialog::getText(this, "Create Habit", "Unit:", QLineEdit::Normal, "", &ok);
         CountHabit *h = new CountHabit(0, userId, name, f, target, unit);
+        myManager.addHabit(h);
+        delete h;
+    }
+    else if (typeStr.startsWith("Workout"))
+    {
+        int targetMin = QInputDialog::getInt(this, "Create Habit", "Target Minutes:", 30, 1, 1440, 1, &ok);
+        if (!ok)
+            return;
+
+        int targetCnt = QInputDialog::getInt(this, "Create Habit", "Target Count/Reps:", 10, 1, 1000, 1, &ok);
+        if (!ok)
+            return;
+
+        QString unit = QInputDialog::getText(this, "Create Habit", "Unit (e.g., pushups):", QLineEdit::Normal, "", &ok);
+        if (!ok)
+            return;
+
+        WorkoutHabit *h = new WorkoutHabit(0, userId, name, f, targetMin, targetCnt, unit);
         myManager.addHabit(h);
         delete h;
     }
@@ -533,15 +547,24 @@ void MainWindow::on_btnPerformHabit_clicked()
     Habit *h = currentHabitList[row];
     bool changed = false;
 
-    if (auto dh = dynamic_cast<DurationHabit *>(h))
+    if (auto wh = dynamic_cast<WorkoutHabit *>(h))
+    {
+        activeTimerHabit = wh;
+        ui->groupBox_workoutTimer->setTitle("Workout: " + wh->name);
+        ui->spinWorkoutMinutes->setValue(wh->targetMinutes - wh->currentMinutes);
+        if (ui->spinWorkoutMinutes->value() <= 0)
+            ui->spinWorkoutMinutes->setValue(wh->targetMinutes);
+
+        QMessageBox::information(this, "Workout", "Timer set for '" + wh->name + "'.\nDon't forget to log your reps manually if needed!");
+    }
+    else if (auto dh = dynamic_cast<DurationHabit *>(h))
     {
         activeTimerHabit = dh;
-        ui->groupBox_workoutTimer->setTitle("Timer: " + dh->name);
-        ui->spinWorkoutMinutes->setValue(dh->targetMinutes - dh->currentMinutes);
-        if (ui->spinWorkoutMinutes->value() <= 0)
-            ui->spinWorkoutMinutes->setValue(dh->targetMinutes);
+        ui->groupBox_workoutTimer->setTitle("Stopwatch: " + dh->name);
+        ui->spinWorkoutMinutes->setEnabled(false); // Disable for stopwatch mode
+        ui->label_workoutTimerDisplay->setText("00:00.00");
 
-        QMessageBox::information(this, "Timer Ready", "Timer set for '" + dh->name + "'.\nClick Start in the Habit Timer box.");
+        QMessageBox::information(this, "Stopwatch Ready", "Stopwatch ready for '" + dh->name + "'.\nClick Start to begin tracking.");
     }
     else if (auto ch = dynamic_cast<CountHabit *>(h))
     {
@@ -578,7 +601,17 @@ void MainWindow::on_btnDeleteHabit_clicked()
 // Workout Timer Controls
 void MainWindow::on_btnWorkoutStart_clicked()
 {
-    m_workoutTimer->start(ui->spinWorkoutMinutes->value());
+    if (auto wh = dynamic_cast<WorkoutHabit *>(activeTimerHabit))
+    {
+        ui->spinWorkoutMinutes->setEnabled(true);
+        m_workoutTimer->start(ui->spinWorkoutMinutes->value());
+    }
+    else if (auto dh = dynamic_cast<DurationHabit *>(activeTimerHabit))
+    {
+        // Pure DurationHabit uses stopwatch
+        ui->spinWorkoutMinutes->setEnabled(false);
+        m_workoutTimer->startStopwatch(dh->targetMinutes);
+    }
 }
 
 void MainWindow::on_btnWorkoutPause_clicked()
@@ -588,6 +621,19 @@ void MainWindow::on_btnWorkoutPause_clicked()
 
 void MainWindow::on_btnWorkoutStop_clicked()
 {
+    if (activeTimerHabit)
+    {
+        double elapsed = m_workoutTimer->getElapsedMinutes();
+        if (elapsed > 0)
+        {
+            activeTimerHabit->currentMinutes += elapsed;
+            if (activeTimerHabit->currentMinutes >= activeTimerHabit->targetMinutes)
+                activeTimerHabit->markComplete();
+
+            myManager.updateHabit(activeTimerHabit);
+            refreshHabits();
+        }
+    }
     m_workoutTimer->stop();
 }
 
@@ -937,13 +983,11 @@ void MainWindow::refreshAcademics()
 void MainWindow::refreshTeacherTools()
 {
     ui->comboTeacherCourse->clear();
-    ui->comboRoutineCourse->clear();
     ui->comboAttendanceCourse->clear();
     QVector<Course *> courses = myManager.getTeacherCourses(userId);
     for (auto c : courses)
     {
         ui->comboTeacherCourse->addItem(c->getName(), c->getId());
-        ui->comboRoutineCourse->addItem(c->getCode() + " - " + c->getName(), c->getId());
         ui->comboAttendanceCourse->addItem(c->getCode() + " - " + c->getName(), c->getId());
     }
     qDeleteAll(courses);

@@ -1,6 +1,4 @@
-#ifndef STUDENT_H
-#define STUDENT_H
-
+#pragma once
 #include "person.hpp"
 #include <QDate>
 #include <QMap>
@@ -28,8 +26,9 @@ public:
 
     void setGpa(double gpa) { m_gpa = gpa; }
     void setDateAdmission(const QDate &date) { dateAdmission = date; }
+    void setSemester(int sem) { semester = sem; }
+    void setDepartment(const QString &dept) { department = dept; }
+    void setBatch(const QString &batch) { this->batch = batch; }
 
     double calculateGPA() const;
 };
-
-#endif // STUDENT_H

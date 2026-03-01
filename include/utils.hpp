@@ -1,6 +1,4 @@
-#ifndef UTILS_HPP
-#define UTILS_HPP
-
+#pragma once
 #include <QString>
 
 class QTableView;
@@ -13,5 +11,3 @@ public:
     static void loadFonts();
     static void adjustColumnWidths(QTableView *table);
 };
-
-#endif // UTILS_HPP

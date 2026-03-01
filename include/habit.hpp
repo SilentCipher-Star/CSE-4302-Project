@@ -1,6 +1,4 @@
-#ifndef HABIT_H
-#define HABIT_H
-
+#pragma once
 #include <QString>
 #include <QDate>
 #include <QStringList>
@@ -8,7 +6,8 @@
 enum class HabitType
 {
     DURATION,
-    COUNT
+    COUNT,
+    WORKOUT
 };
 
 enum class Frequency
@@ -41,11 +40,11 @@ public:
     QString getTypeString() const;
 };
 
-class DurationHabit : public Habit
+class DurationHabit : public virtual Habit
 {
 public:
     int targetMinutes;
-    int currentMinutes;
+    double currentMinutes;
 
     DurationHabit(int id, int sid, QString n, Frequency f, int target);
     QString getProgressString() const override;
@@ -53,7 +52,7 @@ public:
     void deserializeValue(const QString &val) override;
 };
 
-class CountHabit : public Habit
+class CountHabit : public virtual Habit
 {
 public:
     int targetCount;
@@ -61,6 +60,15 @@ public:
     QString unit;
 
     CountHabit(int id, int sid, QString n, Frequency f, int target, QString u);
+    QString getProgressString() const override;
+    QString serializeValue() const override;
+    void deserializeValue(const QString &val) override;
+};
+
+class WorkoutHabit : public DurationHabit, public CountHabit
+{
+public:
+    WorkoutHabit(int id, int sid, QString n, Frequency f, int targetMin, int targetCnt, QString u);
     QString getProgressString() const override;
     QString serializeValue() const override;
     void deserializeValue(const QString &val) override;
@@ -85,5 +93,3 @@ public:
     bool getMaghrib() const { return maghrib; }
     bool getIsha() const { return isha; }
 };
-
-#endif // HABIT_H
