@@ -136,6 +136,7 @@ public:
     void addTask(int userId, const QString &description);
     void completeTask(int taskId, bool status);
     void deleteTask(int taskId);
+    void deleteCompletedTasks(int userId);
 
     DailyPrayerStatus getDailyPrayers(int userId, QString date);
     void updateDailyPrayer(int userId, QString date, QString prayer, bool status);

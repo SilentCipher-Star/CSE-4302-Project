@@ -318,6 +318,21 @@ void AcadenceManager::deleteTask(int taskId)
     CsvHandler::writeCsv("tasks.csv", newData);
 }
 
+void AcadenceManager::deleteCompletedTasks(int userId)
+{
+    QVector<QStringList> data = CsvHandler::readCsv("tasks.csv");
+    QVector<QStringList> newData;
+    for (const auto &row : data)
+    {
+        // Keep row if it's not (belonging to this user AND completed)
+        if (row.size() < 4 || row[1].toInt() != userId || row[3] != "1")
+        {
+            newData.append(row);
+        }
+    }
+    CsvHandler::writeCsv("tasks.csv", newData);
+}
+
 DailyPrayerStatus AcadenceManager::getDailyPrayers(int userId, QString date)
 {
     QVector<QStringList> data = CsvHandler::readCsv("prayers.csv");

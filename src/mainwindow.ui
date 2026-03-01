@@ -152,6 +152,17 @@
             <property name="toolTip"><string>Delete Selected Task</string></property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="btnClearCompletedTasks">
+            <property name="text">
+             <string>Clear Completed</string>
+            </property>
+            <property name="cursor">
+             <cursorShape>PointingHandCursor</cursorShape>
+            </property>
+            <property name="toolTip"><string>Delete All Completed Tasks</string></property>
+           </widget>
+          </item>
          </layout>
         </item>
         
@@ -241,7 +252,42 @@
          </widget>
         </item>
         <item>
-         <widget class="QListWidget" name="habitListWidget"/>
+         <widget class="QTableWidget" name="habitTableWidget">
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <column>
+           <property name="text">
+            <string>Type</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Progress</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Streak</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Status</string>
+           </property>
+          </column>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_habitButtons">
@@ -255,7 +301,7 @@
           <item>
            <widget class="QPushButton" name="btnPerformHabit">
             <property name="text">
-             <string>Perform / Start Timer</string>
+             <string>Perform</string>
             </property>
            </widget>
           </item>
@@ -292,20 +338,6 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_workoutTimerControls">
-             <item>
-              <widget class="QLabel" name="label_workoutMin">
-               <property name="text">
-                <string>Target:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinWorkoutMinutes">
-               <property name="value">
-                <number>30</number>
-               </property>
-              </widget>
-             </item>
              <item>
               <widget class="QPushButton" name="btnWorkoutStart">
                <property name="text">
@@ -565,7 +597,7 @@
           <item>
            <widget class="QLineEdit" name="editQueryInput">
             <property name="placeholderText">
-             <string>Ask a question (Student) or Reply (Teacher)...</string>
+             <string>Query/Reply</string>
             </property>
            </widget>
           </item>

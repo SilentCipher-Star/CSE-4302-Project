@@ -49,6 +49,7 @@ private slots:
     // Study Planner Slots
     void on_addTaskButton_clicked();
     void on_btnDeleteTask_clicked();
+    void on_btnClearCompletedTasks_clicked();
     void on_taskItemChanged(QListWidgetItem *item);
 
     // Habit Tracker Slots

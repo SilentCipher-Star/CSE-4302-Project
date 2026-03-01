@@ -6,11 +6,11 @@ Timer::Timer(QObject *parent) : QObject(parent), remainingTime(0), totalTime(0),
     connect(internalTimer, &QTimer::timeout, this, &Timer::onTimeout);
 }
 
-void Timer::start(int minutes)
+void Timer::start(double minutes)
 {
     if (minutes <= 0)
         return;
-    remainingTime = minutes * 60 * 1000;
+    remainingTime = static_cast<int>(minutes * 60 * 1000);
     totalTime = remainingTime;
     isPaused = false;
     isStopwatch = false;
@@ -18,11 +18,11 @@ void Timer::start(int minutes)
     onTimeout();
 }
 
-void Timer::startStopwatch(int targetMinutes)
+void Timer::startStopwatch(double targetMinutes)
 {
     isStopwatch = true;
     elapsedTime = 0;
-    totalTime = targetMinutes * 60 * 1000; // Used for progress calculation only
+    totalTime = static_cast<int>(targetMinutes * 60 * 1000); // Used for progress calculation only
     isPaused = false;
     internalTimer->start(50);
     onTimeout();
@@ -35,10 +35,23 @@ void Timer::pause()
         internalTimer->stop();
         isPaused = true;
     }
-    else if (isPaused && remainingTime > 0)
+    else if (isPaused)
     {
-        internalTimer->start(50);
-        isPaused = false;
+        bool canResume = false;
+        if (isStopwatch)
+        {
+            if (totalTime <= 0 || elapsedTime < totalTime)
+                canResume = true;
+        }
+        else if (remainingTime > 0)
+        {
+            canResume = true;
+        }
+        if (canResume)
+        {
+            internalTimer->start(50);
+            isPaused = false;
+        }
     }
 }
 

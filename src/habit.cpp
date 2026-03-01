@@ -21,11 +21,38 @@ bool Habit::checkReset()
 
     if (reset)
     {
-        if (!isCompleted && streak > 0)
-            streak = 0;
+        if (streak > 0)
+        {
+            if (frequency == Frequency::DAILY)
+            {
+                if (lastUpdated < today.addDays(-1))
+                {
+                    streak = 0;
+                }
+                else if (lastUpdated == today.addDays(-1) && !isCompleted)
+                {
+                    streak = 0;
+                }
+            }
+            else if (frequency == Frequency::WEEKLY)
+            {
+                int weekDiff = today.weekNumber() - lastUpdated.weekNumber();
+                if (today.year() != lastUpdated.year())
+                    weekDiff += 52 * (today.year() - lastUpdated.year());
+
+                if (weekDiff > 1)
+                    streak = 0;
+                else if (weekDiff == 1 && !isCompleted)
+                    streak = 0;
+            }
+        }
 
         isCompleted = false;
         lastUpdated = today;
+        if (auto dh = dynamic_cast<DurationHabit *>(this))
+            dh->currentMinutes = 0.0;
+        if (auto ch = dynamic_cast<CountHabit *>(this))
+            ch->currentCount = 0;
         return true;
     }
     return false;
@@ -61,7 +88,10 @@ DurationHabit::DurationHabit(int id, int sid, QString n, Frequency f, int target
 
 QString DurationHabit::getProgressString() const
 {
-    return QString("%1/%2 mins").arg(QString::number(currentMinutes, 'f', 2)).arg(targetMinutes);
+    int totalSeconds = static_cast<int>(currentMinutes * 60);
+    int mins = totalSeconds / 60;
+    int secs = totalSeconds % 60;
+    return QString("%1:%2/%3 mins").arg(mins).arg(secs, 2, 10, QChar('0')).arg(targetMinutes);
 }
 
 QString DurationHabit::serializeValue() const
@@ -101,7 +131,10 @@ WorkoutHabit::WorkoutHabit(int id, int sid, QString n, Frequency f, int targetMi
 
 QString WorkoutHabit::getProgressString() const
 {
-    return QString("%1/%2 mins, %3/%4 %5").arg(QString::number(currentMinutes, 'f', 2)).arg(targetMinutes).arg(currentCount).arg(targetCount).arg(unit);
+    int totalSeconds = static_cast<int>(currentMinutes * 60);
+    int mins = totalSeconds / 60;
+    int secs = totalSeconds % 60;
+    return QString("%1:%2/%3 mins, %4/%5 %6").arg(mins).arg(secs, 2, 10, QChar('0')).arg(targetMinutes).arg(currentCount).arg(targetCount).arg(unit);
 }
 
 QString WorkoutHabit::serializeValue() const

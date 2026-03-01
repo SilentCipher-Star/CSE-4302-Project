@@ -50,7 +50,10 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "QPushButton:pressed { padding-top: 9px; padding-bottom: 7px; } "
                       "QPushButton:disabled { background-color: %2; color: %3; border: 1px solid %3; }"
 
-                      "QCheckBox { spacing: 8px; } "
+                      "QCheckBox { spacing: 10px; } "
+                      "QCheckBox::indicator, QListView::indicator { width: 24px; height: 24px; border: 2px solid %4; border-radius: 6px; background-color: %2; } "
+                      "QCheckBox::indicator:checked, QListView::indicator:checked { background-color: %4; border-color: %4; } "
+                      "QCheckBox::indicator:hover, QListView::indicator:hover { border-color: %3; } "
 
                       "QLineEdit, QComboBox { border: 1px solid %4; border-radius: 6px; padding: 8px; background-color: %2; color: %3; } "
                       "QLineEdit:focus, QComboBox:focus { border: 2px solid %4; background-color: %2; }"
@@ -75,6 +78,9 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "QHeaderView::section { background-color: %1; padding: 8px; border: none; border-bottom: 2px solid %4; font-weight: 700; text-transform: uppercase; color: %3; font-size: %7; } "
                       "QTableCornerButton::section { background-color: %1; border: none; } "
                       "QTableWidget::item { padding: 6px; border-bottom: 1px solid %4; } "
+                      "QListWidget::item { padding: 6px; margin: 4px; border-bottom: 1px solid %4; } "
+                      "QListWidget::item:selected { background-color: %4; color: %1; border-radius: 6px; border: none; } "
+                      "QListWidget::item:hover:!selected { background-color: %2; border-radius: 6px; } "
                       "QToolTip { color: %3; background-color: %2; border: 1px solid %4; }")
                       .arg(theme.background,
                            theme.surface,

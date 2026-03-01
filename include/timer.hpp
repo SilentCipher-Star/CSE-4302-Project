@@ -8,8 +8,8 @@ class Timer : public QObject
 public:
     explicit Timer(QObject *parent = nullptr);
 
-    void start(int minutes);
-    void startStopwatch(int targetMinutes = 0);
+    void start(double minutes);
+    void startStopwatch(double targetMinutes = 0);
     void pause();
     void stop();
     double getElapsedMinutes() const;

@@ -15,13 +15,11 @@
 #include <QDoubleSpinBox>
 #include <QDateEdit>
 #include <QFormLayout>
-#include <QHBoxLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QGraphicsDropShadowEffect>
 #include <QHeaderView>
 #include <QResizeEvent>
-#include <QScrollBar>
 #include <QStyle>
 #include <QTimer>
 #include <QVector>
@@ -32,21 +30,21 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     activeTimerHabit = nullptr;
     ui->setupUi(this);
 
-    // Logout button in the top right corner of the tab widget
+    // Setup Logout button
     ui->tabWidget->setCornerWidget(ui->logoutButton, Qt::TopRightCorner);
 
-    // Start in Full Screen
+    // Configure window state
     setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
     setWindowState(Qt::WindowMaximized);
 
-    // Initialize UI components
+    // Setup UI
     setupTables();
     setupTimers();
     setupConnections();
 
     ui->label_welcome->setText("Welcome, " + name);
 
-    // Add shadow effect to profile box
+    // Apply shadow effect
     QGraphicsDropShadowEffect *profileShadow = new QGraphicsDropShadowEffect(ui->groupBox_profile);
     profileShadow->setBlurRadius(20);
     profileShadow->setXOffset(0);
@@ -54,7 +52,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     profileShadow->setColor(QColor(0, 0, 0, 40));
     ui->groupBox_profile->setGraphicsEffect(profileShadow);
 
-    // Setup Admin View Model with Proxy for filtering
+    // Initialize Admin models
     adminModel = new QStandardItemModel(this);
 
     adminProxyModel = new QSortFilterProxyModel(this);
@@ -72,7 +70,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     if (!tables.isEmpty())
         on_tableComboBox_currentTextChanged(tables.first());
 
-    // Adjust UI based on User Role
+    // Configure UI based on role
     if (role == "Student")
     {
         ui->addNoticeButton->setVisible(false);
@@ -108,7 +106,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         ui->noticeListWidget->setVisible(false);
     }
 
-    // Load initial data
+    // Load data
     try
     {
         refreshDashboard();
@@ -136,10 +134,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// Configures table headers to be interactive
+// Configure table headers
 void MainWindow::setupTables()
 {
-    // Configure all tables to have interactive resizing
+    // Set interactive resizing
     QList<QTableView *> tables = {
         ui->adminTableView, ui->tableRoutine, ui->tableTeacherRoutine,
         ui->tableAcademics, ui->tableGrading, ui->tableAttendance};
@@ -151,7 +149,7 @@ void MainWindow::setupTables()
     }
 }
 
-// Initializes Focus and Workout timers with signal connections
+// Initialize timers
 void MainWindow::setupTimers()
 {
     // Focus Timer
@@ -202,7 +200,8 @@ void MainWindow::setupTimers()
                     wh->currentCount += count;
                 }
                 wh->currentMinutes = wh->targetMinutes;
-                wh->markComplete();
+                if (wh->currentCount >= wh->targetCount)
+                    wh->markComplete();
                 myManager.updateHabit(wh);
             } else if (auto dh = dynamic_cast<DurationHabit*>(activeTimerHabit)) {
                 dh->currentMinutes = dh->targetMinutes;
@@ -213,7 +212,7 @@ void MainWindow::setupTimers()
         } });
 }
 
-// Connects dynamic UI elements and signals
+// Setup signal connections
 void MainWindow::setupConnections()
 {
     connect(ui->btnChangePassword, &QPushButton::clicked, this, &MainWindow::onChangePasswordClicked);
@@ -222,12 +221,12 @@ void MainWindow::setupConnections()
 
     ui->addTaskButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     ui->btnDeleteTask->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    ui->btnClearCompletedTasks->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    connect(ui->btnDeleteTask, &QPushButton::clicked, this, &MainWindow::on_btnDeleteTask_clicked);
     connect(ui->taskListWidget, &QListWidget::itemChanged, this, &MainWindow::on_taskItemChanged);
 }
 
-// Handles password change dialog and validation
+// Handle password change
 void MainWindow::onChangePasswordClicked()
 {
     QDialog dlg(this);
@@ -282,7 +281,7 @@ void MainWindow::onChangePasswordClicked()
     }
 }
 
-// Reloads dashboard notices and profile information
+// Refresh dashboard data
 void MainWindow::refreshDashboard()
 {
     ui->noticeListWidget->clear();
@@ -293,6 +292,7 @@ void MainWindow::refreshDashboard()
     }
     catch (const Acadence::Exception &e)
     {
+        // Ignore error if notices fail to load
     }
     for (const auto &n : notices)
     {
@@ -345,7 +345,7 @@ void MainWindow::refreshDashboard()
     }
 }
 
-// Opens dialog to post a new notice
+// Post new notice
 void MainWindow::on_addNoticeButton_clicked()
 {
     bool ok;
@@ -364,13 +364,13 @@ void MainWindow::on_addNoticeButton_clicked()
     }
 }
 
-// Exits the application with a specific code to trigger re-login
+// Logout and restart
 void MainWindow::on_logoutButton_clicked()
 {
     QApplication::exit(99);
 }
 
-// Reloads the To-Do list
+// Refresh task list
 void MainWindow::refreshPlanner()
 {
     ui->taskListWidget->blockSignals(true); // Prevent triggering itemChanged during reload
@@ -395,7 +395,7 @@ void MainWindow::refreshPlanner()
     ui->taskListWidget->blockSignals(false);
 }
 
-// Adds a new task to the planner
+// Add task
 void MainWindow::on_addTaskButton_clicked()
 {
     QString desc = ui->taskLineEdit->text();
@@ -407,19 +407,33 @@ void MainWindow::on_addTaskButton_clicked()
     }
 }
 
-// Deletes the selected task
+// Delete selected task
 void MainWindow::on_btnDeleteTask_clicked()
 {
     QListWidgetItem *item = ui->taskListWidget->currentItem();
     if (item)
     {
+        if (QMessageBox::question(this, "Delete Task", "Are you sure you want to delete this task?", QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
+        {
+            return;
+        }
         int id = item->data(Qt::UserRole).toInt();
         myManager.deleteTask(id);
         delete ui->taskListWidget->takeItem(ui->taskListWidget->row(item));
     }
 }
 
-// Updates task completion status when checkbox is toggled
+// Clear completed tasks
+void MainWindow::on_btnClearCompletedTasks_clicked()
+{
+    if (QMessageBox::question(this, "Clear Completed", "Are you sure you want to delete all completed tasks?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+    {
+        myManager.deleteCompletedTasks(userId);
+        refreshPlanner();
+    }
+}
+
+// Update task status
 void MainWindow::on_taskItemChanged(QListWidgetItem *item)
 {
     int id = item->data(Qt::UserRole).toInt();
@@ -433,23 +447,29 @@ void MainWindow::on_taskItemChanged(QListWidgetItem *item)
     item->setForeground(isChecked ? Qt::gray : QPalette().color(QPalette::Text));
 }
 
-// Focus Timer Controls
+// Focus Timer slots
 void MainWindow::on_btnTimerStart_clicked()
 {
     m_focusTimer->start(ui->spinTimerMinutes->value());
+    ui->btnTimerPause->setText("Pause");
 }
 
 void MainWindow::on_btnTimerPause_clicked()
 {
     m_focusTimer->pause();
+    if (ui->btnTimerPause->text() == "Pause")
+        ui->btnTimerPause->setText("Resume");
+    else
+        ui->btnTimerPause->setText("Pause");
 }
 
 void MainWindow::on_btnTimerStop_clicked()
 {
     m_focusTimer->stop();
+    ui->btnTimerPause->setText("Pause");
 }
 
-// Reloads habits and prayer status
+// Refresh habits and prayers
 void MainWindow::refreshHabits()
 {
     DailyPrayerStatus prayers = myManager.getDailyPrayers(userId, QDate::currentDate().toString(Qt::ISODate));
@@ -460,27 +480,29 @@ void MainWindow::refreshHabits()
     ui->chkIsha->setChecked(prayers.getIsha());
 
     qDeleteAll(currentHabitList);
+    activeTimerHabit = nullptr; // Prevent dangling pointer
     currentHabitList = myManager.getHabits(userId);
-    ui->habitListWidget->clear();
+    ui->habitTableWidget->setRowCount(0);
 
     for (auto h : currentHabitList)
     {
-        QString label = QString("[%1] %2 | %3 | Streak: %4 %5")
-                            .arg(h->getTypeString())
-                            .arg(h->name)
-                            .arg(h->getProgressString())
-                            .arg(h->streak)
-                            .arg(h->isCompleted ? "[DONE]" : "");
+        int row = ui->habitTableWidget->rowCount();
+        ui->habitTableWidget->insertRow(row);
 
-        QListWidgetItem *item = new QListWidgetItem(label);
-        item->setData(Qt::UserRole, h->id);
+        ui->habitTableWidget->setItem(row, 0, new QTableWidgetItem(h->getTypeString()));
+        ui->habitTableWidget->setItem(row, 1, new QTableWidgetItem(h->name));
+        ui->habitTableWidget->setItem(row, 2, new QTableWidgetItem(h->getProgressString()));
+        ui->habitTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(h->streak)));
+        QTableWidgetItem *statusItem = new QTableWidgetItem(h->isCompleted ? "Completed" : "Pending");
         if (h->isCompleted)
-            item->setForeground(Qt::green);
-        ui->habitListWidget->addItem(item);
+            statusItem->setForeground(Qt::green);
+        ui->habitTableWidget->setItem(row, 4, statusItem);
     }
+    ui->habitTableWidget->resizeColumnsToContents();
+    ui->habitTableWidget->horizontalHeader()->setStretchLastSection(true);
 }
 
-// Opens dialog to create a new habit
+// Create new habit
 void MainWindow::on_btnAddHabit_clicked()
 {
     QStringList types = {"Duration (Timer)", "Count (Counter)", "Workout (Both)"};
@@ -526,7 +548,7 @@ void MainWindow::on_btnAddHabit_clicked()
         if (!ok)
             return;
 
-        QString unit = QInputDialog::getText(this, "Create Habit", "Unit (e.g., pushups):", QLineEdit::Normal, "", &ok);
+        QString unit = QInputDialog::getText(this, "Create Habit", "Unit:", QLineEdit::Normal, "", &ok);
         if (!ok)
             return;
 
@@ -537,10 +559,10 @@ void MainWindow::on_btnAddHabit_clicked()
     refreshHabits();
 }
 
-// Increments habit progress or sets up the workout timer
+// Perform selected habit
 void MainWindow::on_btnPerformHabit_clicked()
 {
-    int row = ui->habitListWidget->currentRow();
+    int row = ui->habitTableWidget->currentRow();
     if (row < 0 || row >= currentHabitList.size())
         return;
 
@@ -551,9 +573,13 @@ void MainWindow::on_btnPerformHabit_clicked()
     {
         activeTimerHabit = wh;
         ui->groupBox_workoutTimer->setTitle("Workout: " + wh->name);
-        ui->spinWorkoutMinutes->setValue(wh->targetMinutes - wh->currentMinutes);
-        if (ui->spinWorkoutMinutes->value() <= 0)
-            ui->spinWorkoutMinutes->setValue(wh->targetMinutes);
+
+        double remaining = wh->targetMinutes - wh->currentMinutes;
+        if (remaining <= 0.001)
+            remaining = wh->targetMinutes;
+
+        int totalSeconds = static_cast<int>(remaining * 60);
+        ui->label_workoutTimerDisplay->setText(QString("%1:%2").arg(totalSeconds / 60, 2, 10, QChar('0')).arg(totalSeconds % 60, 2, 10, QChar('0')));
 
         QMessageBox::information(this, "Workout", "Timer set for '" + wh->name + "'.\nDon't forget to log your reps manually if needed!");
     }
@@ -561,7 +587,6 @@ void MainWindow::on_btnPerformHabit_clicked()
     {
         activeTimerHabit = dh;
         ui->groupBox_workoutTimer->setTitle("Stopwatch: " + dh->name);
-        ui->spinWorkoutMinutes->setEnabled(false); // Disable for stopwatch mode
         ui->label_workoutTimerDisplay->setText("00:00.00");
 
         QMessageBox::information(this, "Stopwatch Ready", "Stopwatch ready for '" + dh->name + "'.\nClick Start to begin tracking.");
@@ -586,10 +611,10 @@ void MainWindow::on_btnPerformHabit_clicked()
     }
 }
 
-// Deletes the selected habit
+// Delete selected habit
 void MainWindow::on_btnDeleteHabit_clicked()
 {
-    int row = ui->habitListWidget->currentRow();
+    int row = ui->habitTableWidget->currentRow();
     if (row < 0 || row >= currentHabitList.size())
         return;
 
@@ -598,46 +623,74 @@ void MainWindow::on_btnDeleteHabit_clicked()
     refreshHabits();
 }
 
-// Workout Timer Controls
+// Workout Timer slots
 void MainWindow::on_btnWorkoutStart_clicked()
 {
+    if (!activeTimerHabit)
+    {
+        QMessageBox::warning(this, "Error", "Please select a habit to perform first.");
+        return;
+    }
+
+    ui->btnWorkoutPause->setText("Pause");
     if (auto wh = dynamic_cast<WorkoutHabit *>(activeTimerHabit))
     {
-        ui->spinWorkoutMinutes->setEnabled(true);
-        m_workoutTimer->start(ui->spinWorkoutMinutes->value());
+        double remaining = wh->targetMinutes - wh->currentMinutes;
+        if (remaining <= 0.001)
+            remaining = wh->targetMinutes;
+        m_workoutTimer->start(remaining);
     }
     else if (auto dh = dynamic_cast<DurationHabit *>(activeTimerHabit))
     {
         // Pure DurationHabit uses stopwatch
-        ui->spinWorkoutMinutes->setEnabled(false);
-        m_workoutTimer->startStopwatch(dh->targetMinutes);
+        double remaining = dh->targetMinutes - dh->currentMinutes;
+        if (remaining <= 0.001)
+            remaining = dh->targetMinutes;
+        m_workoutTimer->startStopwatch(remaining);
     }
 }
 
 void MainWindow::on_btnWorkoutPause_clicked()
 {
     m_workoutTimer->pause();
+    if (ui->btnWorkoutPause->text() == "Pause")
+        ui->btnWorkoutPause->setText("Resume");
+    else
+        ui->btnWorkoutPause->setText("Pause");
 }
 
 void MainWindow::on_btnWorkoutStop_clicked()
 {
+    double elapsed = m_workoutTimer->getElapsedMinutes();
+    m_workoutTimer->stop();
+    ui->btnWorkoutPause->setText("Pause");
+
     if (activeTimerHabit)
     {
-        double elapsed = m_workoutTimer->getElapsedMinutes();
         if (elapsed > 0)
         {
             activeTimerHabit->currentMinutes += elapsed;
-            if (activeTimerHabit->currentMinutes >= activeTimerHabit->targetMinutes)
+
+            if (auto wh = dynamic_cast<WorkoutHabit *>(activeTimerHabit))
+            {
+                bool ok;
+                int count = QInputDialog::getInt(this, "Workout Stopped", "Add Reps/Count:", 0, 0, 1000, 1, &ok);
+                if (ok && count > 0)
+                    wh->currentCount += count;
+
+                if (wh->currentMinutes >= wh->targetMinutes && wh->currentCount >= wh->targetCount)
+                    wh->markComplete();
+            }
+            else if (activeTimerHabit->currentMinutes >= activeTimerHabit->targetMinutes)
                 activeTimerHabit->markComplete();
 
             myManager.updateHabit(activeTimerHabit);
             refreshHabits();
         }
     }
-    m_workoutTimer->stop();
 }
 
-// Prayer Tracker Toggles
+// Prayer toggle slots
 void MainWindow::on_chkFajr_toggled(bool checked)
 {
     myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "fajr", checked);
@@ -659,7 +712,7 @@ void MainWindow::on_chkIsha_toggled(bool checked)
     myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "isha", checked);
 }
 
-// Calculates the date for a specific day of the current week
+// Get date for day name
 QDate MainWindow::getDateForDay(QString dayName)
 {
     QDate today = QDate::currentDate();
@@ -672,7 +725,7 @@ QDate MainWindow::getDateForDay(QString dayName)
     return today.addDays(diff);
 }
 
-// Reloads the student routine table
+// Refresh student routine
 void MainWindow::refreshRoutine()
 {
     ui->tableRoutine->setRowCount(0);
@@ -712,7 +765,7 @@ void MainWindow::on_comboRoutineDay_currentIndexChanged(int index)
     refreshRoutine();
 }
 
-// Reloads the teacher routine table, filtering by assigned courses
+// Refresh teacher routine
 void MainWindow::refreshTeacherRoutine()
 {
     ui->tableTeacherRoutine->setRowCount(0);
@@ -761,7 +814,7 @@ void MainWindow::on_comboRoutineDayInput_currentIndexChanged(int index)
     refreshTeacherRoutine();
 }
 
-// Cancels a selected class for the teacher
+// Cancel class
 void MainWindow::on_btnCancelClass_clicked()
 {
     int row = ui->tableTeacherRoutine->currentRow();
@@ -809,7 +862,7 @@ void MainWindow::on_btnCancelClass_clicked()
     }
 }
 
-// Reschedules or exchanges a selected class
+// Reschedule class
 void MainWindow::on_btnRescheduleClass_clicked()
 {
     int row = ui->tableTeacherRoutine->currentRow();
@@ -947,7 +1000,7 @@ void MainWindow::on_btnRescheduleClass_clicked()
     }
 }
 
-// Reloads student academic data (attendance, assessments)
+// Refresh academic data
 void MainWindow::refreshAcademics()
 {
     ui->listAssessments->clear();
@@ -979,7 +1032,7 @@ void MainWindow::refreshAcademics()
     Utils::adjustColumnWidths(ui->tableAcademics);
 }
 
-// Refreshes dropdowns and tables for teacher tools
+// Refresh teacher tools
 void MainWindow::refreshTeacherTools()
 {
     ui->comboTeacherCourse->clear();
@@ -1003,7 +1056,7 @@ void MainWindow::refreshTeacherTools()
     refreshTeacherAttendance();
 }
 
-// Creates a new assessment
+// Create assessment
 void MainWindow::on_btnCreateAssessment_clicked()
 {
     int courseId = ui->comboTeacherCourse->currentData().toInt();
@@ -1023,7 +1076,7 @@ void MainWindow::on_comboTeacherAssessment_currentIndexChanged(int index)
     refreshTeacherGrades();
 }
 
-// Reloads the grading table for the selected assessment
+// Refresh grades table
 void MainWindow::refreshTeacherGrades()
 {
     ui->tableGrading->setRowCount(0);
@@ -1067,7 +1120,7 @@ void MainWindow::refreshTeacherGrades()
     Utils::adjustColumnWidths(ui->tableGrading);
 }
 
-// Saves entered grades to the database
+// Save grades
 void MainWindow::on_btnSaveGrades_clicked()
 {
     int assessmentId = ui->comboTeacherAssessment->currentData().toInt();
@@ -1086,7 +1139,7 @@ void MainWindow::on_btnSaveGrades_clicked()
     refreshTeacherGrades();
 }
 
-// Reloads the attendance sheet for the selected course
+// Refresh attendance table
 void MainWindow::refreshTeacherAttendance()
 {
     ui->tableAttendance->clear();
@@ -1148,7 +1201,7 @@ void MainWindow::on_comboAttendanceCourse_currentIndexChanged(int index)
     refreshTeacherAttendance();
 }
 
-// Saves marked attendance to the database
+// Save attendance
 void MainWindow::on_btnSaveAttendance_clicked()
 {
     int courseId = ui->comboAttendanceCourse->currentData().toInt();
@@ -1172,7 +1225,7 @@ void MainWindow::on_btnSaveAttendance_clicked()
     refreshTeacherAttendance();
 }
 
-// Reloads Q&A threads
+// Refresh queries
 void MainWindow::refreshQueries()
 {
     ui->listQueries->clear();
@@ -1198,7 +1251,7 @@ void MainWindow::refreshQueries()
     }
 }
 
-// Handles asking a question (Student) or replying (Teacher)
+// Handle query action
 void MainWindow::on_btnQueryAction_clicked()
 {
     QString text = ui->editQueryInput->text();
@@ -1243,7 +1296,7 @@ void MainWindow::on_btnQueryAction_clicked()
     }
 }
 
-// Helper to write table model data to CSV
+// Save model to CSV
 void saveTableData(QStandardItemModel *model, const QString &tableName)
 {
     QVector<QStringList> data;
@@ -1260,7 +1313,7 @@ void saveTableData(QStandardItemModel *model, const QString &tableName)
     CsvHandler::writeCsv(tableName + ".csv", data);
 }
 
-// Loads data into the Admin table when selection changes
+// Load admin table
 void MainWindow::on_tableComboBox_currentTextChanged(const QString &tableName)
 {
     adminModel->clear();
@@ -1311,7 +1364,7 @@ void MainWindow::on_tableComboBox_currentTextChanged(const QString &tableName)
                        { Utils::adjustColumnWidths(ui->adminTableView); });
 }
 
-// Adds a new row to the Admin table
+// Add admin row
 void MainWindow::on_btnAddRow_clicked()
 {
     int row = adminModel->rowCount();
@@ -1344,7 +1397,7 @@ void MainWindow::on_btnAddRow_clicked()
     saveTableData(adminModel, currentTable);
 }
 
-// Deletes selected rows from the Admin table
+// Delete admin row
 void MainWindow::on_btnDeleteRow_clicked()
 {
     QModelIndexList selected = ui->adminTableView->selectionModel()->selectedRows();
@@ -1371,7 +1424,7 @@ void MainWindow::on_btnDeleteRow_clicked()
     saveTableData(adminModel, ui->tableComboBox->currentText());
 }
 
-// Filters the Admin table
+// Filter admin table
 void MainWindow::on_searchLineEdit_textChanged(const QString &arg1)
 {
     adminProxyModel->setFilterFixedString(arg1);
@@ -1379,7 +1432,7 @@ void MainWindow::on_searchLineEdit_textChanged(const QString &arg1)
 
 CsvDelegate::CsvDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
 
-// Creates appropriate editors (SpinBox, DateEdit, etc.) based on column type
+// Create custom editor
 QWidget *CsvDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     int col = index.column();
@@ -1521,7 +1574,7 @@ QWidget *CsvDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &
     return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
-// Populates the editor with data from the model
+// Set editor data
 void CsvDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
     QString val = index.model()->data(index, Qt::EditRole).toString();
@@ -1537,7 +1590,7 @@ void CsvDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
         QStyledItemDelegate::setEditorData(editor, index);
 }
 
-// Saves data from the editor to the model, with validation
+// Save editor data
 void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     int col = index.column();
@@ -1641,7 +1694,7 @@ void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
     model->setData(index, newVal, Qt::EditRole);
 }
 
-// Event handler to resize columns when the window size changes
+// Handle resize event
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
