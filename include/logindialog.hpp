@@ -1,10 +1,9 @@
 #pragma once
-
 #include <QDialog>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QApplication>
-#include "academicmanager.hpp"
+#include "appmanager.hpp"
 #include "theme.hpp"
 
 class LoginDialog : public QDialog

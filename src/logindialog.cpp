@@ -1,5 +1,7 @@
 #include "../include/logindialog.hpp"
 #include "../include/csvhandler.hpp"
+#include "../include/appmanager.hpp"
+#include "../include/utils.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -109,11 +111,12 @@ void LoginDialog::onLoginClicked()
     QString inputUsername = userEdit->text();
     QString inputPassword = passEdit->text();
 
+    AcadenceManager manager;
     // Exception Handling
     try
     {
         // Gets role (Admin, Student or Teacher) from user
-        role = Manager.login(inputUsername, inputPassword, userId);
+        role = manager.login(inputUsername, inputPassword, userId);
     }
     catch (const Acadence::Exception &e)
     {
@@ -123,7 +126,7 @@ void LoginDialog::onLoginClicked()
 
     if (!role.isEmpty())
     {
-        if (role == "Admin")
+        if (role == Constants::Role::Admin)
         {
             QVector<QStringList> admins = CsvHandler::readCsv("admins.csv");
             for (const auto &row : admins)
@@ -135,22 +138,20 @@ void LoginDialog::onLoginClicked()
                 }
             }
         }
-        else if (role == "Student")
+        else if (role == Constants::Role::Student)
         {
-            Student *s = Manager.getStudent(userId);
+            std::unique_ptr<Student> s(manager.getStudent(userId));
             if (s)
             {
                 name = s->getName();
-                delete s;
             }
         }
-        else if (role == "Teacher")
+        else if (role == Constants::Role::Teacher)
         {
-            Teacher *t = Manager.getTeacher(userId);
+            std::unique_ptr<Teacher> t(manager.getTeacher(userId));
             if (t)
             {
                 name = t->getName();
-                delete t;
             }
         }
         accept();

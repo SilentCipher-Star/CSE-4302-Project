@@ -1,4 +1,4 @@
-#include "../include/academicmanager.hpp"
+#include "../include/appmanager.hpp"
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
@@ -37,6 +37,23 @@ namespace
 
 AcadenceManager::AcadenceManager()
 {
+}
+
+void AcadenceManager::addObserver(IDataObserver *observer)
+{
+    if (!observers.contains(observer))
+        observers.append(observer);
+}
+
+void AcadenceManager::removeObserver(IDataObserver *observer)
+{
+    observers.removeAll(observer);
+}
+
+void AcadenceManager::notifyObservers(DataType type)
+{
+    for (auto *obs : observers)
+        obs->onDataChanged(type);
 }
 
 QString AcadenceManager::login(const QString &username, const QString &password, int &userId)
@@ -119,6 +136,7 @@ bool AcadenceManager::changePassword(int userId, const QString &role, const QStr
     if (found)
     {
         CsvHandler::writeCsv(filename, data);
+        notifyObservers(DataType::Profile);
         return true;
     }
     throw Acadence::Exception("User not found.");
@@ -142,6 +160,7 @@ void AcadenceManager::addNotice(const QString &content, const QString &author)
 {
     QString date = QDate::currentDate().toString("yyyy-MM-dd");
     CsvHandler::appendCsv("notices.csv", {date, author, content});
+    notifyObservers(DataType::Notices);
 }
 
 QString AcadenceManager::getDashboardStats(int userId, QString role)
@@ -309,6 +328,7 @@ void AcadenceManager::addTask(int userId, const QString &description)
             maxId = std::max(maxId, row[0].toInt());
 
     CsvHandler::appendCsv("tasks.csv", {QString::number(maxId + 1), QString::number(userId), description, "0"});
+    notifyObservers(DataType::Tasks);
 }
 
 void AcadenceManager::completeTask(int taskId, bool status)
@@ -322,6 +342,7 @@ void AcadenceManager::completeTask(int taskId, bool status)
         }
     }
     CsvHandler::writeCsv("tasks.csv", data);
+    notifyObservers(DataType::Tasks);
 }
 
 void AcadenceManager::deleteTask(int taskId)
@@ -336,6 +357,7 @@ void AcadenceManager::deleteTask(int taskId)
         }
     }
     CsvHandler::writeCsv("tasks.csv", newData);
+    notifyObservers(DataType::Tasks);
 }
 
 void AcadenceManager::deleteCompletedTasks(int userId)
@@ -351,6 +373,7 @@ void AcadenceManager::deleteCompletedTasks(int userId)
         }
     }
     CsvHandler::writeCsv("tasks.csv", newData);
+    notifyObservers(DataType::Tasks);
 }
 
 DailyPrayerStatus AcadenceManager::getDailyPrayers(int userId, QString date)
@@ -401,6 +424,7 @@ void AcadenceManager::updateDailyPrayer(int userId, QString date, QString prayer
         data.append(newRow);
     }
     CsvHandler::writeCsv("prayers.csv", data);
+    notifyObservers(DataType::Habits);
 }
 
 QVector<Habit *> AcadenceManager::getHabits(int userId)
@@ -500,6 +524,7 @@ void AcadenceManager::addHabit(Habit *h)
 
     CsvHandler::appendCsv("habits.csv", {QString::number(h->id), QString::number(h->studentId), h->name, typeStr, freqStr,
                                          targetStr, currentStr, "0", QDate::currentDate().toString(Qt::ISODate), "0", unit});
+    notifyObservers(DataType::Habits);
 }
 
 void AcadenceManager::updateHabit(Habit *h)
@@ -524,6 +549,7 @@ void AcadenceManager::updateHabit(Habit *h)
         }
     }
     CsvHandler::writeCsv("habits.csv", data);
+    notifyObservers(DataType::Habits);
 }
 
 void AcadenceManager::deleteHabit(int id)
@@ -538,6 +564,7 @@ void AcadenceManager::deleteHabit(int id)
         }
     }
     CsvHandler::writeCsv("habits.csv", newData);
+    notifyObservers(DataType::Habits);
 }
 
 QVector<RoutineSession> AcadenceManager::getRoutineForDay(QString day, int semester)
@@ -593,6 +620,7 @@ QVector<RoutineSession> AcadenceManager::getRoutineForDay(QString day, int semes
 void AcadenceManager::addRoutineItem(QString day, int serial, QString code, QString name, QString room, QString instructor, int semester)
 {
     CsvHandler::appendCsv("routine.csv", {day, QString::number(serial), code, name, room, instructor, QString::number(semester)});
+    notifyObservers(DataType::Routine);
 }
 
 QVector<RoutineAdjustment> AcadenceManager::getRoutineAdjustments()
@@ -626,6 +654,7 @@ void AcadenceManager::addRoutineAdjustment(const RoutineAdjustment &adj)
                                                       adj.newDate, QString::number(adj.newSerial),
                                                       adj.courseCode, adj.courseName, adj.room, adj.instructor,
                                                       QString::number(adj.semester)});
+    notifyObservers(DataType::Routine);
 }
 
 QVector<RoutineSession> AcadenceManager::getEffectiveRoutine(QDate date, int semester)
@@ -737,6 +766,96 @@ QVector<RoutineSession> AcadenceManager::getEffectiveRoutine(QDate date, int sem
     return effectiveRoutine;
 }
 
+QVector<RescheduleOption> AcadenceManager::getRescheduleOptions(QDate originDate, int originSerial, int semester, QString originCode, QString originRoom, QString instructorName)
+{
+    QVector<RescheduleOption> options;
+    QDate d = QDate::currentDate();
+
+    for (int i = 0; i < 14; ++i)
+    {
+        QDate targetDate = d.addDays(i);
+        if (targetDate.dayOfWeek() > 5)
+            continue; // Skip weekends
+
+        QVector<RoutineSession> daily = getEffectiveRoutine(targetDate, semester);
+
+        // Check standard slots: 09:00, 10:00, 11:00, 12:00, 14:00
+        QList<int> serials = {1, 2, 3, 4, 5};
+        for (int s : serials)
+        {
+            QString slotTime;
+            if (s == 1)
+                slotTime = "09:00";
+            else if (s == 2)
+                slotTime = "10:00";
+            else if (s == 3)
+                slotTime = "11:00";
+            else if (s == 4)
+                slotTime = "12:00";
+            else if (s == 5)
+                slotTime = "14:00";
+
+            if (targetDate == originDate && s == originSerial)
+                continue;
+
+            bool occupied = false;
+            RoutineSession occupiedSession("", "", "", "", "", "", "", 0);
+
+            for (const auto &sess : daily)
+            {
+                if (sess.getStartTime() == slotTime)
+                {
+                    occupied = true;
+                    occupiedSession = sess;
+                    break;
+                }
+            }
+
+            RoutineAdjustment adj;
+            adj.originalDate = originDate.toString(Qt::ISODate);
+            adj.originalSerial = originSerial;
+            adj.type = "RESCHEDULE";
+            adj.newDate = targetDate.toString(Qt::ISODate);
+            adj.newSerial = s;
+            adj.courseCode = originCode;
+            adj.courseName = "Rescheduled"; // Simplified, or fetch name if needed
+            adj.room = originRoom;
+            adj.instructor = instructorName;
+            adj.semester = semester;
+
+            RescheduleOption opt;
+            opt.adjustment = adj;
+
+            if (!occupied)
+            {
+                opt.displayText = targetDate.toString("ddd MMM dd") + " at " + slotTime + " (Empty Slot)";
+                options.append(opt);
+            }
+            else
+            {
+                // Exchange option
+                opt.displayText = targetDate.toString("ddd MMM dd") + " at " + slotTime + " (Exchange with " + occupiedSession.getCourseCode() + ")";
+
+                RoutineAdjustment adj2;
+                adj2.originalDate = targetDate.toString(Qt::ISODate);
+                adj2.originalSerial = s;
+                adj2.type = "RESCHEDULE";
+                adj2.newDate = originDate.toString(Qt::ISODate);
+                adj2.newSerial = originSerial;
+                adj2.courseCode = occupiedSession.getCourseCode();
+                adj2.courseName = occupiedSession.getCourseName();
+                adj2.room = occupiedSession.getRoom();
+                adj2.instructor = occupiedSession.getInstructor();
+                adj2.semester = occupiedSession.getSemester();
+
+                opt.secondaryAdjustment = adj2;
+                options.append(opt);
+            }
+        }
+    }
+    return options;
+}
+
 QVector<Course *> AcadenceManager::getTeacherCourses(int teacherId)
 {
     QVector<Course *> courses;
@@ -794,6 +913,7 @@ void AcadenceManager::addAssessment(int courseId, QString title, QString type, Q
             maxId = std::max(maxId, row[0].toInt());
 
     CsvHandler::appendCsv("assessments.csv", {QString::number(maxId + 1), QString::number(courseId), title, type, date, QString::number(maxMarks)});
+    notifyObservers(DataType::Academics);
 }
 
 QVector<AttendanceRecord> AcadenceManager::getStudentAttendance(int studentId)
@@ -914,6 +1034,7 @@ void AcadenceManager::addGrade(int studentId, int assessmentId, double marks)
         data.append({QString::number(studentId), QString::number(assessmentId), QString::number(marks)});
     }
     CsvHandler::writeCsv("grades.csv", data);
+    notifyObservers(DataType::Academics);
 }
 
 QVector<QString> AcadenceManager::getCourseDates(int courseId)
@@ -962,6 +1083,7 @@ void AcadenceManager::markAttendance(int courseId, int studentId, QString date, 
         data.append({QString::number(courseId), QString::number(studentId), date, present ? "1" : "0"});
     }
     CsvHandler::writeCsv("attendance.csv", data);
+    notifyObservers(DataType::Academics);
 }
 
 QVector<Query> AcadenceManager::getQueries(int userId, QString role)
@@ -1019,6 +1141,7 @@ void AcadenceManager::addQuery(int userId, int teacherId, QString question)
 
     QString ts = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm");
     CsvHandler::appendCsv("queries.csv", {QString::number(maxId + 1), QString::number(userId), QString::number(teacherId), question, "", ts});
+    notifyObservers(DataType::Queries);
 }
 
 void AcadenceManager::answerQuery(int queryId, QString answer)
@@ -1033,6 +1156,7 @@ void AcadenceManager::answerQuery(int queryId, QString answer)
         }
     }
     CsvHandler::writeCsv("queries.csv", data);
+    notifyObservers(DataType::Queries);
 }
 
 QVector<QPair<int, QString>> AcadenceManager::getTeacherList()

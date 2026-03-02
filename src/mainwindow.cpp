@@ -1,4 +1,5 @@
 #include "../include/mainwindow.hpp"
+#include "../include/csvdelegate.hpp"
 #include "../include/utils.hpp"
 #include "../include/theme.hpp"
 #include "ui_mainwindow.h"
@@ -23,11 +24,14 @@
 #include <QStyle>
 #include <QTimer>
 #include <QVector>
+#include <memory>
 
 MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), userRole(role), userId(uid), userName(name)
 {
     activeTimerHabit = nullptr;
+    myManager.addObserver(this);
+
     ui->setupUi(this);
 
     // Setup Logout button
@@ -64,14 +68,14 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     ui->adminTableView->setItemDelegate(csvDelegate);
 
     QStringList tables = {
-        "admins", "students", "teachers", "courses", "routine", "routine_adjustments", "grades", "notices"};
+        Constants::Table::Admins, Constants::Table::Students, Constants::Table::Teachers, Constants::Table::Courses, Constants::Table::Routine, Constants::Table::RoutineAdj, "grades", Constants::Table::Notices};
     ui->tableComboBox->addItems(tables);
 
     if (!tables.isEmpty())
         on_tableComboBox_currentTextChanged(tables.first());
 
     // Configure UI based on role
-    if (role == "Student")
+    if (role == Constants::Role::Student)
     {
         ui->addNoticeButton->setVisible(false);
         ui->tabWidget->setTabVisible(5, false);
@@ -80,7 +84,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         ui->tabWidget->setTabVisible(8, false);
         ui->tabWidget->setTabVisible(10, false);
     }
-    else if (role == "Teacher")
+    else if (role == Constants::Role::Teacher)
     {
         ui->tabWidget->setTabVisible(1, false);
         ui->tabWidget->setTabVisible(2, false);
@@ -90,7 +94,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         refreshTeacherRoutine();
         refreshTeacherTools();
     }
-    else if (role == "Admin")
+    else if (role == Constants::Role::Admin)
     {
         ui->tabWidget->setTabVisible(1, false);
         ui->tabWidget->setTabVisible(2, false);
@@ -111,7 +115,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     {
         refreshDashboard();
         refreshQueries();
-        if (role == "Student")
+        if (role == Constants::Role::Student)
         {
             refreshPlanner();
             refreshHabits();
@@ -130,6 +134,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    myManager.removeObserver(this);
     qDeleteAll(currentHabitList);
     delete ui;
 }
@@ -210,6 +215,36 @@ void MainWindow::setupTimers()
             }
             refreshHabits();
         } });
+}
+
+void MainWindow::onDataChanged(DataType type)
+{
+    switch (type)
+    {
+    case DataType::Habits:
+        refreshHabits();
+        break;
+    case DataType::Tasks:
+        refreshPlanner();
+        break;
+    case DataType::Routine:
+        if (userRole == Constants::Role::Teacher)
+            refreshTeacherRoutine();
+        else
+            refreshRoutine();
+        break;
+    case DataType::Notices:
+        refreshDashboard();
+        break;
+    case DataType::Academics:
+        refreshAcademics();
+        if (userRole == Constants::Role::Teacher)
+            refreshTeacherTools();
+        break;
+    case DataType::Queries:
+        refreshQueries();
+        break;
+    }
 }
 
 // Setup signal connections
@@ -302,9 +337,9 @@ void MainWindow::refreshDashboard()
     QString stats = myManager.getDashboardStats(userId, userRole);
     ui->label_welcome->setToolTip(stats);
 
-    if (userRole == "Student")
+    if (userRole == Constants::Role::Student)
     {
-        Student *s = myManager.getStudent(userId);
+        std::unique_ptr<Student> s(myManager.getStudent(userId));
         if (s)
         {
             ui->val_p_name->setText(s->getName());
@@ -314,12 +349,11 @@ void MainWindow::refreshDashboard()
             ui->val_p_dept->setText(s->getDepartment());
             ui->val_p_sem->setText(QString::number(s->getSemester()));
             ui->val_p_email->setText(s->getEmail());
-            delete s;
         }
     }
-    else if (userRole == "Teacher")
+    else if (userRole == Constants::Role::Teacher)
     {
-        Teacher *t = myManager.getTeacher(userId);
+        std::unique_ptr<Teacher> t(myManager.getTeacher(userId));
         if (t)
         {
             ui->val_p_name->setText(t->getName());
@@ -329,10 +363,9 @@ void MainWindow::refreshDashboard()
             ui->lbl_p_sem->setText("Designation:");
             ui->val_p_sem->setText(t->getDesignation());
             ui->val_p_email->setText(t->getEmail());
-            delete t;
         }
     }
-    else if (userRole == "Admin")
+    else if (userRole == Constants::Role::Admin)
     {
         ui->groupBox_profile->setTitle("Administrator");
         ui->val_p_name->setText("System Admin");
@@ -360,7 +393,6 @@ void MainWindow::on_addNoticeButton_clicked()
         {
             QMessageBox::critical(this, "Error", e.what());
         }
-        refreshDashboard();
     }
 }
 
@@ -403,7 +435,6 @@ void MainWindow::on_addTaskButton_clicked()
     {
         myManager.addTask(userId, desc);
         ui->taskLineEdit->clear();
-        refreshPlanner();
     }
 }
 
@@ -429,7 +460,6 @@ void MainWindow::on_btnClearCompletedTasks_clicked()
     if (QMessageBox::question(this, "Clear Completed", "Are you sure you want to delete all completed tasks?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
     {
         myManager.deleteCompletedTasks(userId);
-        refreshPlanner();
     }
 }
 
@@ -556,7 +586,6 @@ void MainWindow::on_btnAddHabit_clicked()
         myManager.addHabit(h);
         delete h;
     }
-    refreshHabits();
 }
 
 // Perform selected habit
@@ -607,7 +636,6 @@ void MainWindow::on_btnPerformHabit_clicked()
     if (changed)
     {
         myManager.updateHabit(h);
-        refreshHabits();
     }
 }
 
@@ -620,7 +648,6 @@ void MainWindow::on_btnDeleteHabit_clicked()
 
     int id = currentHabitList[row]->id;
     myManager.deleteHabit(id);
-    refreshHabits();
 }
 
 // Workout Timer slots
@@ -685,7 +712,6 @@ void MainWindow::on_btnWorkoutStop_clicked()
                 activeTimerHabit->markComplete();
 
             myManager.updateHabit(activeTimerHabit);
-            refreshHabits();
         }
     }
 }
@@ -712,19 +738,6 @@ void MainWindow::on_chkIsha_toggled(bool checked)
     myManager.updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "isha", checked);
 }
 
-// Get date for day name
-QDate MainWindow::getDateForDay(QString dayName)
-{
-    QDate today = QDate::currentDate();
-    int currentDayOfWeek = today.dayOfWeek(); // 1=Mon, 7=Sun
-
-    QStringList days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-    int targetDayOfWeek = days.indexOf(dayName) + 1;
-
-    int diff = targetDayOfWeek - currentDayOfWeek;
-    return today.addDays(diff);
-}
-
 // Refresh student routine
 void MainWindow::refreshRoutine()
 {
@@ -732,17 +745,16 @@ void MainWindow::refreshRoutine()
     QString day = ui->comboRoutineDay->currentText();
 
     int semester = -1;
-    if (userRole == "Student")
+    if (userRole == Constants::Role::Student)
     {
-        Student *s = myManager.getStudent(userId);
+        std::unique_ptr<Student> s(myManager.getStudent(userId));
         if (s)
         {
             semester = s->getSemester();
-            delete s;
         }
     }
 
-    QVector<RoutineSession> items = myManager.getEffectiveRoutine(getDateForDay(day), semester);
+    QVector<RoutineSession> items = myManager.getEffectiveRoutine(Utils::getDateForDay(day), semester);
 
     ui->tableRoutine->setColumnCount(4);
     QStringList headers = {"Time", "Course", "Room", "Instructor"};
@@ -770,9 +782,9 @@ void MainWindow::refreshTeacherRoutine()
 {
     ui->tableTeacherRoutine->setRowCount(0);
     QString day = ui->comboRoutineDayInput->currentText();
-    QVector<RoutineSession> items = myManager.getEffectiveRoutine(getDateForDay(day));
+    QVector<RoutineSession> items = myManager.getEffectiveRoutine(Utils::getDateForDay(day));
 
-    if (userRole == "Teacher")
+    if (userRole == Constants::Role::Teacher)
     {
         QVector<Course *> courses = myManager.getTeacherCourses(userId);
         QStringList myCodes;
@@ -825,7 +837,7 @@ void MainWindow::on_btnCancelClass_clicked()
     }
 
     QString day = ui->comboRoutineDayInput->currentText();
-    QDate date = getDateForDay(day);
+    QDate date = Utils::getDateForDay(day);
     QString startTimeStr = ui->tableTeacherRoutine->item(row, 0)->data(Qt::UserRole).toString();
     int serial = 0;
     if (startTimeStr == "09:00")
@@ -857,7 +869,6 @@ void MainWindow::on_btnCancelClass_clicked()
         adj.semester = semester;
 
         myManager.addRoutineAdjustment(adj);
-        refreshTeacherRoutine();
         QMessageBox::information(this, "Success", "Class cancelled.");
     }
 }
@@ -873,7 +884,7 @@ void MainWindow::on_btnRescheduleClass_clicked()
     }
 
     QString currentDayStr = ui->comboRoutineDayInput->currentText();
-    QDate originDate = getDateForDay(currentDayStr);
+    QDate originDate = Utils::getDateForDay(currentDayStr);
     QString originStartStr = ui->tableTeacherRoutine->item(row, 0)->data(Qt::UserRole).toString();
     int originSerial = 0;
     if (originStartStr == "09:00")
@@ -891,92 +902,13 @@ void MainWindow::on_btnRescheduleClass_clicked()
     QString originRoom = ui->tableTeacherRoutine->item(row, 2)->text();
     int semester = ui->tableTeacherRoutine->item(row, 3)->text().toInt();
 
-    // Find available slots or exchangeable slots for next 2 weeks
+    // Delegate logic to Manager (Controller)
+    QVector<RescheduleOption> optionsList = myManager.getRescheduleOptions(originDate, originSerial, semester, originCode, originRoom, userName);
+
     QStringList options;
-    QVector<RoutineAdjustment> potentialAdjustments;
-    QVector<RoutineAdjustment> secondaryAdjustments;
-
-    QDate d = QDate::currentDate();
-    for (int i = 0; i < 14; ++i)
+    for (const auto &opt : optionsList)
     {
-        QDate targetDate = d.addDays(i);
-        if (targetDate.dayOfWeek() > 5)
-            continue; // Skip weekends
-
-        QVector<RoutineSession> daily = myManager.getEffectiveRoutine(targetDate, semester);
-
-        // Check standard slots: 09:00, 10:00, 11:00, 12:00
-        QList<int> serials = {1, 2, 3, 4, 5};
-        for (int s : serials)
-        {
-            QString slotTime;
-            if (s == 1)
-                slotTime = "09:00";
-            else if (s == 2)
-                slotTime = "10:00";
-            else if (s == 3)
-                slotTime = "11:00";
-            else if (s == 4)
-                slotTime = "12:00";
-            else if (s == 5)
-                slotTime = "14:00";
-
-            if (targetDate == originDate && s == originSerial)
-                continue;
-
-            bool occupied = false;
-            RoutineSession occupiedSession("", "", "", "", "", "", "", 0);
-
-            for (const auto &sess : daily)
-            {
-                if (sess.getStartTime() == slotTime)
-                {
-                    occupied = true;
-                    occupiedSession = sess;
-                    break;
-                }
-            }
-
-            RoutineAdjustment adj;
-            adj.originalDate = originDate.toString(Qt::ISODate);
-            adj.originalSerial = originSerial;
-            adj.type = "RESCHEDULE";
-            adj.newDate = targetDate.toString(Qt::ISODate);
-            adj.newSerial = s;
-            adj.courseCode = originCode;
-            adj.courseName = ui->tableTeacherRoutine->item(row, 1)->text() + "(Rescheduled)";
-            adj.room = originRoom;
-            adj.instructor = userName;
-            adj.semester = semester;
-
-            RoutineAdjustment adj2;
-
-            if (!occupied)
-            {
-                options << targetDate.toString("ddd MMM dd") + " at " + slotTime + " (Empty Slot)";
-                potentialAdjustments.append(adj);
-                secondaryAdjustments.append(adj2);
-            }
-            else
-            {
-                // Exchange option
-                options << targetDate.toString("ddd MMM dd") + " at " + slotTime + " (Exchange with " + occupiedSession.getCourseCode() + ")";
-
-                adj2.originalDate = targetDate.toString(Qt::ISODate);
-                adj2.originalSerial = s;
-                adj2.type = "RESCHEDULE";
-                adj2.newDate = originDate.toString(Qt::ISODate);
-                adj2.newSerial = originSerial;
-                adj2.courseCode = occupiedSession.getCourseCode();
-                adj2.courseName = occupiedSession.getCourseName();
-                adj2.room = occupiedSession.getRoom();
-                adj2.instructor = occupiedSession.getInstructor();
-                adj2.semester = occupiedSession.getSemester();
-
-                potentialAdjustments.append(adj);
-                secondaryAdjustments.append(adj2);
-            }
-        }
+        options << opt.displayText;
     }
 
     bool ok;
@@ -984,17 +916,16 @@ void MainWindow::on_btnRescheduleClass_clicked()
     if (ok && !choice.isEmpty())
     {
         int idx = options.indexOf(choice);
-        if (idx >= 0 && idx < potentialAdjustments.size())
+        if (idx >= 0 && idx < optionsList.size())
         {
             // Apply the adjustment
-            myManager.addRoutineAdjustment(potentialAdjustments[idx]);
+            myManager.addRoutineAdjustment(optionsList[idx].adjustment);
 
-            if (!secondaryAdjustments[idx].courseCode.isEmpty())
+            if (!optionsList[idx].secondaryAdjustment.courseCode.isEmpty())
             {
-                myManager.addRoutineAdjustment(secondaryAdjustments[idx]);
+                myManager.addRoutineAdjustment(optionsList[idx].secondaryAdjustment);
             }
 
-            refreshTeacherRoutine();
             QMessageBox::information(this, "Success", "Class rescheduled/exchanged successfully.");
         }
     }
@@ -1067,7 +998,6 @@ void MainWindow::on_btnCreateAssessment_clicked()
     myManager.addAssessment(courseId, title, ui->comboAssessmentType->currentText(),
                             QDate::currentDate().toString("yyyy-MM-dd"), ui->spinMaxMarks->value());
     ui->editAssessmentTitle->clear();
-    refreshTeacherTools();
     QMessageBox::information(this, "Success", "Assessment Created");
 }
 
@@ -1097,13 +1027,12 @@ void MainWindow::refreshTeacherGrades()
     if (courseId == -1)
         return;
 
-    Course *c = myManager.getCourse(courseId);
+    std::unique_ptr<Course> c(myManager.getCourse(courseId));
 
     QVector<Student *> students;
     if (c)
     {
         students = myManager.getStudentsBySemester(c->getSemester());
-        delete c;
     }
 
     for (int i = 0; i < students.size(); ++i)
@@ -1136,7 +1065,6 @@ void MainWindow::on_btnSaveGrades_clicked()
         myManager.addGrade(sid, assessmentId, marks);
     }
     QMessageBox::information(this, "Success", "Grades Saved");
-    refreshTeacherGrades();
 }
 
 // Refresh attendance table
@@ -1152,7 +1080,7 @@ void MainWindow::refreshTeacherAttendance()
     {
         return;
     }
-    Course *c = myManager.getCourse(courseId);
+    std::unique_ptr<Course> c(myManager.getCourse(courseId));
     if (!c)
         return;
 
@@ -1192,7 +1120,6 @@ void MainWindow::refreshTeacherAttendance()
     }
 
     qDeleteAll(students);
-    delete c;
     Utils::adjustColumnWidths(ui->tableAttendance);
 }
 
@@ -1222,7 +1149,6 @@ void MainWindow::on_btnSaveAttendance_clicked()
         }
     }
     QMessageBox::information(this, "Success", "Attendance Saved");
-    refreshTeacherAttendance();
 }
 
 // Refresh queries
@@ -1234,7 +1160,7 @@ void MainWindow::refreshQueries()
     for (const auto &q : queries)
     {
         QString label;
-        if (userRole == "Student")
+        if (userRole == Constants::Role::Student)
         {
             label = QString("To: %1 [%2]\nQ: %3\nA: %4").arg(q.getTeacherName(), q.getTimestamp(), q.getQuestion(), q.getAnswer().isEmpty() ? "(Waiting...)" : q.getAnswer());
         }
@@ -1258,7 +1184,7 @@ void MainWindow::on_btnQueryAction_clicked()
     if (text.isEmpty())
         return;
 
-    if (userRole == "Student")
+    if (userRole == Constants::Role::Student)
     {
         QVector<QPair<int, QString>> teachers = myManager.getTeacherList();
         if (teachers.isEmpty())
@@ -1278,7 +1204,6 @@ void MainWindow::on_btnQueryAction_clicked()
             int teacherId = teachers[teacherNames.indexOf(selected)].first;
             myManager.addQuery(userId, teacherId, text);
             ui->editQueryInput->clear();
-            refreshQueries();
         }
     }
     else
@@ -1292,25 +1217,7 @@ void MainWindow::on_btnQueryAction_clicked()
         int qid = item->data(Qt::UserRole).toInt();
         myManager.answerQuery(qid, text);
         ui->editQueryInput->clear();
-        refreshQueries();
     }
-}
-
-// Save model to CSV
-void saveTableData(QStandardItemModel *model, const QString &tableName)
-{
-    QVector<QStringList> data;
-    for (int i = 0; i < model->rowCount(); ++i)
-    {
-        QStringList rowData;
-        for (int j = 0; j < model->columnCount(); ++j)
-        {
-            QStandardItem *item = model->item(i, j);
-            rowData << (item ? item->text() : "");
-        }
-        data.append(rowData);
-    }
-    CsvHandler::writeCsv(tableName + ".csv", data);
 }
 
 // Load admin table
@@ -1339,17 +1246,17 @@ void MainWindow::on_tableComboBox_currentTextChanged(const QString &tableName)
     }
 
     QStringList headers;
-    if (tableName == "admins")
+    if (tableName == Constants::Table::Admins)
         headers << "ID" << "Username" << "Password" << "Name" << "Email";
-    else if (tableName == "students")
+    else if (tableName == Constants::Table::Students)
         headers << "ID" << "Name" << "Email" << "Username" << "Password" << "Dept" << "Batch" << "Sem" << "Admission Date" << "CGPA";
-    else if (tableName == "teachers")
+    else if (tableName == Constants::Table::Teachers)
         headers << "ID" << "Name" << "Email" << "Username" << "Password" << "Dept" << "Designation" << "Salary";
-    else if (tableName == "courses")
+    else if (tableName == Constants::Table::Courses)
         headers << "ID" << "Code" << "Name" << "Teacher ID" << "Semester" << "Credits";
-    else if (tableName == "routine")
+    else if (tableName == Constants::Table::Routine)
         headers << "Day" << "Serial" << "Code" << "Name" << "Room" << "Instructor" << "Semester";
-    else if (tableName == "routine_adjustments")
+    else if (tableName == Constants::Table::RoutineAdj)
         headers << "Orig Date" << "Orig Serial" << "Type" << "New Date" << "New Serial" << "Code" << "Name" << "Room" << "Instructor" << "Semester";
     else if (tableName == "grades")
         headers << "Student ID" << "Assessment ID" << "Marks";
@@ -1358,7 +1265,7 @@ void MainWindow::on_tableComboBox_currentTextChanged(const QString &tableName)
     adminModel->setHorizontalHeaderLabels(headers);
 
     connect(adminModel, &QStandardItemModel::itemChanged, this, [this, tableName]()
-            { saveTableData(adminModel, tableName); });
+            { Utils::saveTableData(adminModel, tableName); });
 
     QTimer::singleShot(10, this, [this]()
                        { Utils::adjustColumnWidths(ui->adminTableView); });
@@ -1373,8 +1280,8 @@ void MainWindow::on_btnAddRow_clicked()
     QString currentTable = ui->tableComboBox->currentText();
     QString nextIdStr = "";
 
-    if (currentTable == "admins" || currentTable == "students" ||
-        currentTable == "teachers" || currentTable == "courses")
+    if (currentTable == Constants::Table::Admins || currentTable == Constants::Table::Students ||
+        currentTable == Constants::Table::Teachers || currentTable == Constants::Table::Courses)
     {
         int maxId = 0;
         for (int i = 0; i < row; ++i)
@@ -1394,7 +1301,7 @@ void MainWindow::on_btnAddRow_clicked()
             adminModel->setItem(row, j, new QStandardItem(""));
     }
 
-    saveTableData(adminModel, currentTable);
+    Utils::saveTableData(adminModel, currentTable);
 }
 
 // Delete admin row
@@ -1421,277 +1328,13 @@ void MainWindow::on_btnDeleteRow_clicked()
         adminModel->removeRow(sourceRows[i]);
     }
 
-    saveTableData(adminModel, ui->tableComboBox->currentText());
+    Utils::saveTableData(adminModel, ui->tableComboBox->currentText());
 }
 
 // Filter admin table
 void MainWindow::on_searchLineEdit_textChanged(const QString &arg1)
 {
     adminProxyModel->setFilterFixedString(arg1);
-}
-
-CsvDelegate::CsvDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
-
-// Create custom editor
-QWidget *CsvDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
-{
-    int col = index.column();
-
-    if (currentTable == "admins")
-    {
-        if (col == 0)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 999999);
-            return sb;
-        }
-    }
-    else if (currentTable == "students")
-    {
-        if (col == 0)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 999999);
-            return sb;
-        }
-        if (col == 7)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 8);
-            return sb;
-        }
-        if (col == 8)
-        {
-            QDateEdit *de = new QDateEdit(parent);
-            de->setDisplayFormat("yyyy-MM-dd");
-            de->setCalendarPopup(true);
-            return de;
-        }
-        if (col == 9)
-        {
-            QDoubleSpinBox *dsb = new QDoubleSpinBox(parent);
-            dsb->setRange(0.0, 4.0);
-            dsb->setSingleStep(0.01);
-            return dsb;
-        }
-        if (col == 5)
-        {
-            QComboBox *cb = new QComboBox(parent);
-            cb->addItems({"CSE", "EEE", "MCE", "CEE", "BTM", "TVE", "SWE"});
-            return cb;
-        }
-    }
-    else if (currentTable == "teachers")
-    {
-        if (col == 0)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 999999);
-            return sb;
-        }
-        if (col == 7)
-        {
-            QDoubleSpinBox *dsb = new QDoubleSpinBox(parent);
-            dsb->setRange(0.0, 1000000.0);
-            return dsb;
-        }
-        if (col == 5)
-        {
-            QComboBox *cb = new QComboBox(parent);
-            cb->addItems({"CSE", "EEE", "MCE", "CEE", "BTM", "TVE", "SWE"});
-            return cb;
-        }
-    }
-    else if (currentTable == "courses")
-    {
-        if (col == 0 || col == 3 || col == 5)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 999999);
-            return sb;
-        }
-        if (col == 4)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 8);
-            return sb;
-        }
-    }
-    else if (currentTable == "routine")
-    {
-        if (col == 1)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 5);
-            return sb;
-        }
-        if (col == 6)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 8);
-            return sb;
-        }
-    }
-    else if (currentTable == "routine_adjustments")
-    {
-        if (col == 0 || col == 3)
-        {
-            QDateEdit *de = new QDateEdit(parent);
-            de->setDisplayFormat("yyyy-MM-dd");
-            de->setCalendarPopup(true);
-            return de;
-        }
-        if (col == 1 || col == 4)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 5);
-            return sb;
-        }
-        if (col == 2)
-        {
-            QComboBox *cb = new QComboBox(parent);
-            cb->addItems({"CANCEL", "RESCHEDULE"});
-            return cb;
-        }
-        if (col == 9)
-        {
-            QSpinBox *sb = new QSpinBox(parent);
-            sb->setRange(1, 8);
-            return sb;
-        }
-    }
-    else if (currentTable == "notices")
-    {
-        if (col == 0)
-        {
-            QDateEdit *de = new QDateEdit(parent);
-            de->setDisplayFormat("yyyy-MM-dd");
-            de->setCalendarPopup(true);
-            return de;
-        }
-    }
-
-    return QStyledItemDelegate::createEditor(parent, option, index);
-}
-
-// Set editor data
-void CsvDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
-{
-    QString val = index.model()->data(index, Qt::EditRole).toString();
-    if (QSpinBox *sb = qobject_cast<QSpinBox *>(editor))
-        sb->setValue(val.toInt());
-    else if (QDoubleSpinBox *dsb = qobject_cast<QDoubleSpinBox *>(editor))
-        dsb->setValue(val.toDouble());
-    else if (QComboBox *cb = qobject_cast<QComboBox *>(editor))
-        cb->setCurrentText(val);
-    else if (QDateEdit *de = qobject_cast<QDateEdit *>(editor))
-        de->setDate(QDate::fromString(val, "yyyy-MM-dd"));
-    else
-        QStyledItemDelegate::setEditorData(editor, index);
-}
-
-// Save editor data
-void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
-{
-    int col = index.column();
-    QString newVal;
-
-    if (QSpinBox *sb = qobject_cast<QSpinBox *>(editor))
-        newVal = QString::number(sb->value());
-    else if (QDoubleSpinBox *dsb = qobject_cast<QDoubleSpinBox *>(editor))
-        newVal = QString::number(dsb->value());
-    else if (QComboBox *cb = qobject_cast<QComboBox *>(editor))
-        newVal = cb->currentText();
-    else if (QDateEdit *de = qobject_cast<QDateEdit *>(editor))
-        newVal = de->date().toString("yyyy-MM-dd");
-    else if (QLineEdit *le = qobject_cast<QLineEdit *>(editor))
-        newVal = le->text();
-    else
-    {
-        QStyledItemDelegate::setModelData(editor, model, index);
-        return;
-    }
-
-    // Validate Unique ID
-    if (col == 0 && (currentTable == "admins" || currentTable == "students" || currentTable == "teachers" || currentTable == "courses"))
-    {
-        for (int i = 0; i < model->rowCount(); ++i)
-        {
-            if (i != index.row() && model->index(i, 0).data(Qt::EditRole).toString() == newVal)
-            {
-                QMessageBox::warning(editor->parentWidget(), "Validation Error", "ID must be unique.");
-                return;
-            }
-        }
-    }
-
-    bool isUsernameCol = (currentTable == "admins" && col == 1) ||
-                         ((currentTable == "students" || currentTable == "teachers") && col == 3);
-
-    // Validate Username format and uniqueness
-    if (isUsernameCol)
-    {
-        QString error = Utils::validateUsername(newVal);
-        if (!error.isEmpty())
-        {
-            QMessageBox::warning(editor->parentWidget(), "Validation Error", error);
-            return;
-        }
-
-        QStringList userTables = {"admins", "students", "teachers"};
-        for (const QString &table : userTables)
-        {
-            int uCol = (table == "admins") ? 1 : 3;
-            if (table == currentTable)
-            {
-                for (int i = 0; i < model->rowCount(); ++i)
-                {
-                    if (i != index.row() && model->index(i, uCol).data(Qt::EditRole).toString() == newVal)
-                    {
-                        QMessageBox::warning(editor->parentWidget(), "Validation Error", "Username '" + newVal + "' already taken.");
-                        return;
-                    }
-                }
-            }
-            else
-            {
-                QVector<QStringList> data;
-                try
-                {
-                    data = CsvHandler::readCsv(table + ".csv");
-                }
-                catch (const std::exception &)
-                {
-                    continue;
-                }
-
-                for (const auto &row : data)
-                {
-                    if (row.size() > uCol && row[uCol] == newVal)
-                    {
-                        QMessageBox::warning(editor->parentWidget(), "Validation Error", "Username '" + newVal + "' already taken in " + table + ".");
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
-    bool isPasswordCol = (currentTable == "admins" && col == 2) ||
-                         ((currentTable == "students" || currentTable == "teachers") && col == 4);
-
-    // Validate Password strength
-    if (isPasswordCol)
-    {
-        QString error = Utils::validatePassword(newVal);
-        if (!error.isEmpty())
-        {
-            QMessageBox::warning(editor->parentWidget(), "Validation Error", error);
-            return;
-        }
-    }
-
-    model->setData(index, newVal, Qt::EditRole);
 }
 
 // Handle resize event

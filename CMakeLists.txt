@@ -16,6 +16,8 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/mainwindow.cpp
     include/mainwindow.hpp
     src/mainwindow.ui
+    src/csvdelegate.cpp
+    include/csvdelegate.hpp
     include/person.hpp
     src/person.cpp
     include/admin.hpp
@@ -26,8 +28,8 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/teacher.cpp
     include/course.hpp
     src/course.cpp
-    include/academicmanager.hpp
-    src/academicmanager.cpp
+    include/appmanager.hpp
+    src/appmanager.cpp
     include/timer.hpp
     src/timer.cpp
     include/habit.hpp

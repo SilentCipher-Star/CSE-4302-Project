@@ -117,6 +117,32 @@ public:
     QString getTimestamp() const { return timestamp; }
 };
 
+struct RescheduleOption
+{
+    QString displayText;
+    RoutineAdjustment adjustment;
+    RoutineAdjustment secondaryAdjustment;
+};
+
+enum class DataType
+{
+    None,
+    Habits,
+    Tasks,
+    Routine,
+    Notices,
+    Academics,
+    Queries,
+    Profile
+};
+
+class IDataObserver
+{
+public:
+    virtual void onDataChanged(DataType type) = 0;
+    virtual ~IDataObserver() = default;
+};
+
 class AcadenceManager
 {
 public:
@@ -151,6 +177,7 @@ public:
     QVector<RoutineAdjustment> getRoutineAdjustments();
     void addRoutineAdjustment(const RoutineAdjustment &adj);
     QVector<RoutineSession> getEffectiveRoutine(QDate date, int semester = -1);
+    QVector<RescheduleOption> getRescheduleOptions(QDate originDate, int originSerial, int semester, QString originCode, QString originRoom, QString instructorName);
 
     QVector<Course *> getTeacherCourses(int teacherId);
     Course *getCourse(int id);
@@ -171,6 +198,13 @@ public:
     void addQuery(int userId, int teacherId, QString question);
     void answerQuery(int queryId, QString answer);
     QVector<QPair<int, QString>> getTeacherList();
+
+    void addObserver(IDataObserver *observer);
+    void removeObserver(IDataObserver *observer);
+
+private:
+    QVector<IDataObserver *> observers;
+    void notifyObservers(DataType type);
 };
 
 template <typename T>

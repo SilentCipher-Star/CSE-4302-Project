@@ -1,5 +1,7 @@
 #include "../include/utils.hpp"
+#include "../include/csvhandler.hpp"
 #include <QRegularExpression>
+#include <QStandardItemModel>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFontDatabase>
@@ -97,4 +99,32 @@ void Utils::adjustColumnWidths(QTableView *table)
         }
         table->horizontalHeader()->setStretchLastSection(true);
     }
+}
+
+QDate Utils::getDateForDay(QString dayName)
+{
+    QDate today = QDate::currentDate();
+    int currentDayOfWeek = today.dayOfWeek(); // 1=Mon, 7=Sun
+
+    QStringList days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+    int targetDayOfWeek = days.indexOf(dayName) + 1;
+
+    int diff = targetDayOfWeek - currentDayOfWeek;
+    return today.addDays(diff);
+}
+
+void Utils::saveTableData(QStandardItemModel *model, const QString &tableName)
+{
+    QVector<QStringList> data;
+    for (int i = 0; i < model->rowCount(); ++i)
+    {
+        QStringList rowData;
+        for (int j = 0; j < model->columnCount(); ++j)
+        {
+            QStandardItem *item = model->item(i, j);
+            rowData << (item ? item->text() : "");
+        }
+        data.append(rowData);
+    }
+    CsvHandler::writeCsv(tableName + ".csv", data);
 }

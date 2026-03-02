@@ -4,11 +4,10 @@
 #include <QTableWidgetItem>
 #include <QListWidgetItem>
 #include <QPushButton>
-#include "academicmanager.hpp"
+#include "appmanager.hpp"
 #include "timer.hpp"
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
-#include <QStyledItemDelegate>
 
 // Forward declaration of MainWindow namespace to keep compilation fast
 QT_BEGIN_NAMESPACE
@@ -18,20 +17,10 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
-// Class for handling the creation of editors like SpinBox, DateEdit, ComboBox
-class CsvDelegate : public QStyledItemDelegate
-{
-    Q_OBJECT
-public:
-    explicit CsvDelegate(QObject *parent = nullptr);
-    QString currentTable;
-    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
-    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
-};
+class CsvDelegate;
 
 // The main application window
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, public IDataObserver
 {
     Q_OBJECT
 
@@ -97,6 +86,9 @@ private slots:
     // Profile Slots
     void onChangePasswordClicked();
 
+    // Observer Interface
+    void onDataChanged(DataType type) override;
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
@@ -141,5 +133,4 @@ private:
     void refreshTeacherGrades();
     void refreshTeacherAttendance();
     void refreshQueries();
-    QDate getDateForDay(QString dayName);
 };
