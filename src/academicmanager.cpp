@@ -7,6 +7,34 @@
 #include <QCoreApplication>
 #include <QDateTime>
 
+// Helper template class for generic CSV retrieval operations
+namespace
+{
+    template <typename T>
+    class CsvRepository
+    {
+    public:
+        CsvRepository(const QString &filename) : m_filename(filename) {}
+
+        template <typename Func>
+        T *findById(int id, Func parser)
+        {
+            QVector<QStringList> data = CsvHandler::readCsv(m_filename);
+            for (const auto &row : data)
+            {
+                if (!row.isEmpty() && row[0].toInt() == id)
+                {
+                    return parser(row);
+                }
+            }
+            return nullptr;
+        }
+
+    private:
+        QString m_filename;
+    };
+}
+
 AcadenceManager::AcadenceManager()
 {
 }
@@ -226,44 +254,36 @@ QString AcadenceManager::getDashboardStats(int userId, QString role)
 
 Student *AcadenceManager::getStudent(int id)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("students.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 8 && row[0].toInt() == id)
-        {
-            Student *s = new Student(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
-            s->setUsername(row[3]);
-            s->setPassword(row[4]);
+    CsvRepository<Student> repo("students.csv");
+    return repo.findById(id, [](const QStringList &row) -> Student *
+                         {
+        if (row.size() < 8) return nullptr;
+        Student *s = new Student(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
+        s->setUsername(row[3]);
+        s->setPassword(row[4]);
 
-            if (row.size() >= 9)
-                s->setDateAdmission(QDate::fromString(row[8], Qt::ISODate));
-            if (row.size() >= 10)
-                s->setGpa(row[9].toDouble());
+        if (row.size() >= 9)
+            s->setDateAdmission(QDate::fromString(row[8], Qt::ISODate));
+        if (row.size() >= 10)
+            s->setGpa(row[9].toDouble());
 
-            return s;
-        }
-    }
-    return nullptr;
+        return s; });
 }
 
 Teacher *AcadenceManager::getTeacher(int id)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("teachers.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 7 && row[0].toInt() == id)
-        {
-            Teacher *t = new Teacher(row[0].toInt(), row[1], row[2], row[5], row[6]);
-            t->setUsername(row[3]);
-            t->setPassword(row[4]);
+    CsvRepository<Teacher> repo("teachers.csv");
+    return repo.findById(id, [](const QStringList &row) -> Teacher *
+                         {
+        if (row.size() < 7) return nullptr;
+        Teacher *t = new Teacher(row[0].toInt(), row[1], row[2], row[5], row[6]);
+        t->setUsername(row[3]);
+        t->setPassword(row[4]);
 
-            if (row.size() >= 8)
-                t->setSalary(row[7].toDouble());
+        if (row.size() >= 8)
+            t->setSalary(row[7].toDouble());
 
-            return t;
-        }
-    }
-    return nullptr;
+        return t; });
 }
 
 QVector<Task> AcadenceManager::getTasks(int userId)
@@ -733,15 +753,11 @@ QVector<Course *> AcadenceManager::getTeacherCourses(int teacherId)
 
 Course *AcadenceManager::getCourse(int id)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("courses.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 6 && row[0].toInt() == id)
-        {
-            return new Course(row[0].toInt(), row[1], row[2], row[3].toInt(), row[4].toInt(), row[5].toInt());
-        }
-    }
-    return nullptr;
+    CsvRepository<Course> repo("courses.csv");
+    return repo.findById(id, [](const QStringList &row) -> Course *
+                         {
+        if (row.size() < 6) return nullptr;
+        return new Course(row[0].toInt(), row[1], row[2], row[3].toInt(), row[4].toInt(), row[5].toInt()); });
 }
 
 QVector<Assessment> AcadenceManager::getAssessments()
