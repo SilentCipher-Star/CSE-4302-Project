@@ -5,11 +5,10 @@
 #include <QListWidgetItem>
 #include <QPushButton>
 #include "appmanager.hpp"
-#include "timer.hpp"
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 
-// Forward declaration of MainWindow namespace to keep compilation fast
+// Forward declarations
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -17,7 +16,15 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
-class CsvDelegate;
+// Forward declare UI modules
+class UIDashboard;
+class UIPlanner;
+class UIHabits;
+class UITimers;
+class UIRoutine;
+class UIAcademics;
+class UIQueries;
+class UIAdmin;
 
 // The main application window
 class MainWindow : public QMainWindow, public IDataObserver
@@ -27,64 +34,6 @@ class MainWindow : public QMainWindow, public IDataObserver
 public:
     MainWindow(QString role, int userId, QString userName, QWidget *parent = nullptr);
     ~MainWindow();
-
-private slots:
-    // Admin Panel Slots
-    void on_btnAddRow_clicked();
-    void on_btnDeleteRow_clicked();
-    void on_tableComboBox_currentTextChanged(const QString &arg1);
-    void on_searchLineEdit_textChanged(const QString &arg1);
-
-    // Study Planner Slots
-    void on_addTaskButton_clicked();
-    void on_btnDeleteTask_clicked();
-    void on_btnClearCompletedTasks_clicked();
-    void on_taskItemChanged(QListWidgetItem *item);
-
-    // Habit Tracker Slots
-    void on_btnAddHabit_clicked();
-    void on_btnPerformHabit_clicked();
-    void on_btnDeleteHabit_clicked();
-
-    // Dashboard Slots
-    void on_addNoticeButton_clicked();
-    void on_logoutButton_clicked();
-
-    // Focus Timer Slots
-    void on_btnTimerStart_clicked();
-    void on_btnTimerPause_clicked();
-    void on_btnTimerStop_clicked();
-
-    // Workout/Habit Timer Slots
-    void on_btnWorkoutStart_clicked();
-    void on_btnWorkoutPause_clicked();
-    void on_btnWorkoutStop_clicked();
-
-    // Routine/Schedule Slots
-    void on_comboRoutineDay_currentIndexChanged(int index);
-    void on_comboRoutineDayInput_currentIndexChanged(int index);
-    void on_btnCancelClass_clicked();
-    void on_btnRescheduleClass_clicked();
-
-    // Teacher Academic Tools Slots
-    void on_btnCreateAssessment_clicked();
-    void on_comboTeacherAssessment_currentIndexChanged(int index);
-    void on_btnSaveGrades_clicked();
-    void on_comboAttendanceCourse_currentIndexChanged(int index);
-    void on_btnSaveAttendance_clicked();
-
-    // Q&A Slots
-    void on_btnQueryAction_clicked();
-
-    // Prayer Tracker Slots
-    void on_chkFajr_toggled(bool checked);
-    void on_chkDhuhr_toggled(bool checked);
-    void on_chkAsr_toggled(bool checked);
-    void on_chkMaghrib_toggled(bool checked);
-    void on_chkIsha_toggled(bool checked);
-
-    // Profile Slots
-    void onChangePasswordClicked();
 
     // Observer Interface
     void onDataChanged(DataType type) override;
@@ -96,41 +45,22 @@ private:
     Ui::MainWindow *ui;
     AcadenceManager myManager;
 
-    // Caches for memory management
-    QVector<Student *> currentStudentList;
-    QVector<Teacher *> currentTeacherList;
-    QVector<Course *> currentCourseList;
-    QVector<Habit *> currentHabitList;
-
-    // Timer objects
-    Timer *m_focusTimer;
-    Timer *m_workoutTimer;
-    DurationHabit *activeTimerHabit;
-
-    // Admin View Models
-    QStandardItemModel *adminModel;
-    QSortFilterProxyModel *adminProxyModel;
-    CsvDelegate *csvDelegate;
-
     // User Session Data
     QString userRole;
     int userId;
     QString userName;
 
+    // UI Modules
+    UIDashboard *uiDashboard;
+    UIPlanner *uiPlanner;
+    UIHabits *uiHabits;
+    UITimers *uiTimers;
+    UIRoutine *uiRoutine;
+    UIAcademics *uiAcademics;
+    UIQueries *uiQueries;
+    UIAdmin *uiAdmin;
+
     // Initialization Helpers
     void setupTables();
-    void setupTimers();
     void setupConnections();
-
-    // Data Refresh Helpers
-    void refreshDashboard();
-    void refreshPlanner();
-    void refreshHabits();
-    void refreshRoutine();
-    void refreshTeacherRoutine();
-    void refreshAcademics();
-    void refreshTeacherTools();
-    void refreshTeacherGrades();
-    void refreshTeacherAttendance();
-    void refreshQueries();
 };
