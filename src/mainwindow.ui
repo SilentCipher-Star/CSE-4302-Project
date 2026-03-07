@@ -510,6 +510,10 @@
            <item><widget class="QComboBox" name="comboAssessmentType">
             <item><property name="text"><string>Quiz</string></property></item>
             <item><property name="text"><string>Assignment</string></property></item>
+            <item><property name="text"><string>Exam</string></property></item>
+            <item><property name="text"><string>Lab</string></property></item>
+            <item><property name="text"><string>Project</string></property></item>
+            <item><property name="text"><string>Presentation</string></property></item>
            </widget></item>
            <item><widget class="QSpinBox" name="spinMaxMarks"><property name="value"><number>20</number></property></widget></item>
            <item><widget class="QPushButton" name="btnCreateAssessment"><property name="text"><string>Create</string></property></widget></item>

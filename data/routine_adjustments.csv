@@ -1,1 +1,11 @@
 
+2026-03-03,1,CANCEL,,0,Hum 4145,Islamiat,R-101,John Doe,1
+2026-03-04,2,RESCHEDULE,2026-03-06,3,Hum 4147,"Technology, Environment and Society",R-101,Jane Smith,1
+2026-03-05,3,CANCEL,,0,Math 4141,Geometry and Differential Calculus,R-101,Peter Jones,1
+2026-03-06,4,RESCHEDULE,2026-03-08,5,Phy 4141,Physics I,R-101,Alice Brown,1
+2026-03-07,5,CANCEL,,0,CSE 4105,Computing for Engineers,R-101,Bob Johnson,1
+2026-03-08,1,RESCHEDULE,2026-03-10,2,CSE 4107,Structured Programming I,R-101,Lisa Davis,1
+2026-03-09,2,CANCEL,,0,Hum 4142,Arabic I,R-101,Mike Wilson,1
+2026-03-10,3,RESCHEDULE,2026-03-12,4,Hum 4144,English I,R-101,Sarah Lee,1
+2026-03-11,4,CANCEL,,0,Phy 4142,Physics I Lab,R-101,David Garcia,1
+2026-03-12,5,RESCHEDULE,2026-03-14,1,CSE 4104,Engineering Drawing Lab,R-101,Emma Martinez,1
