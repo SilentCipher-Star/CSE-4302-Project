@@ -70,3 +70,4 @@ cmake-build-*/
 .DS_Store
 Thumbs.db
 
+.Project/
