@@ -45,6 +45,41 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/logindialog.cpp
     include/theme.hpp
     src/theme.cpp
+    include/manager_auth.hpp
+    src/manager_auth.cpp
+    include/manager_notices.hpp
+    src/manager_notices.cpp
+    include/manager_persons.hpp
+    src/manager_persons.cpp
+    include/manager_prayers.hpp
+    src/manager_prayers.cpp
+    include/manager_routine.hpp
+    src/manager_routine.cpp
+    include/manager_academics.hpp
+    src/manager_academics.cpp
+    include/manager_queries.hpp
+    src/manager_queries.cpp
+    include/manager_tasks.hpp
+    src/manager_tasks.cpp
+    include/manager_habits.hpp
+    src/manager_habits.cpp
+    include/notifications.hpp
+    include/ui_dashboard.hpp
+    src/ui_dashboard.cpp
+    include/ui_planner.hpp
+    src/ui_planner.cpp
+    include/ui_habits.hpp
+    src/ui_habits.cpp
+    include/ui_timers.hpp
+    src/ui_timers.cpp
+    include/ui_routine.hpp
+    src/ui_routine.cpp
+    include/ui_academics.hpp
+    src/ui_academics.cpp
+    include/ui_queries.hpp
+    src/ui_queries.cpp
+    include/ui_admin.hpp
+    src/ui_admin.cpp
 )
 
 target_link_libraries(Acadence PRIVATE Qt6::Widgets)
