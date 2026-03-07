@@ -16,6 +16,9 @@ public:
     int getUserId() const;
     QString getName() const;
 
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private:
     QApplication &m_app;
     QLineEdit *userEdit;

@@ -9,6 +9,8 @@
 #include <QGraphicsDropShadowEffect>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QEvent>
+#include <QKeyEvent>
 
 LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     : QDialog(parent), m_app(app), userId(-1), currentThemeIdx(0)
@@ -84,7 +86,58 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     connect(buttonBox, &QDialogButtonBox::accepted, this, &LoginDialog::onLoginClicked);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
+    // Keyboard UX:
+    // - Enter on username -> move to password
+    // - Enter on password -> attempt login
+    connect(userEdit, &QLineEdit::returnPressed, this, [this]()
+            { passEdit->setFocus(); passEdit->selectAll(); });
+    connect(passEdit, &QLineEdit::returnPressed, this, &LoginDialog::onLoginClicked);
+
+    // Arrow-key navigation between username/password inputs
+    userEdit->installEventFilter(this);
+    passEdit->installEventFilter(this);
+
+    userEdit->setFocus();
+
     updateThemeButton(themes[currentThemeIdx]);
+}
+
+bool LoginDialog::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        const int key = keyEvent->key();
+
+        if (obj == userEdit && (key == Qt::Key_Return || key == Qt::Key_Enter))
+        {
+            passEdit->setFocus();
+            passEdit->selectAll();
+            return true;
+        }
+
+        if (obj == passEdit && (key == Qt::Key_Return || key == Qt::Key_Enter))
+        {
+            onLoginClicked();
+            return true;
+        }
+
+        if (obj == userEdit && key == Qt::Key_Down)
+        {
+            passEdit->setFocus();
+            passEdit->selectAll();
+            return true;
+        }
+
+        if (obj == passEdit && key == Qt::Key_Up)
+        {
+            userEdit->setFocus();
+            userEdit->selectAll();
+            return true;
+        }
+    }
+
+    return QDialog::eventFilter(obj, event);
 }
 
 void LoginDialog::updateThemeButton(const AppTheme &t)
