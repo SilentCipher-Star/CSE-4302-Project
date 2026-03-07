@@ -71,3 +71,6 @@ cmake-build-*/
 Thumbs.db
 
 .Project/
+
+IMPROVEMENTS.md
+REFACTORING_SUMMARY.md
