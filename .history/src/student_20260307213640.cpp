@@ -8,8 +8,7 @@ double Student::totalCumulativeCGPA = 0.0;
 Student::Student(int id, QString name, QString email, QString dept, QString batch, int sem)
     : Person(id, name, email), department(dept), batch(batch), semester(sem), m_gpa(0.0)
 {
-    incrementStudentCount();
-    totalCumulativeCGPA += m_gpa;
+    ++totalStudents;
 }
 
 double Student::calculateGPA() const
@@ -36,21 +35,4 @@ bool Student::operator==(const Student& other) const
 bool Student::operator!=(const Student& other) const
 {
     return !(*this == other);
-}
-
-
-int Student::getTotalStudents()
-{
-    return totalStudents;
-}
-
-double Student::getAverageInstituteCGPA()
-{
-    if (totalStudents == 0) return 0.0;
-    return totalCumulativeCGPA / totalStudents;
-}
-
-void Student::incrementStudentCount()
-{
-    totalStudents++;
 }

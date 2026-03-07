@@ -8,8 +8,7 @@ double Student::totalCumulativeCGPA = 0.0;
 Student::Student(int id, QString name, QString email, QString dept, QString batch, int sem)
     : Person(id, name, email), department(dept), batch(batch), semester(sem), m_gpa(0.0)
 {
-    incrementStudentCount();
-    totalCumulativeCGPA += m_gpa;
+    ++totalStudents;
 }
 
 double Student::calculateGPA() const

@@ -33,7 +33,7 @@ public:
     void setDepartment(const QString &dept) { department = dept; }
     void setBatch(const QString &batch) { this->batch = batch; }
 
-   
+    // Static methods
     static int getTotalStudents();
     static double getAverageInstituteCGPA();
     static void incrementStudentCount();

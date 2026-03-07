@@ -33,11 +33,6 @@ public:
     void setDepartment(const QString &dept) { department = dept; }
     void setBatch(const QString &batch) { this->batch = batch; }
 
-   
-    static int getTotalStudents();
-    static double getAverageInstituteCGPA();
-    static void incrementStudentCount();
-    
     double calculateGPA() const;
 
     // Operator Overloading
