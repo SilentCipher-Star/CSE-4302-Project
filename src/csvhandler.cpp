@@ -143,7 +143,8 @@ void CsvHandler::initialize()
     QVector<QString> otherFiles = {
         "students.csv", "teachers.csv", "courses.csv", "themes.csv",
         "routine.csv", "attendance.csv", "grades.csv", "notices.csv",
-        "tasks.csv", "habits.csv", "queries.csv", "assessments.csv", "prayers.csv"};
+        "tasks.csv", "habits.csv", "queries.csv", "assessments.csv", "prayers.csv",
+        "enrollments.csv"};
 
     for (const QString &fileName : otherFiles)
     {
