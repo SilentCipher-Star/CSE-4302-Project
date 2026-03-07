@@ -148,15 +148,19 @@ class AcadenceManager
 public:
     AcadenceManager();
 
+    // Add delegates - these call the manager modules and notify observers
     QString login(const QString &username, const QString &password, int &userId);
     bool changePassword(int userId, const QString &role, const QString &oldPass, const QString &newPass);
 
     QVector<Notice> getNotices();
     void addNotice(const QString &content, const QString &author);
+    bool updateNotice(const QString &date, const QString &author, const QString &oldContent, const QString &newContent);
+    bool deleteNotice(const QString &date, const QString &author, const QString &content);
     QString getDashboardStats(int userId, QString role);
 
     Student *getStudent(int id);
     Teacher *getTeacher(int id);
+    QPair<QString, QString> getAdminProfile(int id);
 
     QVector<Task> getTasks(int userId);
     void addTask(int userId, const QString &description);
@@ -182,7 +186,10 @@ public:
     QVector<Course *> getTeacherCourses(int teacherId);
     Course *getCourse(int id);
     QVector<Assessment> getAssessments();
+    QVector<Assessment> getStudentAssessments(int studentId);
     void addAssessment(int courseId, QString title, QString type, QString date, int maxMarks);
+    QVector<Assessment> getTeacherAssessments(int teacherId);
+    QVector<Student *> getStudentsByEnrollment(int courseId);
 
     QVector<AttendanceRecord> getStudentAttendance(int studentId);
     QVector<Student *> getStudentsBySemester(int semester);
@@ -199,6 +206,7 @@ public:
     void answerQuery(int queryId, QString answer);
     QVector<QPair<int, QString>> getTeacherList();
 
+    // Observer pattern
     void addObserver(IDataObserver *observer);
     void removeObserver(IDataObserver *observer);
 
@@ -217,5 +225,30 @@ T *findById(const QVector<T *> &list, int id)
     }
     return nullptr;
 }
+
+// Small CSV repository helper template for single-file lookups
+template <typename T>
+class CsvRepository
+{
+public:
+    explicit CsvRepository(const QString &filename) : m_filename(filename) {}
+
+    template <typename Func>
+    T *findById(int id, Func parser)
+    {
+        QVector<QStringList> data = CsvHandler::readCsv(m_filename);
+        for (const auto &row : data)
+        {
+            if (!row.isEmpty() && row[0].toInt() == id)
+            {
+                return parser(row);
+            }
+        }
+        return nullptr;
+    }
+
+private:
+    QString m_filename;
+};
 
 #endif // ACADENCEMANAGER_HPP

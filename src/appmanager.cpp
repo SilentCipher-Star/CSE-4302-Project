@@ -1,43 +1,16 @@
 #include "../include/appmanager.hpp"
-#include <QFile>
-#include <QTextStream>
-#include <QDebug>
+#include "../include/manager_auth.hpp"
+#include "../include/manager_notices.hpp"
+#include "../include/manager_persons.hpp"
+#include "../include/manager_prayers.hpp"
+#include "../include/manager_routine.hpp"
+#include "../include/manager_academics.hpp"
+#include "../include/manager_queries.hpp"
+#include "../include/manager_tasks.hpp"
+#include "../include/manager_habits.hpp"
 #include <QMap>
-#include <QDir>
-#include <QCoreApplication>
-#include <QDateTime>
 
-// Helper template class for generic CSV retrieval operations
-namespace
-{
-    template <typename T>
-    class CsvRepository
-    {
-    public:
-        CsvRepository(const QString &filename) : m_filename(filename) {}
-
-        template <typename Func>
-        T *findById(int id, Func parser)
-        {
-            QVector<QStringList> data = CsvHandler::readCsv(m_filename);
-            for (const auto &row : data)
-            {
-                if (!row.isEmpty() && row[0].toInt() == id)
-                {
-                    return parser(row);
-                }
-            }
-            return nullptr;
-        }
-
-    private:
-        QString m_filename;
-    };
-}
-
-AcadenceManager::AcadenceManager()
-{
-}
+AcadenceManager::AcadenceManager() {}
 
 void AcadenceManager::addObserver(IDataObserver *observer)
 {
@@ -56,111 +29,18 @@ void AcadenceManager::notifyObservers(DataType type)
         obs->onDataChanged(type);
 }
 
+// ============ Authentication ============
 QString AcadenceManager::login(const QString &username, const QString &password, int &userId)
 {
-    QVector<QStringList> admins = CsvHandler::readCsv("admins.csv");
-    for (const auto &row : admins)
-    {
-        if (row.size() >= 3 && row[1] == username && row[2] == password)
-        {
-            userId = row[0].toInt();
-            return "Admin";
-        }
-    }
-
-    QVector<QStringList> students = CsvHandler::readCsv("students.csv");
-    for (const auto &row : students)
-    {
-        if (row.size() >= 5 && row[3] == username && row[4] == password)
-        {
-            userId = row[0].toInt();
-            return "Student";
-        }
-    }
-
-    QVector<QStringList> teachers = CsvHandler::readCsv("teachers.csv");
-    for (const auto &row : teachers)
-    {
-        if (row.size() >= 5 && row[3] == username && row[4] == password)
-        {
-            userId = row[0].toInt();
-            return "Teacher";
-        }
-    }
-    return "";
+    return ManagerAuth::login(username, password, userId);
 }
 
 bool AcadenceManager::changePassword(int userId, const QString &role, const QString &oldPass, const QString &newPass)
 {
-    QString filename;
-    int passIndex = 4;
-
-    if (role == "Student")
-    {
-        filename = "students.csv";
-    }
-    else if (role == "Teacher")
-    {
-        filename = "teachers.csv";
-    }
-    else if (role == "Admin")
-    {
-        filename = "admins.csv";
-        passIndex = 2;
-    }
-    else
-    {
-        return false;
-    }
-
-    QVector<QStringList> data = CsvHandler::readCsv(filename);
-    bool found = false;
-
-    for (auto &row : data)
-    {
-        if (row.size() > passIndex && row[0].toInt() == userId)
-        {
-            if (row[passIndex] == oldPass)
-            {
-                row[passIndex] = newPass;
-                found = true;
-            }
-            else
-            {
-                throw Acadence::Exception("Old password does not match.");
-            }
-            break;
-        }
-    }
-
-    if (found)
-    {
-        CsvHandler::writeCsv(filename, data);
+    bool result = ManagerAuth::changePassword(userId, role, oldPass, newPass);
+    if (result)
         notifyObservers(DataType::Profile);
-        return true;
-    }
-    throw Acadence::Exception("User not found.");
-}
-
-QVector<Notice> AcadenceManager::getNotices()
-{
-    QVector<Notice> notices;
-    QVector<QStringList> data = CsvHandler::readCsv("notices.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 3)
-        {
-            notices.append(Notice(row[0], row[1], row[2]));
-        }
-    }
-    return notices;
-}
-
-void AcadenceManager::addNotice(const QString &content, const QString &author)
-{
-    QString date = QDate::currentDate().toString("yyyy-MM-dd");
-    CsvHandler::appendCsv("notices.csv", {date, author, content});
-    notifyObservers(DataType::Notices);
+    return result;
 }
 
 QString AcadenceManager::getDashboardStats(int userId, QString role)
@@ -175,22 +55,17 @@ QString AcadenceManager::getDashboardStats(int userId, QString role)
 
         QMap<int, int> courseCredits;
         QVector<QStringList> courseData = CsvHandler::readCsv("courses.csv");
-
         for (const auto &row : courseData)
         {
             if (row.size() >= 6 && row[4].toInt() == semester)
-            {
                 courseCredits[row[0].toInt()] = row[5].toInt();
-            }
         }
 
         QMap<int, double> courseObtained;
         QMap<int, double> courseMax;
-
         QVector<QStringList> assData = CsvHandler::readCsv("assessments.csv");
         QVector<QStringList> gradeData = CsvHandler::readCsv("grades.csv");
 
-        // Calculate obtained marks for each course
         for (const auto &arow : assData)
         {
             if (arow.size() < 6)
@@ -201,40 +76,27 @@ QString AcadenceManager::getDashboardStats(int userId, QString role)
 
             if (courseCredits.contains(cId))
             {
-                bool isGraded = false;
-                double obtained = 0.0;
                 for (const auto &grow : gradeData)
                 {
                     if (grow.size() >= 3 && grow[0].toInt() == userId && grow[1].toInt() == aId)
                     {
-                        obtained = grow[2].toDouble();
-                        isGraded = true;
+                        courseMax[cId] += maxMarks;
+                        courseObtained[cId] += grow[2].toDouble();
                         break;
                     }
-                }
-
-                if (isGraded)
-                {
-                    courseMax[cId] += maxMarks;
-                    courseObtained[cId] += obtained;
                 }
             }
         }
 
-        double totalPoints = 0;
-        double totalCredits = 0;
-
+        double totalPoints = 0, totalCredits = 0;
         for (auto it = courseCredits.begin(); it != courseCredits.end(); ++it)
         {
             int cId = it.key();
-            int credits = it.value();
             double max = courseMax.value(cId, 0);
-
-            // Calculate Grade Point based on percentage
             if (max > 0)
             {
                 double pct = (courseObtained.value(cId, 0) / max) * 100.0;
-                double gp = 0.0;
+                double gp = 0;
                 if (pct >= 80)
                     gp = 4.00;
                 else if (pct >= 75)
@@ -253,920 +115,157 @@ QString AcadenceManager::getDashboardStats(int userId, QString role)
                     gp = 2.25;
                 else if (pct >= 40)
                     gp = 2.00;
-
-                totalPoints += (gp * credits);
-                totalCredits += credits;
+                totalPoints += (gp * it.value());
+                totalCredits += it.value();
             }
         }
-
         if (totalCredits > 0)
             return "GPA: " + QString::number(totalPoints / totalCredits, 'f', 2);
-
         return "GPA: N/A";
     }
     else if (role == "Teacher")
     {
-        return "Active Courses: " + QString::number(getTeacherCourses(userId).size());
+        QVector<Course *> courses = getTeacherCourses(userId);
+        int count = courses.size();
+        qDeleteAll(courses);
+        return "Active Courses: " + QString::number(count);
     }
     return "System Active";
 }
 
-Student *AcadenceManager::getStudent(int id)
+// ============ Notices ============
+QVector<Notice> AcadenceManager::getNotices() { return ManagerNotices::getNotices(); }
+void AcadenceManager::addNotice(const QString &c, const QString &a)
 {
-    CsvRepository<Student> repo("students.csv");
-    return repo.findById(id, [](const QStringList &row) -> Student *
-                         {
-        if (row.size() < 8) return nullptr;
-        Student *s = new Student(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
-        s->setUsername(row[3]);
-        s->setPassword(row[4]);
-
-        if (row.size() >= 9)
-            s->setDateAdmission(QDate::fromString(row[8], Qt::ISODate));
-        if (row.size() >= 10)
-            s->setGpa(row[9].toDouble());
-
-        return s; });
+    ManagerNotices::addNotice(c, a);
+    notifyObservers(DataType::Notices);
+}
+bool AcadenceManager::updateNotice(const QString &date, const QString &author, const QString &oldContent, const QString &newContent)
+{
+    const bool updated = ManagerNotices::updateNotice(date, author, oldContent, newContent);
+    if (updated)
+        notifyObservers(DataType::Notices);
+    return updated;
+}
+bool AcadenceManager::deleteNotice(const QString &date, const QString &author, const QString &content)
+{
+    const bool deleted = ManagerNotices::deleteNotice(date, author, content);
+    if (deleted)
+        notifyObservers(DataType::Notices);
+    return deleted;
 }
 
-Teacher *AcadenceManager::getTeacher(int id)
+// ============ Persons ============
+Student *AcadenceManager::getStudent(int id) { return ManagerPersons::getStudent(id); }
+Teacher *AcadenceManager::getTeacher(int id) { return ManagerPersons::getTeacher(id); }
+QPair<QString, QString> AcadenceManager::getAdminProfile(int id) { return ManagerPersons::getAdminProfile(id); }
+
+// ============ Tasks ============
+QVector<Task> AcadenceManager::getTasks(int userId) { return ManagerTasks::getTasks(userId); }
+void AcadenceManager::addTask(int userId, const QString &desc)
 {
-    CsvRepository<Teacher> repo("teachers.csv");
-    return repo.findById(id, [](const QStringList &row) -> Teacher *
-                         {
-        if (row.size() < 7) return nullptr;
-        Teacher *t = new Teacher(row[0].toInt(), row[1], row[2], row[5], row[6]);
-        t->setUsername(row[3]);
-        t->setPassword(row[4]);
-
-        if (row.size() >= 8)
-            t->setSalary(row[7].toDouble());
-
-        return t; });
-}
-
-QVector<Task> AcadenceManager::getTasks(int userId)
-{
-    QVector<Task> tasks;
-    QVector<QStringList> data = CsvHandler::readCsv("tasks.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 4 && row[1].toInt() == userId)
-        {
-            tasks.append(Task(row[0].toInt(), row[2], (row[3] == "1")));
-        }
-    }
-    return tasks;
-}
-
-void AcadenceManager::addTask(int userId, const QString &description)
-{
-    QVector<QStringList> data = CsvHandler::readCsv("tasks.csv");
-    int maxId = 0;
-    for (const auto &row : data)
-        if (row.size() > 0)
-            maxId = std::max(maxId, row[0].toInt());
-
-    CsvHandler::appendCsv("tasks.csv", {QString::number(maxId + 1), QString::number(userId), description, "0"});
+    ManagerTasks::addTask(userId, desc);
     notifyObservers(DataType::Tasks);
 }
-
 void AcadenceManager::completeTask(int taskId, bool status)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("tasks.csv");
-    for (auto &row : data)
-    {
-        if (row.size() >= 4 && row[0].toInt() == taskId)
-        {
-            row[3] = status ? "1" : "0";
-        }
-    }
-    CsvHandler::writeCsv("tasks.csv", data);
+    ManagerTasks::completeTask(taskId, status);
     notifyObservers(DataType::Tasks);
 }
-
 void AcadenceManager::deleteTask(int taskId)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("tasks.csv");
-    QVector<QStringList> newData;
-    for (const auto &row : data)
-    {
-        if (row.size() > 0 && row[0].toInt() != taskId)
-        {
-            newData.append(row);
-        }
-    }
-    CsvHandler::writeCsv("tasks.csv", newData);
+    ManagerTasks::deleteTask(taskId);
     notifyObservers(DataType::Tasks);
 }
-
 void AcadenceManager::deleteCompletedTasks(int userId)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("tasks.csv");
-    QVector<QStringList> newData;
-    for (const auto &row : data)
-    {
-        // Keep row if it's not (belonging to this user AND completed)
-        if (row.size() < 4 || row[1].toInt() != userId || row[3] != "1")
-        {
-            newData.append(row);
-        }
-    }
-    CsvHandler::writeCsv("tasks.csv", newData);
+    ManagerTasks::deleteCompletedTasks(userId);
     notifyObservers(DataType::Tasks);
 }
 
-DailyPrayerStatus AcadenceManager::getDailyPrayers(int userId, QString date)
-{
-    QVector<QStringList> data = CsvHandler::readCsv("prayers.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 7 && row[0].toInt() == userId && row[1] == date)
-        {
-            return DailyPrayerStatus(row[2] == "1", row[3] == "1", row[4] == "1", row[5] == "1", row[6] == "1");
-        }
-    }
-    return DailyPrayerStatus(false, false, false, false, false);
-}
-
+// ============ Prayers ============
+DailyPrayerStatus AcadenceManager::getDailyPrayers(int userId, QString date) { return ManagerPrayers::getDailyPrayers(userId, date); }
 void AcadenceManager::updateDailyPrayer(int userId, QString date, QString prayer, bool status)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("prayers.csv");
-    bool found = false;
-
-    int prayerIdx = -1;
-    if (prayer == "fajr")
-        prayerIdx = 2;
-    else if (prayer == "dhuhr")
-        prayerIdx = 3;
-    else if (prayer == "asr")
-        prayerIdx = 4;
-    else if (prayer == "maghrib")
-        prayerIdx = 5;
-    else if (prayer == "isha")
-        prayerIdx = 6;
-
-    for (auto &row : data)
-    {
-        if (row.size() >= 7 && row[0].toInt() == userId && row[1] == date)
-        {
-            if (prayerIdx != -1)
-                row[prayerIdx] = status ? "1" : "0";
-            found = true;
-        }
-    }
-
-    if (!found)
-    {
-        QStringList newRow = {QString::number(userId), date, "0", "0", "0", "0", "0"};
-        if (prayerIdx != -1)
-            newRow[prayerIdx] = status ? "1" : "0";
-        data.append(newRow);
-    }
-    CsvHandler::writeCsv("prayers.csv", data);
+    ManagerPrayers::updateDailyPrayer(userId, date, prayer, status);
     notifyObservers(DataType::Habits);
 }
 
-QVector<Habit *> AcadenceManager::getHabits(int userId)
-{
-    QVector<Habit *> habits;
-    QVector<QStringList> data = CsvHandler::readCsv("habits.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 11 && row[1].toInt() == userId)
-        {
-            int id = row[0].toInt();
-            QString name = row[2];
-            HabitType type = HabitType::COUNT;
-            if (row[3] == "Duration")
-                type = HabitType::DURATION;
-            else if (row[3] == "Workout")
-                type = HabitType::WORKOUT;
-
-            Frequency freq = (row[4] == "Daily") ? Frequency::DAILY : Frequency::WEEKLY;
-            QString targetStr = row[5];
-            QString currentStr = row[6];
-            int streak = row[7].toInt();
-            QDate lastDate = QDate::fromString(row[8], Qt::ISODate);
-            bool isComp = (row[9] == "1");
-            QString unit = row[10];
-
-            Habit *h = nullptr;
-            if (type == HabitType::DURATION)
-            {
-                auto *dh = new DurationHabit(id, userId, name, freq, targetStr.toInt());
-                dh->currentMinutes = currentStr.toDouble();
-                h = dh;
-            }
-            else if (type == HabitType::COUNT)
-            {
-                auto *ch = new CountHabit(id, userId, name, freq, targetStr.toInt(), unit);
-                ch->currentCount = currentStr.toInt();
-                h = ch;
-            }
-            else if (type == HabitType::WORKOUT)
-            {
-                QStringList targets = targetStr.split('|');
-                int tMin = (targets.size() > 0) ? targets[0].toInt() : 0;
-                int tCnt = (targets.size() > 1) ? targets[1].toInt() : 0;
-
-                auto *wh = new WorkoutHabit(id, userId, name, freq, tMin, tCnt, unit);
-                wh->deserializeValue(currentStr);
-                h = wh;
-            }
-
-            h->streak = streak;
-            h->lastUpdated = lastDate;
-            h->isCompleted = isComp;
-
-            if (h->checkReset())
-            {
-                updateHabit(h);
-            }
-            habits.append(h);
-        }
-    }
-    return habits;
-}
-
+// ============ Habits ============
+QVector<Habit *> AcadenceManager::getHabits(int userId) { return ManagerHabits::getHabits(userId); }
 void AcadenceManager::addHabit(Habit *h)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("habits.csv");
-    int maxId = 0;
-    for (const auto &row : data)
-        if (row.size() > 0)
-            maxId = std::max(maxId, row[0].toInt());
-    h->id = maxId + 1;
-
-    QString typeStr = h->getTypeString();
-    QString freqStr = (h->frequency == Frequency::DAILY) ? "Daily" : "Weekly";
-    QString unit = "";
-    QString targetStr = "0";
-    QString currentStr = "0";
-
-    if (auto *wh = dynamic_cast<WorkoutHabit *>(h))
-    {
-        targetStr = QString("%1|%2").arg(wh->targetMinutes).arg(wh->targetCount);
-        currentStr = wh->serializeValue();
-        unit = wh->unit;
-    }
-    else if (auto *dh = dynamic_cast<DurationHabit *>(h))
-    {
-        targetStr = QString::number(dh->targetMinutes);
-        currentStr = QString::number(dh->currentMinutes, 'f', 4);
-    }
-    else if (auto *ch = dynamic_cast<CountHabit *>(h))
-    {
-        targetStr = QString::number(ch->targetCount);
-        currentStr = QString::number(ch->currentCount);
-        unit = ch->unit;
-    }
-
-    CsvHandler::appendCsv("habits.csv", {QString::number(h->id), QString::number(h->studentId), h->name, typeStr, freqStr,
-                                         targetStr, currentStr, "0", QDate::currentDate().toString(Qt::ISODate), "0", unit});
+    ManagerHabits::addHabit(h);
     notifyObservers(DataType::Habits);
 }
-
 void AcadenceManager::updateHabit(Habit *h)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("habits.csv");
-    for (auto &row : data)
-    {
-        if (row.size() >= 11 && row[0].toInt() == h->id)
-        {
-            QString currentStr = "0";
-            if (auto *wh = dynamic_cast<WorkoutHabit *>(h))
-                currentStr = wh->serializeValue();
-            else if (auto *dh = dynamic_cast<DurationHabit *>(h))
-                currentStr = QString::number(dh->currentMinutes, 'f', 4);
-            else if (auto *ch = dynamic_cast<CountHabit *>(h))
-                currentStr = QString::number(ch->currentCount);
-
-            row[6] = currentStr;
-            row[7] = QString::number(h->streak);
-            row[8] = h->lastUpdated.toString(Qt::ISODate);
-            row[9] = h->isCompleted ? "1" : "0";
-        }
-    }
-    CsvHandler::writeCsv("habits.csv", data);
+    ManagerHabits::updateHabit(h);
     notifyObservers(DataType::Habits);
 }
-
 void AcadenceManager::deleteHabit(int id)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("habits.csv");
-    QVector<QStringList> newData;
-    for (const auto &row : data)
-    {
-        if (row.size() > 0 && row[0].toInt() != id)
-        {
-            newData.append(row);
-        }
-    }
-    CsvHandler::writeCsv("habits.csv", newData);
+    ManagerHabits::deleteHabit(id);
     notifyObservers(DataType::Habits);
 }
 
-QVector<RoutineSession> AcadenceManager::getRoutineForDay(QString day, int semester)
-{
-    WeeklyRoutine weeklyRoutine;
-    QVector<QStringList> data = CsvHandler::readCsv("routine.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 7)
-        {
-            if (semester == -1 || row[6].toInt() == semester)
-            {
-                int serial = row[1].toInt();
-                QString start, end;
-                if (serial == 1)
-                {
-                    start = "09:00";
-                    end = "10:00";
-                }
-                else if (serial == 2)
-                {
-                    start = "10:00";
-                    end = "11:00";
-                }
-                else if (serial == 3)
-                {
-                    start = "11:00";
-                    end = "12:00";
-                }
-                else if (serial == 4)
-                {
-                    start = "12:00";
-                    end = "13:00";
-                }
-                else if (serial == 5)
-                {
-                    start = "14:00";
-                    end = "15:00";
-                }
-                else
-                {
-                    start = "00:00";
-                    end = "00:00";
-                }
-
-                weeklyRoutine.addSession(RoutineSession(row[0], start, end, row[2], row[3], row[4], row[5], row[6].toInt()));
-            }
-        }
-    }
-    return weeklyRoutine.getSessionsForDay(day);
-}
-
+// ============ Routine ============
+QVector<RoutineSession> AcadenceManager::getRoutineForDay(QString day, int semester) { return ManagerRoutine::getRoutineForDay(day, semester); }
 void AcadenceManager::addRoutineItem(QString day, int serial, QString code, QString name, QString room, QString instructor, int semester)
 {
-    CsvHandler::appendCsv("routine.csv", {day, QString::number(serial), code, name, room, instructor, QString::number(semester)});
+    ManagerRoutine::addRoutineItem(day, serial, code, name, room, instructor, semester);
     notifyObservers(DataType::Routine);
 }
-
-QVector<RoutineAdjustment> AcadenceManager::getRoutineAdjustments()
-{
-    QVector<RoutineAdjustment> list;
-    QVector<QStringList> data = CsvHandler::readCsv("routine_adjustments.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 10)
-        {
-            RoutineAdjustment adj;
-            adj.originalDate = row[0];
-            adj.originalSerial = row[1].toInt();
-            adj.type = row[2];
-            adj.newDate = row[3];
-            adj.newSerial = row[4].toInt();
-            adj.courseCode = row[5];
-            adj.courseName = row[6];
-            adj.room = row[7];
-            adj.instructor = row[8];
-            adj.semester = row[9].toInt();
-            list.append(adj);
-        }
-    }
-    return list;
-}
-
+QVector<RoutineAdjustment> AcadenceManager::getRoutineAdjustments() { return ManagerRoutine::getRoutineAdjustments(); }
 void AcadenceManager::addRoutineAdjustment(const RoutineAdjustment &adj)
 {
-    CsvHandler::appendCsv("routine_adjustments.csv", {adj.originalDate, QString::number(adj.originalSerial), adj.type,
-                                                      adj.newDate, QString::number(adj.newSerial),
-                                                      adj.courseCode, adj.courseName, adj.room, adj.instructor,
-                                                      QString::number(adj.semester)});
+    ManagerRoutine::addRoutineAdjustment(adj);
     notifyObservers(DataType::Routine);
 }
-
-QVector<RoutineSession> AcadenceManager::getEffectiveRoutine(QDate date, int semester)
-{
-    QString dayName = date.toString("dddd");
-    QVector<RoutineSession> baseRoutine = getRoutineForDay(dayName, semester);
-    QVector<RoutineAdjustment> adjustments = getRoutineAdjustments();
-    QVector<RoutineSession> effectiveRoutine;
-
-    // 1. Process base routine: exclude if cancelled or moved FROM this date
-    for (const auto &session : baseRoutine)
-    {
-        bool modified = false;
-        for (const auto &adj : adjustments)
-        {
-            QString start;
-            if (adj.originalSerial == 1)
-                start = "09:00";
-            else if (adj.originalSerial == 2)
-                start = "10:00";
-            else if (adj.originalSerial == 3)
-                start = "11:00";
-            else if (adj.originalSerial == 4)
-                start = "12:00";
-            else if (adj.originalSerial == 5)
-                start = "14:00";
-
-            if (adj.originalDate == date.toString(Qt::ISODate) &&
-                start == session.getStartTime() &&
-                adj.courseCode == session.getCourseCode())
-            {
-                modified = true; // It's either cancelled or moved away
-                break;
-            }
-        }
-        if (!modified)
-        {
-            effectiveRoutine.append(session);
-        }
-    }
-
-    // 2. Add sessions moved TO this date
-    for (const auto &adj : adjustments)
-    {
-        if (adj.type == "RESCHEDULE" && adj.newDate == date.toString(Qt::ISODate))
-        {
-            // Check if this rescheduled slot has been cancelled
-            bool isCancelled = false;
-            for (const auto &cancelAdj : adjustments)
-            {
-                if (cancelAdj.type == "CANCEL" &&
-                    cancelAdj.originalDate == adj.newDate &&
-                    cancelAdj.originalSerial == adj.newSerial &&
-                    cancelAdj.courseCode == adj.courseCode)
-                {
-                    isCancelled = true;
-                    break;
-                }
-            }
-            if (isCancelled)
-                continue;
-
-            if (semester == -1 || adj.semester == semester)
-            {
-                // Calculate end time (assuming 1 hour duration for simplicity if not stored)
-                QString start, end;
-                if (adj.newSerial == 1)
-                {
-                    start = "09:00";
-                    end = "10:00";
-                }
-                else if (adj.newSerial == 2)
-                {
-                    start = "10:00";
-                    end = "11:00";
-                }
-                else if (adj.newSerial == 3)
-                {
-                    start = "11:00";
-                    end = "12:00";
-                }
-                else if (adj.newSerial == 4)
-                {
-                    start = "12:00";
-                    end = "13:00";
-                }
-                else if (adj.newSerial == 5)
-                {
-                    start = "14:00";
-                    end = "15:00";
-                }
-                else
-                {
-                    start = "00:00";
-                    end = "00:00";
-                }
-
-                effectiveRoutine.append(RoutineSession(
-                    dayName, start, end,
-                    adj.courseCode, adj.courseName, adj.room, adj.instructor, adj.semester));
-            }
-        }
-    }
-
-    // Sort by start time
-    std::sort(effectiveRoutine.begin(), effectiveRoutine.end(), [](const RoutineSession &a, const RoutineSession &b)
-              { return QTime::fromString(a.getStartTime(), "HH:mm") < QTime::fromString(b.getStartTime(), "HH:mm"); });
-
-    return effectiveRoutine;
-}
-
+QVector<RoutineSession> AcadenceManager::getEffectiveRoutine(QDate date, int semester) { return ManagerRoutine::getEffectiveRoutine(date, semester); }
 QVector<RescheduleOption> AcadenceManager::getRescheduleOptions(QDate originDate, int originSerial, int semester, QString originCode, QString originRoom, QString instructorName)
 {
-    QVector<RescheduleOption> options;
-    QDate d = QDate::currentDate();
-
-    for (int i = 0; i < 14; ++i)
-    {
-        QDate targetDate = d.addDays(i);
-        if (targetDate.dayOfWeek() > 5)
-            continue; // Skip weekends
-
-        QVector<RoutineSession> daily = getEffectiveRoutine(targetDate, semester);
-
-        // Check standard slots: 09:00, 10:00, 11:00, 12:00, 14:00
-        QList<int> serials = {1, 2, 3, 4, 5};
-        for (int s : serials)
-        {
-            QString slotTime;
-            if (s == 1)
-                slotTime = "09:00";
-            else if (s == 2)
-                slotTime = "10:00";
-            else if (s == 3)
-                slotTime = "11:00";
-            else if (s == 4)
-                slotTime = "12:00";
-            else if (s == 5)
-                slotTime = "14:00";
-
-            if (targetDate == originDate && s == originSerial)
-                continue;
-
-            bool occupied = false;
-            RoutineSession occupiedSession("", "", "", "", "", "", "", 0);
-
-            for (const auto &sess : daily)
-            {
-                if (sess.getStartTime() == slotTime)
-                {
-                    occupied = true;
-                    occupiedSession = sess;
-                    break;
-                }
-            }
-
-            RoutineAdjustment adj;
-            adj.originalDate = originDate.toString(Qt::ISODate);
-            adj.originalSerial = originSerial;
-            adj.type = "RESCHEDULE";
-            adj.newDate = targetDate.toString(Qt::ISODate);
-            adj.newSerial = s;
-            adj.courseCode = originCode;
-            adj.courseName = "Rescheduled"; // Simplified, or fetch name if needed
-            adj.room = originRoom;
-            adj.instructor = instructorName;
-            adj.semester = semester;
-
-            RescheduleOption opt;
-            opt.adjustment = adj;
-
-            if (!occupied)
-            {
-                opt.displayText = targetDate.toString("ddd MMM dd") + " at " + slotTime + " (Empty Slot)";
-                options.append(opt);
-            }
-            else
-            {
-                // Exchange option
-                opt.displayText = targetDate.toString("ddd MMM dd") + " at " + slotTime + " (Exchange with " + occupiedSession.getCourseCode() + ")";
-
-                RoutineAdjustment adj2;
-                adj2.originalDate = targetDate.toString(Qt::ISODate);
-                adj2.originalSerial = s;
-                adj2.type = "RESCHEDULE";
-                adj2.newDate = originDate.toString(Qt::ISODate);
-                adj2.newSerial = originSerial;
-                adj2.courseCode = occupiedSession.getCourseCode();
-                adj2.courseName = occupiedSession.getCourseName();
-                adj2.room = occupiedSession.getRoom();
-                adj2.instructor = occupiedSession.getInstructor();
-                adj2.semester = occupiedSession.getSemester();
-
-                opt.secondaryAdjustment = adj2;
-                options.append(opt);
-            }
-        }
-    }
-    return options;
+    return ManagerRoutine::getRescheduleOptions(originDate, originSerial, semester, originCode, originRoom, instructorName);
 }
 
-QVector<Course *> AcadenceManager::getTeacherCourses(int teacherId)
-{
-    QVector<Course *> courses;
-    QVector<QStringList> data = CsvHandler::readCsv("courses.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 6 && row[3].toInt() == teacherId)
-        {
-            courses.append(new Course(row[0].toInt(), row[1], row[2], row[3].toInt(), row[4].toInt(), row[5].toInt()));
-        }
-    }
-    return courses;
-}
-
-Course *AcadenceManager::getCourse(int id)
-{
-    CsvRepository<Course> repo("courses.csv");
-    return repo.findById(id, [](const QStringList &row) -> Course *
-                         {
-        if (row.size() < 6) return nullptr;
-        return new Course(row[0].toInt(), row[1], row[2], row[3].toInt(), row[4].toInt(), row[5].toInt()); });
-}
-
-QVector<Assessment> AcadenceManager::getAssessments()
-{
-    QVector<Assessment> list;
-    QVector<QStringList> assessmentData = CsvHandler::readCsv("assessments.csv");
-
-    // Optimization: Read courses once to create a lookup map
-    // This avoids opening the courses file for every single assessment row.
-    QVector<QStringList> courseData = CsvHandler::readCsv("courses.csv");
-    QMap<int, QString> courseMap;
-    for (const auto &row : courseData)
-        if (row.size() >= 3)
-            courseMap.insert(row[0].toInt(), row[2]);
-
-    for (const auto &row : assessmentData)
-    {
-        if (row.size() >= 6)
-        {
-            int courseId = row[1].toInt();
-            QString courseName = courseMap.value(courseId, "Unknown");
-            list.append(Assessment(row[0].toInt(), courseId, courseName, row[2], row[3], row[4], row[5].toInt()));
-        }
-    }
-    return list;
-}
-
+// ============ Academics ============
+QVector<Course *> AcadenceManager::getTeacherCourses(int teacherId) { return ManagerAcademics::getTeacherCourses(teacherId); }
+Course *AcadenceManager::getCourse(int id) { return ManagerAcademics::getCourse(id); }
+QVector<Assessment> AcadenceManager::getAssessments() { return ManagerAcademics::getAssessments(); }
+QVector<Assessment> AcadenceManager::getTeacherAssessments(int teacherId) { return ManagerAcademics::getTeacherAssessments(teacherId); }
+QVector<Assessment> AcadenceManager::getStudentAssessments(int studentId) { return ManagerAcademics::getStudentAssessments(studentId); }
 void AcadenceManager::addAssessment(int courseId, QString title, QString type, QString date, int maxMarks)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("assessments.csv");
-    int maxId = 0;
-    for (const auto &row : data)
-        if (row.size() > 0)
-            maxId = std::max(maxId, row[0].toInt());
-
-    CsvHandler::appendCsv("assessments.csv", {QString::number(maxId + 1), QString::number(courseId), title, type, date, QString::number(maxMarks)});
+    ManagerAcademics::addAssessment(courseId, title, type, date, maxMarks);
     notifyObservers(DataType::Academics);
 }
-
-QVector<AttendanceRecord> AcadenceManager::getStudentAttendance(int studentId)
-{
-    QVector<AttendanceRecord> records;
-    Student *s = getStudent(studentId);
-    if (!s)
-        return records;
-    int semester = s->getSemester();
-    delete s;
-
-    QVector<QStringList> courseData = CsvHandler::readCsv("courses.csv");
-    QVector<int> courseIds;
-    QMap<int, QString> courseNames;
-    for (const auto &row : courseData)
-    {
-        if (row.size() >= 6 && row[4].toInt() == semester)
-        {
-            int cid = row[0].toInt();
-            courseIds.append(cid);
-            courseNames[cid] = row[2];
-        }
-    }
-
-    QVector<QStringList> attData = CsvHandler::readCsv("attendance.csv");
-    QVector<QStringList> gradeData = CsvHandler::readCsv("grades.csv");
-    QVector<Assessment> assessments = getAssessments();
-
-    for (int cid : courseIds)
-    {
-        QSet<QString> uniqueDates;
-        int attended = 0;
-        for (const auto &row : attData)
-        {
-            if (row.size() >= 4 && row[0].toInt() == cid)
-            {
-                uniqueDates.insert(row[2]);
-                if (row[1].toInt() == studentId && row[3] == "1")
-                {
-                    attended++;
-                }
-            }
-        }
-
-        int totalClasses = uniqueDates.size();
-        int attendedClasses = attended;
-
-        double totalMarksObtained = 0;
-        double totalMaxMarks = 0;
-        for (const auto &a : assessments)
-        {
-            if (a.getCourseId() == cid)
-            {
-                bool isGraded = false;
-                double obtained = 0.0;
-                for (const auto &grow : gradeData)
-                {
-                    if (grow.size() >= 3 && grow[0].toInt() == studentId && grow[1].toInt() == a.getId())
-                    {
-                        obtained = grow[2].toDouble();
-                        isGraded = true;
-                        break;
-                    }
-                }
-                if (isGraded)
-                {
-                    totalMaxMarks += a.getMaxMarks();
-                    totalMarksObtained += obtained;
-                }
-            }
-        }
-        records.append(AttendanceRecord(courseNames[cid], totalClasses, attendedClasses, totalMarksObtained, totalMaxMarks));
-    }
-    return records;
-}
-
-QVector<Student *> AcadenceManager::getStudentsBySemester(int semester)
-{
-    QVector<Student *> list;
-    QVector<QStringList> data = CsvHandler::readCsv("students.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 6 && row[5].toInt() == semester)
-        {
-            list.append(new Student(row[0].toInt(), row[1], row[2], row[3], row[4], row[5].toInt()));
-        }
-    }
-    return list;
-}
-
-double AcadenceManager::getGrade(int studentId, int assessmentId)
-{
-    QVector<QStringList> data = CsvHandler::readCsv("grades.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 3 && row[0].toInt() == studentId && row[1].toInt() == assessmentId)
-        {
-            return row[2].toDouble();
-        }
-    }
-    return -1.0;
-}
-
-void AcadenceManager::addGrade(int studentId, int assessmentId, double marks)
-{
-    QVector<QStringList> data = CsvHandler::readCsv("grades.csv");
-    bool found = false;
-    for (auto &row : data)
-    {
-        if (row.size() >= 3 && row[0].toInt() == studentId && row[1].toInt() == assessmentId)
-        {
-            row[2] = QString::number(marks);
-            found = true;
-        }
-    }
-    if (!found)
-    {
-        data.append({QString::number(studentId), QString::number(assessmentId), QString::number(marks)});
-    }
-    CsvHandler::writeCsv("grades.csv", data);
-    notifyObservers(DataType::Academics);
-}
-
-QVector<QString> AcadenceManager::getCourseDates(int courseId)
-{
-    QSet<QString> dates;
-    QVector<QStringList> data = CsvHandler::readCsv("attendance.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 4 && row[0].toInt() == courseId)
-        {
-            dates.insert(row[2]);
-        }
-    }
-    QVector<QString> list = dates.values();
-    std::sort(list.begin(), list.end());
-    return list;
-}
-
-bool AcadenceManager::isPresent(int courseId, int studentId, QString date)
-{
-    QVector<QStringList> data = CsvHandler::readCsv("attendance.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 4 && row[0].toInt() == courseId && row[1].toInt() == studentId && row[2] == date)
-        {
-            return row[3] == "1";
-        }
-    }
-    return false;
-}
-
+QVector<Student *> AcadenceManager::getStudentsByEnrollment(int courseId) { return ManagerAcademics::getStudentsByEnrollment(courseId); }
+QVector<Student *> AcadenceManager::getStudentsBySemester(int semester) { return ManagerAcademics::getStudentsBySemester(semester); }
+QVector<AttendanceRecord> AcadenceManager::getStudentAttendance(int studentId) { return ManagerAcademics::getStudentAttendance(studentId); }
+QVector<QString> AcadenceManager::getCourseDates(int courseId) { return ManagerAcademics::getCourseDates(courseId); }
+bool AcadenceManager::isPresent(int courseId, int studentId, QString date) { return ManagerAcademics::isPresent(courseId, studentId, date); }
 void AcadenceManager::markAttendance(int courseId, int studentId, QString date, bool present)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("attendance.csv");
-    bool found = false;
-    for (auto &row : data)
-    {
-        if (row.size() >= 4 && row[0].toInt() == courseId && row[1].toInt() == studentId && row[2] == date)
-        {
-            row[3] = present ? "1" : "0";
-            found = true;
-        }
-    }
-    if (!found)
-    {
-        data.append({QString::number(courseId), QString::number(studentId), date, present ? "1" : "0"});
-    }
-    CsvHandler::writeCsv("attendance.csv", data);
+    ManagerAcademics::markAttendance(courseId, studentId, date, present);
+    notifyObservers(DataType::Academics);
+}
+double AcadenceManager::getGrade(int studentId, int assessmentId) { return ManagerAcademics::getGrade(studentId, assessmentId); }
+void AcadenceManager::addGrade(int studentId, int assessmentId, double marks)
+{
+    ManagerAcademics::addGrade(studentId, assessmentId, marks);
     notifyObservers(DataType::Academics);
 }
 
-QVector<Query> AcadenceManager::getQueries(int userId, QString role)
-{
-    QVector<Query> list;
-    QVector<QStringList> data = CsvHandler::readCsv("queries.csv");
-
-    // Pre-load names for display
-    QMap<int, QString> studentNames;
-    QVector<QStringList> sData = CsvHandler::readCsv("students.csv");
-    for (const auto &row : sData)
-        if (row.size() >= 2)
-            studentNames[row[0].toInt()] = row[1];
-
-    QMap<int, QString> teacherNames;
-    QVector<QStringList> tData = CsvHandler::readCsv("teachers.csv");
-    for (const auto &row : tData)
-        if (row.size() >= 2)
-            teacherNames[row[0].toInt()] = row[1];
-
-    for (const auto &row : data)
-    {
-        if (row.size() >= 6)
-        {
-            int qId = row[0].toInt();
-            int sId = row[1].toInt();
-            int tId = row[2].toInt();
-
-            bool isVisible = false;
-            if (role == "Admin")
-                isVisible = true;
-            else if (role == "Student" && sId == userId)
-                isVisible = true;
-            else if (role == "Teacher" && tId == userId)
-                isVisible = true;
-
-            if (isVisible)
-            {
-                QString sName = studentNames.value(sId, "Unknown Student");
-                QString tName = teacherNames.value(tId, "Unknown Teacher");
-                list.append(Query(qId, sId, tId, sName, tName, row[3], row[4], row[5]));
-            }
-        }
-    }
-    return list;
-}
-
+// ============ Queries ============
+QVector<Query> AcadenceManager::getQueries(int userId, QString role) { return ManagerQueries::getQueries(userId, role); }
 void AcadenceManager::addQuery(int userId, int teacherId, QString question)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("queries.csv");
-    int maxId = 0;
-    for (const auto &row : data)
-        if (row.size() > 0)
-            maxId = std::max(maxId, row[0].toInt());
-
-    QString ts = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm");
-    CsvHandler::appendCsv("queries.csv", {QString::number(maxId + 1), QString::number(userId), QString::number(teacherId), question, "", ts});
+    ManagerQueries::addQuery(userId, teacherId, question);
     notifyObservers(DataType::Queries);
 }
-
 void AcadenceManager::answerQuery(int queryId, QString answer)
 {
-    QVector<QStringList> data = CsvHandler::readCsv("queries.csv");
-    QVector<QString> lines;
-    for (auto &row : data)
-    {
-        if (row.size() >= 6 && row[0].toInt() == queryId)
-        {
-            row[4] = answer;
-        }
-    }
-    CsvHandler::writeCsv("queries.csv", data);
+    ManagerQueries::answerQuery(queryId, answer);
     notifyObservers(DataType::Queries);
 }
-
-QVector<QPair<int, QString>> AcadenceManager::getTeacherList()
-{
-    QVector<QPair<int, QString>> list;
-    QVector<QStringList> data = CsvHandler::readCsv("teachers.csv");
-    for (const auto &row : data)
-    {
-        if (row.size() >= 2)
-            list.append({row[0].toInt(), row[1]});
-    }
-    return list;
-}
+QVector<QPair<int, QString>> AcadenceManager::getTeacherList() { return ManagerQueries::getTeacherList(); }
