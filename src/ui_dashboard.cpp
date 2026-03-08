@@ -584,6 +584,8 @@ void UIDashboard::onNoticeItemClicked(QListWidgetItem *item)
     QDialog viewer;
     viewer.setWindowTitle("Notice");
     viewer.setModal(true);
+    viewer.resize(900, 700);
+    viewer.setMinimumSize(700, 500);
 
     QVBoxLayout *layout = new QVBoxLayout(&viewer);
     const QString subject = item->data(NoticeSubjectRole).toString();
