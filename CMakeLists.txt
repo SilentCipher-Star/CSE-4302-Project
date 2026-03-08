@@ -45,7 +45,7 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     include/databasemanager.hpp
     src/databasemanager.cpp
     include/logindialog.hpp
-    src/logindialog_new.cpp
+    src/logindialog.cpp
     include/theme.hpp
     src/theme.cpp
     include/manager_auth.hpp
