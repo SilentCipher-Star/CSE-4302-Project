@@ -49,12 +49,15 @@ QVector<Habit *> ManagerHabits::getHabits(int userId)
                 h = wh;
             }
 
-            h->streak = streak;
-            h->lastUpdated = lastDate;
-            h->isCompleted = isComp;
-            if (h->checkReset())
-                updateHabit(h);
-            habits.append(h);
+            if (h)
+            {
+                h->streak = streak;
+                h->lastUpdated = lastDate;
+                h->isCompleted = isComp;
+                if (h->checkReset())
+                    updateHabit(h);
+                habits.append(h);
+            }
         }
     }
     return habits;
@@ -72,7 +75,8 @@ void ManagerHabits::addHabit(Habit *h)
     const QString typeStr = h->getTypeString();
     const QString freqStr = h->getFrequencyString();
     const QString currentStr = h->serializeValue();
-    const QString unit = (dynamic_cast<CountHabit *>(h)) ? dynamic_cast<CountHabit *>(h)->unit : "";
+    const auto *chPtr = dynamic_cast<const CountHabit *>(h);
+    const QString unit = chPtr ? chPtr->unit : "";
 
     QString targetStr;
     if (auto *wh = dynamic_cast<WorkoutHabit *>(h))

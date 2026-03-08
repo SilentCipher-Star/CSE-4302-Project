@@ -22,10 +22,10 @@ void UITimers::setupTimers()
     ui->label_timerDisplay->setAlignment(Qt::AlignCenter);
     m_focusTimer = new Timer(this);
 
-    connect(m_focusTimer, &Timer::timeUpdated, [this](QString time, float progress)
-            {
-        ui->label_timerDisplay->setText(time);
-        QColor acc = ui->label_timerDisplay->palette().color(QPalette::Highlight);
+    auto updateDisplay = [](QLabel *lbl, const QString &time, float progress)
+    {
+        lbl->setText(time);
+        QColor acc = lbl->palette().color(QPalette::Highlight);
         QString accRgba = QString("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
 
         QString style = QString("QLabel { font-size: %1; border: 3px solid palette(highlight); border-radius: 16px; color: palette(text); "
@@ -36,7 +36,11 @@ void UITimers::setupTimers()
                             .arg(accRgba)
                             .arg(progress > 0.001 ? progress - 0.001 : 0)
                             .arg(progress);
-        ui->label_timerDisplay->setStyleSheet(style); });
+        lbl->setStyleSheet(style);
+    };
+
+    connect(m_focusTimer, &Timer::timeUpdated, [this, updateDisplay](QString time, float progress)
+            { updateDisplay(ui->label_timerDisplay, time, progress); });
 
     connect(m_focusTimer, &Timer::finished, [this]()
             { QMessageBox::information(nullptr, "Timer", "Focus session complete!"); });
@@ -46,21 +50,8 @@ void UITimers::setupTimers()
     ui->label_workoutTimerDisplay->setAlignment(Qt::AlignCenter);
     m_workoutTimer = new Timer(this);
 
-    connect(m_workoutTimer, &Timer::timeUpdated, [this](QString time, float progress)
-            {
-        ui->label_workoutTimerDisplay->setText(time);
-        QColor acc = ui->label_workoutTimerDisplay->palette().color(QPalette::Highlight);
-        QString accRgba = QString("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
-
-        QString style = QString("QLabel { font-size: %1; border: 3px solid palette(highlight); border-radius: 16px; color: palette(text); "
-                                "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-                                "stop:0 %2, stop:%3 %2, "
-                                "stop:%3 transparent, stop:1 transparent); }")
-                            .arg(AppFonts::Timer)
-                            .arg(accRgba)
-                            .arg(progress > 0.001 ? progress - 0.001 : 0)
-                            .arg(progress);
-        ui->label_workoutTimerDisplay->setStyleSheet(style); });
+    connect(m_workoutTimer, &Timer::timeUpdated, [this, updateDisplay](QString time, float progress)
+            { updateDisplay(ui->label_workoutTimerDisplay, time, progress); });
 
     connect(m_workoutTimer, &Timer::finished, [this]()
             {

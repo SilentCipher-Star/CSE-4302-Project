@@ -72,9 +72,8 @@ void UIHabits::onAddHabitClicked()
         int target = QInputDialog::getInt(nullptr, "Create Habit", "Target Minutes:", 30, 1, 1440, 1, &ok);
         if (!ok)
             return;
-        auto *h = new DurationHabit(0, userId, name, f, target);
-        myManager->addHabit(h);
-        delete h;
+        DurationHabit h(0, userId, name, f, target);
+        myManager->addHabit(&h);
         Notifications::success(nullptr, "Habit \"" + name + "\" created successfully!");
         refreshHabits();
     }
@@ -84,9 +83,8 @@ void UIHabits::onAddHabitClicked()
         if (!ok)
             return;
         QString unit = QInputDialog::getText(nullptr, "Create Habit", "Unit:", QLineEdit::Normal, "", &ok);
-        auto *h = new CountHabit(0, userId, name, f, target, unit);
-        myManager->addHabit(h);
-        delete h;
+        CountHabit h(0, userId, name, f, target, unit);
+        myManager->addHabit(&h);
         Notifications::success(nullptr, "Habit \"" + name + "\" created successfully!");
         refreshHabits();
     }
@@ -104,9 +102,8 @@ void UIHabits::onAddHabitClicked()
         if (!ok)
             return;
 
-        auto *h = new WorkoutHabit(0, userId, name, f, targetMin, targetCnt, unit);
-        myManager->addHabit(h);
-        delete h;
+        WorkoutHabit h(0, userId, name, f, targetMin, targetCnt, unit);
+        myManager->addHabit(&h);
         Notifications::success(nullptr, "Habit \"" + name + "\" created successfully!");
         refreshHabits();
     }
