@@ -1,9 +1,22 @@
 #include "../include/manager_academics.hpp"
 #include "../include/manager_persons.hpp"
+#include "../include/personfactory.hpp"
 #include "../include/csvhandler.hpp"
 #include <QMap>
 #include <QSet>
 #include <algorithm>
+
+namespace
+{
+    Course *parseCourse(const QStringList &row)
+    {
+        if (row.size() >= 6)
+        {
+            return new Course(row[0].toInt(), row[1], row[2], row[3].toInt(), row[4].toInt(), row[5].toInt());
+        }
+        return nullptr;
+    }
+}
 
 // Academics namespace courses implementation
 QVector<Course *> ManagerAcademics::getTeacherCourses(int teacherId)
@@ -13,9 +26,8 @@ QVector<Course *> ManagerAcademics::getTeacherCourses(int teacherId)
     for (const auto &row : data)
     {
         if (row.size() >= 6 && row[3].toInt() == teacherId)
-        {
-            courses.append(new Course(row[0].toInt(), row[1], row[2], row[3].toInt(), row[4].toInt(), row[5].toInt()));
-        }
+            if (auto c = parseCourse(row))
+                courses.append(c);
     }
     return courses;
 }
@@ -26,9 +38,7 @@ Course *ManagerAcademics::getCourse(int id)
     for (const auto &row : data)
     {
         if (row.size() >= 6 && row[0].toInt() == id)
-        {
-            return new Course(row[0].toInt(), row[1], row[2], row[3].toInt(), row[4].toInt(), row[5].toInt());
-        }
+            return parseCourse(row);
     }
     return nullptr;
 }
@@ -136,12 +146,12 @@ QVector<Student *> ManagerAcademics::getStudentsBySemester(int semester)
     QVector<QStringList> data = CsvHandler::readCsv("students.csv");
     for (const auto &row : data)
     {
-        // students.csv: ID(0),Name(1),Email(2),Username(3),Password(4),Dept(5),Batch(6),Semester(7),AdmissionDate(8),CGPA(9)
         if (row.size() >= 8 && row[7].toInt() == semester)
         {
-            Student *s = new Student(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
+            Student *s = PersonFactory::createStudent(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
             s->setUsername(row[3]);
             s->setPassword(row[4]);
+
             if (row.size() >= 9)
                 s->setDateAdmission(QDate::fromString(row[8], Qt::ISODate));
             if (row.size() >= 10)

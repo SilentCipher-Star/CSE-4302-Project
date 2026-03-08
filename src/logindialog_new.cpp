@@ -15,22 +15,27 @@
 #include <QTimer>
 
 // ── Sticker definitions: symbol · x-ratio · y-ratio · font-size (px) ──────
-struct StickerDef { QString text; float xr, yr; int size; };
+struct StickerDef
+{
+    QString text;
+    float xr, yr;
+    int size;
+};
 static const QVector<StickerDef> k_stickers = {
-    { "\xe2\x98\x85",  0.04f, 0.07f, 56 },
-    { "\xe2\x9c\xa6",  0.94f, 0.11f, 40 },
-    { "\xe2\x9d\x80",  0.08f, 0.82f, 48 },
-    { "\xe2\x9c\xa7",  0.91f, 0.80f, 52 },
-    { "\xc2\xb7",      0.14f, 0.44f, 44 },
-    { "\xe2\x9c\xa6",  0.85f, 0.48f, 36 },
-    { "\xe2\x98\x85",  0.22f, 0.90f, 32 },
-    { "\xe2\x99\xa5",  0.78f, 0.12f, 42 },
-    { "\xe2\x98\x85",  0.50f, 0.04f, 48 },
-    { "\xe2\x9c\xa7",  0.50f, 0.94f, 36 },
-    { "\xc2\xb7",      0.35f, 0.20f, 30 },
-    { "\xe2\x9c\xa6",  0.65f, 0.75f, 28 },
-    { "\xe2\x98\x85",  0.88f, 0.55f, 34 },
-    { "\xe2\x99\xa5",  0.12f, 0.60f, 30 },
+    {"\xe2\x98\x85", 0.04f, 0.07f, 56},
+    {"\xe2\x9c\xa6", 0.94f, 0.11f, 40},
+    {"\xe2\x9d\x80", 0.08f, 0.82f, 48},
+    {"\xe2\x9c\xa7", 0.91f, 0.80f, 52},
+    {"\xc2\xb7", 0.14f, 0.44f, 44},
+    {"\xe2\x9c\xa6", 0.85f, 0.48f, 36},
+    {"\xe2\x98\x85", 0.22f, 0.90f, 32},
+    {"\xe2\x99\xa5", 0.78f, 0.12f, 42},
+    {"\xe2\x98\x85", 0.50f, 0.04f, 48},
+    {"\xe2\x9c\xa7", 0.50f, 0.94f, 36},
+    {"\xc2\xb7", 0.35f, 0.20f, 30},
+    {"\xe2\x9c\xa6", 0.65f, 0.75f, 28},
+    {"\xe2\x98\x85", 0.88f, 0.55f, 34},
+    {"\xe2\x99\xa5", 0.12f, 0.60f, 30},
 };
 
 LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
@@ -56,7 +61,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     decoTop->setAlignment(Qt::AlignCenter);
     decoTop->setObjectName("decoLabel");
     decoTop->setProperty("baseStyle",
-        "font-size:30px; letter-spacing:14px; background:transparent;");
+                         "font-size:30px; letter-spacing:14px; background:transparent;");
     mainLayout->addWidget(decoTop, 0, Qt::AlignCenter);
 
     mainLayout->addSpacing(10);
@@ -75,14 +80,13 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     taglineLabel->setAlignment(Qt::AlignCenter);
     taglineLabel->setObjectName("decoLabel");
     taglineLabel->setProperty("baseStyle",
-        "font-size:17px; font-weight:400; letter-spacing:1.2px; background:transparent;");
+                              "font-size:17px; font-weight:400; letter-spacing:1.2px; background:transparent;");
     mainLayout->addWidget(taglineLabel, 0, Qt::AlignCenter);
 
     mainLayout->addSpacing(24);
 
     // Login card
     QFrame *centerFrame = new QFrame(this);
-    centerFrame->setFixedWidth(490);
     centerFrame->setObjectName("loginFrame");
 
     QVBoxLayout *frameLayout = new QVBoxLayout(centerFrame);
@@ -102,7 +106,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     cardTitle->setAlignment(Qt::AlignCenter);
     cardTitle->setObjectName("cardDecoLabel");
     cardTitle->setProperty("baseStyle",
-        "font-size:27px; font-weight:700; letter-spacing:2px; background:transparent;");
+                           "font-size:27px; font-weight:700; letter-spacing:2px; background:transparent;");
     frameLayout->addWidget(cardTitle);
 
     frameLayout->addSpacing(4);
@@ -119,13 +123,11 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     userEdit = new QLineEdit(centerFrame);
     userEdit->setPlaceholderText("  Username");
     userEdit->setAlignment(Qt::AlignCenter);
-    userEdit->setMinimumHeight(52);
 
     passEdit = new QLineEdit(centerFrame);
     passEdit->setPlaceholderText("  Password");
     passEdit->setEchoMode(QLineEdit::Password);
     passEdit->setAlignment(Qt::AlignCenter);
-    passEdit->setMinimumHeight(52);
 
     frameLayout->addWidget(userEdit);
     frameLayout->addWidget(passEdit);
@@ -134,8 +136,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     // Buttons
     QDialogButtonBox *buttonBox = new QDialogButtonBox(
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, centerFrame);
-    buttonBox->button(QDialogButtonBox::Ok)->setText("  Sign In  ");
-    buttonBox->button(QDialogButtonBox::Ok)->setMinimumHeight(52);
+    buttonBox->button(QDialogButtonBox::Ok)->setText("Sign In");
     buttonBox->button(QDialogButtonBox::Cancel)->setText("Exit");
     buttonBox->setCenterButtons(true);
     frameLayout->addWidget(buttonBox);
@@ -148,7 +149,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     footer->setAlignment(Qt::AlignCenter);
     footer->setObjectName("decoLabel");
     footer->setProperty("baseStyle",
-        "font-size:15px; letter-spacing:2.5px; background:transparent;");
+                        "font-size:15px; letter-spacing:2.5px; background:transparent;");
     mainLayout->addWidget(footer, 0, Qt::AlignCenter);
 
     mainLayout->addSpacing(8);
@@ -157,7 +158,6 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     QHBoxLayout *bottomLayout = new QHBoxLayout();
     bottomLayout->addStretch();
     themeBtn = new QPushButton(this);
-    themeBtn->setFixedSize(46, 46);
     themeBtn->setCursor(Qt::PointingHandCursor);
     themeBtn->setToolTip("Change Theme");
     bottomLayout->addWidget(themeBtn);
@@ -179,12 +179,12 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     }
 
     // Connections
-    connect(themeBtn,  &QPushButton::clicked,       this, &LoginDialog::onThemeClicked);
+    connect(themeBtn, &QPushButton::clicked, this, &LoginDialog::onThemeClicked);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &LoginDialog::onLoginClicked);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     connect(userEdit, &QLineEdit::returnPressed, this, [this]()
-        { passEdit->setFocus(); passEdit->selectAll(); });
+            { passEdit->setFocus(); passEdit->selectAll(); });
     connect(passEdit, &QLineEdit::returnPressed, this, &LoginDialog::onLoginClicked);
 
     userEdit->installEventFilter(this);
@@ -199,18 +199,29 @@ bool LoginDialog::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress)
     {
-        QKeyEvent *ke  = static_cast<QKeyEvent *>(event);
-        const int  key = ke->key();
+        QKeyEvent *ke = static_cast<QKeyEvent *>(event);
+        const int key = ke->key();
 
         if (obj == userEdit && (key == Qt::Key_Return || key == Qt::Key_Enter ||
-                                 key == Qt::Key_Down))
-        { passEdit->setFocus(); passEdit->selectAll(); return true; }
+                                key == Qt::Key_Down))
+        {
+            passEdit->setFocus();
+            passEdit->selectAll();
+            return true;
+        }
 
         if (obj == passEdit && (key == Qt::Key_Return || key == Qt::Key_Enter))
-        { onLoginClicked(); return true; }
+        {
+            onLoginClicked();
+            return true;
+        }
 
         if (obj == passEdit && key == Qt::Key_Up)
-        { userEdit->setFocus(); userEdit->selectAll(); return true; }
+        {
+            userEdit->setFocus();
+            userEdit->selectAll();
+            return true;
+        }
     }
     return QDialog::eventFilter(obj, event);
 }
@@ -219,7 +230,8 @@ bool LoginDialog::eventFilter(QObject *obj, QEvent *event)
 void LoginDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
-    QTimer::singleShot(100, this, [this]() {
+    QTimer::singleShot(100, this, [this]()
+                       {
         int w = width();
         int h = height();
         for (QLabel *lbl : findChildren<QLabel *>("stickerLabel"))
@@ -235,41 +247,40 @@ void LoginDialog::showEvent(QShowEvent *event)
                       int(h * yr) - (sz + 24) / 2);
             lbl->show();
             lbl->raise();
-        }
-    });
+        } });
 }
 
 // ──────────────────────────────────────────────────────────────────────────
 void LoginDialog::updateThemeButton(const AppTheme &t)
 {
     themeBtn->setStyleSheet(QString(
-        "QPushButton {"
-        "  background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 %1,stop:1 %2);"
-        "  border:2px solid %2; border-radius:23px; font-size:22px; }"
-        "QPushButton:hover { border-color:white; }"
-    ).arg(t.accent, t.background));
+                                "QPushButton {"
+                                "  background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 %1,stop:1 %2);"
+                                "  border:2px solid %2; border-radius:23px; font-size:22px; }"
+                                "QPushButton:hover { border-color:white; }")
+                                .arg(t.accent, t.background));
     themeBtn->setToolTip(QString("Theme: %1").arg(t.name));
 
     QFrame *frame = findChild<QFrame *>("loginFrame");
     if (frame)
     {
         frame->setStyleSheet(QString(
-            ".QFrame#loginFrame {"
-            "  border:2px solid %1;"
-            "  border-radius:28px;"
-            "  background: qlineargradient(x1:0,y1:0,x2:0,y2:1,"
-            "    stop:0 %2, stop:1 %3); }"
-        ).arg(t.accent, t.surface, t.background));
+                                 ".QFrame#loginFrame {"
+                                 "  border:2px solid %1;"
+                                 "  border-radius:28px;"
+                                 "  background: qlineargradient(x1:0,y1:0,x2:0,y2:1,"
+                                 "    stop:0 %2, stop:1 %3); }")
+                                 .arg(t.accent, t.surface, t.background));
     }
 
     QFrame *bar = findChild<QFrame *>("loginAccentBar");
     if (bar)
     {
         bar->setStyleSheet(QString(
-            "background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
-            "  stop:0 %1, stop:0.5 %2, stop:1 %1);"
-            "border-radius:3px;"
-        ).arg(t.accent, t.surface));
+                               "background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
+                               "  stop:0 %1, stop:0.5 %2, stop:1 %1);"
+                               "border-radius:3px;")
+                               .arg(t.accent, t.surface));
     }
 
     for (QLabel *lbl : findChildren<QLabel *>("decoLabel"))
@@ -288,8 +299,9 @@ void LoginDialog::updateThemeButton(const AppTheme &t)
     {
         int sz = lbl->property("stickerSize").toInt();
         lbl->setStyleSheet(QString(
-            "font-size:%1px; color:%2; background:transparent;")
-            .arg(sz).arg(t.accent));
+                               "font-size:%1px; color:%2; background:transparent;")
+                               .arg(sz)
+                               .arg(t.accent));
     }
 }
 
@@ -326,18 +338,23 @@ void LoginDialog::onLoginClicked()
             for (const auto &row : admins)
             {
                 if (row.size() >= 4 && row[0].toInt() == userId)
-                { name = row[3]; break; }
+                {
+                    name = row[3];
+                    break;
+                }
             }
         }
         else if (role == Constants::Role::Student)
         {
             std::unique_ptr<Student> s(manager.getStudent(userId));
-            if (s) name = s->getName();
+            if (s)
+                name = s->getName();
         }
         else if (role == Constants::Role::Teacher)
         {
             std::unique_ptr<Teacher> t(manager.getTeacher(userId));
-            if (t) name = t->getName();
+            if (t)
+                name = t->getName();
         }
         accept();
     }
@@ -350,6 +367,6 @@ void LoginDialog::onLoginClicked()
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-QString LoginDialog::getRole()   const { return role;   }
-int     LoginDialog::getUserId() const { return userId; }
-QString LoginDialog::getName()   const { return name;   }
+QString LoginDialog::getRole() const { return role; }
+int LoginDialog::getUserId() const { return userId; }
+QString LoginDialog::getName() const { return name; }

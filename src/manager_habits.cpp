@@ -69,26 +69,23 @@ void ManagerHabits::addHabit(Habit *h)
             maxId = std::max(maxId, row[0].toInt());
     h->id = maxId + 1;
 
-    QString typeStr = h->getTypeString();
-    QString freqStr = (h->frequency == Frequency::DAILY) ? "Daily" : "Weekly";
-    QString unit = "", targetStr = "0", currentStr = "0";
+    const QString typeStr = h->getTypeString();
+    const QString freqStr = h->getFrequencyString();
+    const QString currentStr = h->serializeValue();
+    const QString unit = (dynamic_cast<CountHabit *>(h)) ? dynamic_cast<CountHabit *>(h)->unit : "";
 
+    QString targetStr;
     if (auto *wh = dynamic_cast<WorkoutHabit *>(h))
     {
         targetStr = QString("%1|%2").arg(wh->targetMinutes).arg(wh->targetCount);
-        currentStr = wh->serializeValue();
-        unit = wh->unit;
     }
     else if (auto *dh = dynamic_cast<DurationHabit *>(h))
     {
         targetStr = QString::number(dh->targetMinutes);
-        currentStr = QString::number(dh->currentMinutes, 'f', 4);
     }
     else if (auto *ch = dynamic_cast<CountHabit *>(h))
     {
         targetStr = QString::number(ch->targetCount);
-        currentStr = QString::number(ch->currentCount);
-        unit = ch->unit;
     }
 
     CsvHandler::appendCsv("habits.csv", {QString::number(h->id), QString::number(h->studentId), h->name, typeStr, freqStr,
@@ -102,15 +99,7 @@ void ManagerHabits::updateHabit(Habit *h)
     {
         if (row.size() >= 11 && row[0].toInt() == h->id)
         {
-            QString currentStr = "0";
-            if (auto *wh = dynamic_cast<WorkoutHabit *>(h))
-                currentStr = wh->serializeValue();
-            else if (auto *dh = dynamic_cast<DurationHabit *>(h))
-                currentStr = QString::number(dh->currentMinutes, 'f', 4);
-            else if (auto *ch = dynamic_cast<CountHabit *>(h))
-                currentStr = QString::number(ch->currentCount);
-
-            row[6] = currentStr;
+            row[6] = h->serializeValue();
             row[7] = QString::number(h->streak);
             row[8] = h->lastUpdated.toString(Qt::ISODate);
             row[9] = h->isCompleted ? "1" : "0";

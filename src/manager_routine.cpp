@@ -3,10 +3,9 @@
 #include <QTime>
 #include <algorithm>
 
-QVector<RoutineSession> ManagerRoutine::getRoutineForDay(QString day, int semester)
+static QVector<RoutineSession> parseRoutineSessions(const QVector<QStringList> &data, QString day, int semester)
 {
     WeeklyRoutine weeklyRoutine;
-    QVector<QStringList> data = CsvHandler::readCsv("routine.csv");
     for (const auto &row : data)
     {
         if (row.size() >= 7)
@@ -53,15 +52,20 @@ QVector<RoutineSession> ManagerRoutine::getRoutineForDay(QString day, int semest
     return weeklyRoutine.getSessionsForDay(day);
 }
 
+QVector<RoutineSession> ManagerRoutine::getRoutineForDay(QString day, int semester)
+{
+    QVector<QStringList> data = CsvHandler::readCsv("routine.csv");
+    return parseRoutineSessions(data, day, semester);
+}
+
 void ManagerRoutine::addRoutineItem(QString day, int serial, QString code, QString name, QString room, QString instructor, int semester)
 {
     CsvHandler::appendCsv("routine.csv", {day, QString::number(serial), code, name, room, instructor, QString::number(semester)});
 }
 
-QVector<RoutineAdjustment> ManagerRoutine::getRoutineAdjustments()
+static QVector<RoutineAdjustment> parseAdjustments(const QVector<QStringList> &data)
 {
     QVector<RoutineAdjustment> list;
-    QVector<QStringList> data = CsvHandler::readCsv("routine_adjustments.csv");
     for (const auto &row : data)
     {
         if (row.size() >= 10)
@@ -83,6 +87,12 @@ QVector<RoutineAdjustment> ManagerRoutine::getRoutineAdjustments()
     return list;
 }
 
+QVector<RoutineAdjustment> ManagerRoutine::getRoutineAdjustments()
+{
+    QVector<QStringList> data = CsvHandler::readCsv("routine_adjustments.csv");
+    return parseAdjustments(data);
+}
+
 void ManagerRoutine::addRoutineAdjustment(const RoutineAdjustment &adj)
 {
     CsvHandler::appendCsv("routine_adjustments.csv", {adj.originalDate, QString::number(adj.originalSerial), adj.type,
@@ -91,11 +101,9 @@ void ManagerRoutine::addRoutineAdjustment(const RoutineAdjustment &adj)
                                                       QString::number(adj.semester)});
 }
 
-QVector<RoutineSession> ManagerRoutine::getEffectiveRoutine(QDate date, int semester)
+static QVector<RoutineSession> computeEffectiveRoutine(QDate date, int semester, const QVector<RoutineSession> &baseRoutine, const QVector<RoutineAdjustment> &adjustments)
 {
     QString dayName = date.toString("dddd");
-    QVector<RoutineSession> baseRoutine = getRoutineForDay(dayName, semester);
-    QVector<RoutineAdjustment> adjustments = getRoutineAdjustments();
     QVector<RoutineSession> effectiveRoutine;
 
     // 1. Process base routine: exclude if cancelled or moved FROM this date
@@ -200,10 +208,23 @@ QVector<RoutineSession> ManagerRoutine::getEffectiveRoutine(QDate date, int seme
     return effectiveRoutine;
 }
 
+QVector<RoutineSession> ManagerRoutine::getEffectiveRoutine(QDate date, int semester)
+{
+    QString dayName = date.toString("dddd");
+    QVector<RoutineSession> baseRoutine = getRoutineForDay(dayName, semester);
+    QVector<RoutineAdjustment> adjustments = getRoutineAdjustments();
+    return computeEffectiveRoutine(date, semester, baseRoutine, adjustments);
+}
+
 QVector<RescheduleOption> ManagerRoutine::getRescheduleOptions(QDate originDate, int originSerial, int semester, QString originCode, QString originRoom, QString instructorName)
 {
     QVector<RescheduleOption> options;
     QDate d = QDate::currentDate();
+
+    // Optimization: Read CSVs once
+    QVector<QStringList> rawRoutine = CsvHandler::readCsv("routine.csv");
+    QVector<QStringList> rawAdjustments = CsvHandler::readCsv("routine_adjustments.csv");
+    QVector<RoutineAdjustment> adjustments = parseAdjustments(rawAdjustments);
 
     for (int i = 0; i < 14; ++i)
     {
@@ -211,7 +232,9 @@ QVector<RescheduleOption> ManagerRoutine::getRescheduleOptions(QDate originDate,
         if (targetDate.dayOfWeek() > 5)
             continue; // Skip weekends
 
-        QVector<RoutineSession> daily = getEffectiveRoutine(targetDate, semester);
+        QString dayName = targetDate.toString("dddd");
+        QVector<RoutineSession> baseRoutine = parseRoutineSessions(rawRoutine, dayName, semester);
+        QVector<RoutineSession> daily = computeEffectiveRoutine(targetDate, semester, baseRoutine, adjustments);
 
         // Check standard slots: 09:00, 10:00, 11:00, 12:00, 14:00
         QList<int> serials = {1, 2, 3, 4, 5};

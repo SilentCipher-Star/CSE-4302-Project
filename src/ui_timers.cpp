@@ -25,11 +25,15 @@ void UITimers::setupTimers()
     connect(m_focusTimer, &Timer::timeUpdated, [this](QString time, float progress)
             {
         ui->label_timerDisplay->setText(time);
-        QString style = QString("QLabel { font-size: %1; border: 2px solid palette(base); border-radius: 12px; color: palette(text); "
+        QColor acc = ui->label_timerDisplay->palette().color(QPalette::Highlight);
+        QString accRgba = QString("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
+
+        QString style = QString("QLabel { font-size: %1; border: 3px solid palette(highlight); border-radius: 16px; color: palette(text); "
                                 "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-                                "stop:0 palette(base), stop:%2 palette(base), "
+                                "stop:0 %2, stop:%3 %2, "
                                 "stop:%3 transparent, stop:1 transparent); }")
                             .arg(AppFonts::Timer)
+                            .arg(accRgba)
                             .arg(progress > 0.001 ? progress - 0.001 : 0)
                             .arg(progress);
         ui->label_timerDisplay->setStyleSheet(style); });
@@ -45,11 +49,15 @@ void UITimers::setupTimers()
     connect(m_workoutTimer, &Timer::timeUpdated, [this](QString time, float progress)
             {
         ui->label_workoutTimerDisplay->setText(time);
-        QString style = QString("QLabel { font-size: %1; border: 2px solid palette(base); border-radius: 12px; color: palette(text); "
+        QColor acc = ui->label_workoutTimerDisplay->palette().color(QPalette::Highlight);
+        QString accRgba = QString("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
+
+        QString style = QString("QLabel { font-size: %1; border: 3px solid palette(highlight); border-radius: 16px; color: palette(text); "
                                 "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-                                "stop:0 palette(base), stop:%2 palette(base), "
+                                "stop:0 %2, stop:%3 %2, "
                                 "stop:%3 transparent, stop:1 transparent); }")
                             .arg(AppFonts::Timer)
+                            .arg(accRgba)
                             .arg(progress > 0.001 ? progress - 0.001 : 0)
                             .arg(progress);
         ui->label_workoutTimerDisplay->setStyleSheet(style); });

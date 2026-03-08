@@ -65,7 +65,10 @@ private:
     void setupTables();
     void setupConnections();
     void toggleDarkMode();
+    void onThemeClicked();
 
     QPushButton *m_darkModeBtn = nullptr;
-    bool         m_darkMode    = false;
+    QPushButton *m_themeBtn = nullptr;
+    bool m_darkMode = false;
+    AppTheme m_userTheme;
 };

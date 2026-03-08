@@ -73,7 +73,6 @@ void UIPlanner::onDeleteTaskClicked()
     {
         int id = item->data(Qt::UserRole).toInt();
         myManager->deleteTask(id);
-        delete ui->taskListWidget->takeItem(ui->taskListWidget->row(item));
         Notifications::success(nullptr, "Task deleted successfully.");
     }
 }
@@ -93,9 +92,4 @@ void UIPlanner::onTaskItemChanged(QListWidgetItem *item)
     int id = item->data(Qt::UserRole).toInt();
     bool isChecked = (item->checkState() == Qt::Checked);
     myManager->completeTask(id, isChecked);
-
-    QFont f = item->font();
-    f.setStrikeOut(isChecked);
-    item->setFont(f);
-    item->setForeground(isChecked ? Qt::gray : QPalette().color(QPalette::Text));
 }

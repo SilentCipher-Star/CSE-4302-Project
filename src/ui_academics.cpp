@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QDate>
+#include <QHeaderView>
 #include <memory>
 #include <QDialog>
 #include <QVBoxLayout>
@@ -24,13 +25,39 @@
 #include <QFile>
 #include <QTextStream>
 
+namespace
+{
+    // Helper to fetch assessment details to avoid duplicating this logic.
+    struct AssessmentDetails
+    {
+        int courseId = -1;
+        int maxMarks = -1;
+        bool isValid() const { return courseId != -1; }
+    };
+
+    AssessmentDetails getDetails(AcadenceManager *manager, int assessmentId)
+    {
+        AssessmentDetails details;
+        QVector<Assessment> assessments = manager->getAssessments();
+        for (const auto &a : assessments)
+        {
+            if (a.getId() == assessmentId)
+            {
+                details.courseId = a.getCourseId();
+                details.maxMarks = a.getMaxMarks();
+                return details;
+            }
+        }
+        return details;
+    }
+}
+
 UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString role, int uid, QObject *parent)
     : QObject(parent), ui(ui), myManager(manager), userRole(role), userId(uid), btnCheckWarnings(nullptr)
 {
     if (role == "Teacher")
     {
         btnCheckWarnings = new QPushButton("Check Attendance Warnings");
-        btnCheckWarnings->setMaximumWidth(250);
         ui->hbox_attendance_controls->addWidget(btnCheckWarnings);
         connect(btnCheckWarnings, &QPushButton::clicked, this, &UIAcademics::onCheckAttendanceWarningsClicked);
     }
@@ -172,7 +199,7 @@ void UIAcademics::refreshAcademics()
         statusItem->setForeground(rowColor);
         ui->tableAcademics->setItem(i, 3, statusItem);
     }
-    Utils::adjustColumnWidths(ui->tableAcademics);
+    ui->tableAcademics->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     if (hasCritical)
     {
@@ -240,23 +267,15 @@ void UIAcademics::refreshTeacherGrades()
 {
     ui->tableGrading->setRowCount(0);
 
-    int assessmentId = ui->comboTeacherAssessment->currentData().toInt();
-
-    QVector<Assessment> allAssessments = myManager->getAssessments();
-    int courseId = -1;
-    for (const auto &a : allAssessments)
-    {
-        if (a.getId() == assessmentId)
-        {
-            courseId = a.getCourseId();
-            break;
-        }
-    }
-
-    if (courseId == -1)
+    const int assessmentId = ui->comboTeacherAssessment->currentData().toInt();
+    if (assessmentId <= 0)
         return;
 
-    std::unique_ptr<Course> c(myManager->getCourse(courseId));
+    const auto details = getDetails(myManager, assessmentId);
+    if (!details.isValid())
+        return;
+
+    std::unique_ptr<Course> c(myManager->getCourse(details.courseId));
 
     QVector<Student *> students;
     if (c)
@@ -283,39 +302,29 @@ void UIAcademics::refreshTeacherGrades()
         ++i;
     }
     qDeleteAll(students);
-    Utils::adjustColumnWidths(ui->tableGrading);
+    ui->tableGrading->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 void UIAcademics::onSaveGradesClicked()
 {
     int assessmentId = ui->comboTeacherAssessment->currentData().toInt();
-    QVector<Assessment> assessments = myManager->getAssessments();
-    int maxMarks = -1;
-    int courseId = -1;
-    for (const auto &a : assessments)
-    {
-        if (a.getId() == assessmentId)
-        {
-            maxMarks = a.getMaxMarks();
-            courseId = a.getCourseId();
-            break;
-        }
-    }
+    const auto details = getDetails(myManager, assessmentId);
 
-    if (courseId == -1)
+    if (!details.isValid())
     {
         QMessageBox::warning(nullptr, "Error", "Invalid assessment selected.");
         return;
     }
 
-    Course *course = myManager->getCourse(courseId);
+    const int maxMarks = details.maxMarks;
+    const int courseId = details.courseId;
+
+    std::unique_ptr<Course> course(myManager->getCourse(courseId));
     if (!course || course->getTeacherId() != userId)
     {
         QMessageBox::warning(nullptr, "Permission Denied", "You don't have permission to grade this assessment.");
-        delete course;
         return;
     }
-    delete course;
 
     int rows = ui->tableGrading->rowCount();
     for (int i = 0; i < rows; ++i)

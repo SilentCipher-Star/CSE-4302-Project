@@ -31,11 +31,28 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     cornerLayout->setContentsMargins(0, 0, 6, 0);
     cornerLayout->setSpacing(6);
 
+    // Detect the current theme applied from LoginDialog
+    auto themes = ThemeManager::getAvailableThemes();
+    if (!themes.isEmpty())
+        m_userTheme = themes[0]; // Default fallback
+
+    QString currentBg = QApplication::palette().color(QPalette::Window).name(QColor::HexRgb);
+    for (const auto &t : themes)
+    {
+        if (QColor(t.background).name(QColor::HexRgb) == currentBg)
+        {
+            m_userTheme = t;
+            break;
+        }
+    }
+
+    m_themeBtn = new QPushButton("Theme", cornerContainer);
+    connect(m_themeBtn, &QPushButton::clicked, this, &MainWindow::onThemeClicked);
+
     m_darkModeBtn = new QPushButton("Dark Mode", cornerContainer);
-    m_darkModeBtn->setFixedHeight(34);
-    m_darkModeBtn->setFixedWidth(110);
     connect(m_darkModeBtn, &QPushButton::clicked, this, &MainWindow::toggleDarkMode);
 
+    cornerLayout->addWidget(m_themeBtn);
     cornerLayout->addWidget(m_darkModeBtn);
     cornerLayout->addWidget(ui->logoutButton);
     ui->tabWidget->setCornerWidget(cornerContainer, Qt::TopRightCorner);
@@ -194,14 +211,36 @@ void MainWindow::toggleDarkMode()
     {
         theme = {"Midnight", "#1a1b2e", "#252641", "#e2e8f0", "#818cf8"};
         m_darkModeBtn->setText("Light Mode");
+        m_themeBtn->setEnabled(false); // Disable theme cycling in dark mode
     }
     else
     {
-        theme = {"Sakura Dream", "#fdf0f3", "#fff5f7", "#3d1a2e", "#e91e8c"};
+        theme = m_userTheme;
         m_darkModeBtn->setText("Dark Mode");
+        m_themeBtn->setEnabled(true);
     }
 
     ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), theme);
+}
+
+void MainWindow::onThemeClicked()
+{
+    if (m_darkMode)
+        return;
+
+    auto themes = ThemeManager::getAvailableThemes();
+    int idx = -1;
+    for (int i = 0; i < themes.size(); ++i)
+    {
+        if (themes[i].name == m_userTheme.name)
+        {
+            idx = i;
+            break;
+        }
+    }
+    int nextIdx = (idx + 1) % themes.size();
+    m_userTheme = themes[nextIdx];
+    ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), m_userTheme);
 }
 
 void MainWindow::setupConnections()
@@ -280,10 +319,6 @@ void MainWindow::resizeEvent(QResizeEvent *event)
             Utils::adjustColumnWidths(ui->tableRoutine);
         if (ui->tableTeacherRoutine->isVisible())
             Utils::adjustColumnWidths(ui->tableTeacherRoutine);
-        if (ui->tableAcademics->isVisible())
-            Utils::adjustColumnWidths(ui->tableAcademics);
-        if (ui->tableGrading->isVisible())
-            Utils::adjustColumnWidths(ui->tableGrading);
         if (ui->tableAttendance->isVisible())
             Utils::adjustColumnWidths(ui->tableAttendance); });
 }

@@ -32,36 +32,36 @@
 
 namespace
 {
-constexpr int NoticeHeaderRole = Qt::UserRole + 20;
-constexpr int NoticeBodyRole = Qt::UserRole + 21;
-constexpr int NoticeExpandedRole = Qt::UserRole + 22;
-constexpr int NoticeDateRole = Qt::UserRole + 23;
-constexpr int NoticeAuthorRole = Qt::UserRole + 24;
-constexpr int NoticeAudienceRole = Qt::UserRole + 25;
-constexpr int NoticeSubjectRole = Qt::UserRole + 26;
-constexpr int NoticeCourseIdsRole = Qt::UserRole + 27;
-constexpr int NoticeRawAuthorRole = Qt::UserRole + 28;
-constexpr int NoticeRawContentRole = Qt::UserRole + 29;
-// Decorator-pattern roles
-constexpr int NoticeIsUrgentRole       = Qt::UserRole + 30;
-constexpr int NoticeIsPinnedRole       = Qt::UserRole + 31;
-constexpr int NoticeExpiresOnRole      = Qt::UserRole + 32;
-constexpr int NoticeBadgesRole         = Qt::UserRole + 33;
-constexpr int NoticeHighlightColorRole = Qt::UserRole + 34;
+    constexpr int NoticeHeaderRole = Qt::UserRole + 20;
+    constexpr int NoticeBodyRole = Qt::UserRole + 21;
+    constexpr int NoticeExpandedRole = Qt::UserRole + 22;
+    constexpr int NoticeDateRole = Qt::UserRole + 23;
+    constexpr int NoticeAuthorRole = Qt::UserRole + 24;
+    constexpr int NoticeAudienceRole = Qt::UserRole + 25;
+    constexpr int NoticeSubjectRole = Qt::UserRole + 26;
+    constexpr int NoticeCourseIdsRole = Qt::UserRole + 27;
+    constexpr int NoticeRawAuthorRole = Qt::UserRole + 28;
+    constexpr int NoticeRawContentRole = Qt::UserRole + 29;
+    // Decorator-pattern roles
+    constexpr int NoticeIsUrgentRole = Qt::UserRole + 30;
+    constexpr int NoticeIsPinnedRole = Qt::UserRole + 31;
+    constexpr int NoticeExpiresOnRole = Qt::UserRole + 32;
+    constexpr int NoticeBadgesRole = Qt::UserRole + 33;
+    constexpr int NoticeHighlightColorRole = Qt::UserRole + 34;
 
-QString normalizeAudience(const QString &raw)
-{
-    const QString key = raw.trimmed().toUpper();
-    if (key == "ALL" || key == "STUDENTS" || key == "TEACHERS" || key == "ADMINS")
-        return key;
-    return "";
-}
+    QString normalizeAudience(const QString &raw)
+    {
+        const QString key = raw.trimmed().toUpper();
+        if (key == "ALL" || key == "STUDENTS" || key == "TEACHERS" || key == "ADMINS")
+            return key;
+        return "";
+    }
 
-bool isAdminLikeAuthor(const QString &author)
-{
-    const QString key = author.trimmed().toLower();
-    return key == "admin" || key == "system admin" || key == "system administrator" || key == "register of the campus";
-}
+    bool isAdminLikeAuthor(const QString &author)
+    {
+        const QString key = author.trimmed().toLower();
+        return key == "admin" || key == "system admin" || key == "system administrator" || key == "register of the campus";
+    }
 }
 
 UIDashboard::UIDashboard(Ui::MainWindow *ui, AcadenceManager *manager, QString role, int uid, QString name, QObject *parent)
@@ -75,8 +75,8 @@ UIDashboard::UIDashboard(Ui::MainWindow *ui, AcadenceManager *manager, QString r
 QFrame *UIDashboard::buildStatsCard(const QString &value, const QString &label, const QString &bgColor) const
 {
     QFrame *card = new QFrame();
-    card->setFixedHeight(82);
-    card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    card->setObjectName("statsCard");
     card->setStyleSheet(QString("QFrame { background: %1; border-radius: 16px; }").arg(bgColor));
 
     QVBoxLayout *l = new QVBoxLayout(card);
@@ -110,7 +110,7 @@ void UIDashboard::refreshStatsCards()
     }
 
     m_statsFrame = new QFrame();
-    m_statsFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    m_statsFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     QVBoxLayout *outerL = new QVBoxLayout(m_statsFrame);
     outerL->setContentsMargins(0, 4, 0, 4);
     outerL->setSpacing(6);
@@ -128,7 +128,7 @@ void UIDashboard::refreshStatsCards()
 
         // Attendance average
         double avgAtt = 0;
-        int    attCnt = 0;
+        int attCnt = 0;
         try
         {
             for (const auto &rec : myManager->getStudentAttendance(userId))
@@ -140,21 +140,29 @@ void UIDashboard::refreshStatsCards()
                 }
             }
         }
-        catch (...) {}
+        catch (...)
+        {
+        }
         const QString attStr = attCnt > 0 ? QString::number(avgAtt / attCnt, 'f', 1) + "%" : "N/A";
 
         // Pending tasks
         int pending = 0;
-        try { for (const auto &t : myManager->getTasks(userId)) if (!t.getIsCompleted()) ++pending; }
-        catch (...) {}
+        try
+        {
+            for (const auto &t : myManager->getTasks(userId))
+                if (!t.getIsCompleted())
+                    ++pending;
+        }
+        catch (...)
+        {
+        }
 
-        cardsL->addWidget(buildStatsCard(gpa,                         "Current GPA",       "#7c3aed"));
-        cardsL->addWidget(buildStatsCard(attStr,                      "Avg Attendance",    "#0891b2"));
-        cardsL->addWidget(buildStatsCard(QString::number(pending),    "Pending Tasks",     "#d97706"));
+        cardsL->addWidget(buildStatsCard(gpa, "Current GPA", "#7c3aed"));
+        cardsL->addWidget(buildStatsCard(attStr, "Avg Attendance", "#0891b2"));
+        cardsL->addWidget(buildStatsCard(QString::number(pending), "Pending Tasks", "#d97706"));
 
         // View Charts button
         QPushButton *chartBtn = new QPushButton("View Attendance Chart");
-        chartBtn->setFixedHeight(34);
         connect(chartBtn, &QPushButton::clicked, this, &UIDashboard::onViewChartsClicked);
         outerL->addLayout(cardsL);
         outerL->addWidget(chartBtn, 0, Qt::AlignRight);
@@ -168,7 +176,9 @@ void UIDashboard::refreshStatsCards()
             courseCount = courses.size();
             qDeleteAll(courses);
         }
-        catch (...) {}
+        catch (...)
+        {
+        }
 
         cardsL->addWidget(buildStatsCard(QString::number(courseCount), "Active Courses", "#7c3aed"));
         outerL->addLayout(cardsL);
@@ -185,12 +195,16 @@ void UIDashboard::refreshStatsCards()
 void UIDashboard::onViewChartsClicked()
 {
     QVector<AttendanceRecord> records;
-    try { records = myManager->getStudentAttendance(userId); }
-    catch (...) {}
+    try
+    {
+        records = myManager->getStudentAttendance(userId);
+    }
+    catch (...)
+    {
+    }
 
     QDialog dlg;
     dlg.setWindowTitle("Attendance Chart");
-    dlg.resize(640, 420);
 
     QVBoxLayout *layout = new QVBoxLayout(&dlg);
 
@@ -238,7 +252,8 @@ void UIDashboard::refreshDashboard()
         // Ignore error if notices fail to load
     }
     // Parsed notice info for sorting before inserting into the list widget
-    struct ParsedEntry {
+    struct ParsedEntry
+    {
         Notice raw;
         QString audienceTag, subject, body, authorDisplay, expiresOn, badges;
         QStringList courseIds;
@@ -248,9 +263,54 @@ void UIDashboard::refreshDashboard()
 
     QVector<ParsedEntry> priorityEntries, regularEntries;
 
+    // Optimization: Cache student course IDs once to avoid reading CSV for every notice
+    QSet<int> cachedStudentCourseIds;
+    if (userRole == Constants::Role::Student)
+    {
+        cachedStudentCourseIds = currentStudentCourseIds();
+    }
+
+    auto isNoticeVisible = [&](const QString &content) -> bool
+    {
+        QString audienceTag;
+        QStringList courseIds;
+        QString subject;
+        QString body;
+        if (parseStructuredNoticeContent(content, audienceTag, courseIds, subject, body))
+        {
+            if (userRole == Constants::Role::Admin)
+                return true;
+
+            const QString normalized = normalizeAudience(audienceTag);
+            if (normalized == "ALL")
+                return true;
+            if (userRole == Constants::Role::Teacher)
+                return normalized == "TEACHERS";
+
+            if (userRole == Constants::Role::Student)
+            {
+                if (normalized != "STUDENTS")
+                    return false;
+                if (courseIds.isEmpty())
+                    return true;
+
+                for (const QString &cidText : courseIds)
+                {
+                    if (cachedStudentCourseIds.contains(cidText.toInt()))
+                        return true;
+                }
+                return false;
+            }
+            return false;
+        }
+
+        // Fallback to legacy check if not structured
+        return noticeVisibleForCurrentUser(content);
+    };
+
     for (const auto &n : notices)
     {
-        if (!noticeVisibleForCurrentUser(n.getContent()))
+        if (!isNoticeVisible(n.getContent()))
             continue;
 
         ParsedEntry e;
@@ -273,9 +333,9 @@ void UIDashboard::refreshDashboard()
                 e.subject += "...";
         }
 
-        e.isUrgent   = isUrgent;
-        e.isPinned   = isPinned;
-        e.expiresOn  = expiresOn;
+        e.isUrgent = isUrgent;
+        e.isPinned = isPinned;
+        e.expiresOn = expiresOn;
 
         e.authorDisplay = n.getAuthor();
         if (isAdminLikeAuthor(e.authorDisplay))
@@ -286,9 +346,9 @@ void UIDashboard::refreshDashboard()
             e.subject, e.body, e.authorDisplay, n.getDate(),
             e.isUrgent, e.isPinned, e.expiresOn);
 
-        e.badges    = decorated->getBadges();
+        e.badges = decorated->getBadges();
         e.highlight = decorated->getHighlightColor();
-        e.priority  = decorated->isPriority();
+        e.priority = decorated->isPriority();
         // -------------------------------------------------------
 
         if (e.priority)
@@ -314,21 +374,21 @@ void UIDashboard::refreshDashboard()
         previewLine += "\n" + summarizeNotice(e.body);
 
         QListWidgetItem *item = new QListWidgetItem();
-        item->setData(NoticeHeaderRole,         previewLine);
-        item->setData(NoticeBodyRole,            e.body);
-        item->setData(NoticeExpandedRole,        false);
-        item->setData(NoticeDateRole,            e.raw.getDate());
-        item->setData(NoticeAuthorRole,          e.authorDisplay);
-        item->setData(NoticeAudienceRole,        e.audienceTag);
-        item->setData(NoticeSubjectRole,         e.subject);
-        item->setData(NoticeCourseIdsRole,       e.courseIds.join(","));
-        item->setData(NoticeRawAuthorRole,       e.raw.getAuthor());
-        item->setData(NoticeRawContentRole,      e.raw.getContent());
-        item->setData(NoticeIsUrgentRole,        e.isUrgent);
-        item->setData(NoticeIsPinnedRole,        e.isPinned);
-        item->setData(NoticeExpiresOnRole,       e.expiresOn);
-        item->setData(NoticeBadgesRole,          e.badges);
-        item->setData(NoticeHighlightColorRole,  e.highlight);
+        item->setData(NoticeHeaderRole, previewLine);
+        item->setData(NoticeBodyRole, e.body);
+        item->setData(NoticeExpandedRole, false);
+        item->setData(NoticeDateRole, e.raw.getDate());
+        item->setData(NoticeAuthorRole, e.authorDisplay);
+        item->setData(NoticeAudienceRole, e.audienceTag);
+        item->setData(NoticeSubjectRole, e.subject);
+        item->setData(NoticeCourseIdsRole, e.courseIds.join(","));
+        item->setData(NoticeRawAuthorRole, e.raw.getAuthor());
+        item->setData(NoticeRawContentRole, e.raw.getContent());
+        item->setData(NoticeIsUrgentRole, e.isUrgent);
+        item->setData(NoticeIsPinnedRole, e.isPinned);
+        item->setData(NoticeExpiresOnRole, e.expiresOn);
+        item->setData(NoticeBadgesRole, e.badges);
+        item->setData(NoticeHighlightColorRole, e.highlight);
         updateNoticeItemDisplay(item);
         return item;
     };
@@ -400,7 +460,6 @@ void UIDashboard::onAddNoticeClicked()
     QDialog editor;
     editor.setWindowTitle("Compose Notice");
     editor.setModal(true);
-    editor.resize(620, 460);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(&editor);
     QFormLayout *form = new QFormLayout();
@@ -489,8 +548,8 @@ void UIDashboard::onAddNoticeClicked()
     }
 
     const QString expiresOn = expiryCheck->isChecked()
-                              ? expiresEdit->date().toString("yyyy-MM-dd")
-                              : QString{};
+                                  ? expiresEdit->date().toString("yyyy-MM-dd")
+                                  : QString{};
 
     QStringList courseIds;
     if (userRole == Constants::Role::Teacher && audienceTag == "STUDENTS")
@@ -525,7 +584,6 @@ void UIDashboard::onNoticeItemClicked(QListWidgetItem *item)
     QDialog viewer;
     viewer.setWindowTitle("Notice");
     viewer.setModal(true);
-    viewer.resize(700, 500);
 
     QVBoxLayout *layout = new QVBoxLayout(&viewer);
     const QString subject = item->data(NoticeSubjectRole).toString();
@@ -645,7 +703,6 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
         QDialog editor;
         editor.setWindowTitle("Edit Notice");
         editor.setModal(true);
-        editor.resize(620, 460);
 
         QVBoxLayout *mainLayout = new QVBoxLayout(&editor);
         QFormLayout *form = new QFormLayout();
@@ -751,8 +808,8 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
         }
 
         const QString newExpiresOn = editExpiryCheck->isChecked()
-                                     ? editExpiresEdit->date().toString("yyyy-MM-dd")
-                                     : QString{};
+                                         ? editExpiresEdit->date().toString("yyyy-MM-dd")
+                                         : QString{};
 
         QStringList newCourseIds;
         if (userRole == Constants::Role::Teacher && newAudience == "STUDENTS")
@@ -1017,7 +1074,7 @@ void UIDashboard::updateNoticeItemDisplay(QListWidgetItem *item)
     if (highlight.isValid())
         item->setBackground(highlight);
     else
-        item->setBackground(QBrush());  // reset to default
+        item->setBackground(QBrush()); // reset to default
 }
 
 QString UIDashboard::summarizeNotice(const QString &content) const
@@ -1031,8 +1088,8 @@ QString UIDashboard::summarizeNotice(const QString &content) const
 }
 
 QString UIDashboard::composeNoticeStorageContent(const QString &audienceTag, const QStringList &courseIds,
-                                                  const QString &subject, const QString &body,
-                                                  bool isUrgent, bool isPinned, const QString &expiresOn) const
+                                                 const QString &subject, const QString &body,
+                                                 bool isUrgent, bool isPinned, const QString &expiresOn) const
 {
     QJsonObject obj;
     obj.insert("audience", audienceTag.trimmed().toUpper());
@@ -1040,8 +1097,10 @@ QString UIDashboard::composeNoticeStorageContent(const QString &audienceTag, con
     obj.insert("body", body.trimmed());
 
     // Decorator flags – only persist when set (keeps CSV compact for plain notices)
-    if (isUrgent)  obj.insert("isUrgent", true);
-    if (isPinned)  obj.insert("isPinned", true);
+    if (isUrgent)
+        obj.insert("isUrgent", true);
+    if (isPinned)
+        obj.insert("isPinned", true);
     if (!expiresOn.trimmed().isEmpty())
         obj.insert("expiresOn", expiresOn.trimmed());
 
@@ -1062,9 +1121,12 @@ bool UIDashboard::parseStructuredNoticeContent(const QString &raw, QString &audi
     courseIds.clear();
     subject.clear();
     body.clear();
-    if (isUrgent)  *isUrgent  = false;
-    if (isPinned)  *isPinned  = false;
-    if (expiresOn) expiresOn->clear();
+    if (isUrgent)
+        *isUrgent = false;
+    if (isPinned)
+        *isPinned = false;
+    if (expiresOn)
+        expiresOn->clear();
 
     if (!raw.startsWith("@notice:"))
         return false;
@@ -1077,13 +1139,16 @@ bool UIDashboard::parseStructuredNoticeContent(const QString &raw, QString &audi
 
     const QJsonObject obj = doc.object();
     audienceTag = obj.value("audience").toString().trimmed().toUpper();
-    subject     = obj.value("subject").toString().trimmed();
-    body        = obj.value("body").toString().trimmed();
+    subject = obj.value("subject").toString().trimmed();
+    body = obj.value("body").toString().trimmed();
 
     // Decorator flags
-    if (isUrgent)  *isUrgent  = obj.value("isUrgent").toBool(false);
-    if (isPinned)  *isPinned  = obj.value("isPinned").toBool(false);
-    if (expiresOn) *expiresOn = obj.value("expiresOn").toString().trimmed();
+    if (isUrgent)
+        *isUrgent = obj.value("isUrgent").toBool(false);
+    if (isPinned)
+        *isPinned = obj.value("isPinned").toBool(false);
+    if (expiresOn)
+        *expiresOn = obj.value("expiresOn").toString().trimmed();
 
     const QJsonArray ids = obj.value("courseIds").toArray();
     for (const QJsonValue &v : ids)

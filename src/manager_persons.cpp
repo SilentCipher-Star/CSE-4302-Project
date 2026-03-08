@@ -2,37 +2,55 @@
 #include "../include/csvhandler.hpp"
 #include "../include/personfactory.hpp"
 
-template <typename T>
-class CsvRepository
+namespace
 {
-public:
-    explicit CsvRepository(const QString &filename) : m_filename(filename) {}
-
-    template <typename Func>
-    T *findById(int id, Func parser)
+    template <typename T>
+    class CsvRepository
     {
-        QVector<QStringList> data = CsvHandler::readCsv(m_filename);
-        for (const auto &row : data)
+    public:
+        explicit CsvRepository(const QString &filename) : m_filename(filename) {}
+
+        template <typename Func>
+        T *findById(int id, Func parser)
         {
-            if (!row.isEmpty() && row[0].toInt() == id)
+            QVector<QStringList> data = CsvHandler::readCsv(m_filename);
+            for (const auto &row : data)
             {
-                return parser(row);
+                if (!row.isEmpty() && row[0].toInt() == id)
+                {
+                    return parser(row);
+                }
             }
+            return nullptr;
         }
-        return nullptr;
-    }
 
-private:
-    QString m_filename;
-};
+        template <typename Func, typename Filter>
+        QVector<T *> findAll(Func parser, Filter filter)
+        {
+            QVector<T *> results;
+            QVector<QStringList> data = CsvHandler::readCsv(m_filename);
+            for (const auto &row : data)
+            {
+                if (filter(row))
+                {
+                    if (T *obj = parser(row))
+                    {
+                        results.append(obj);
+                    }
+                }
+            }
+            return results;
+        }
 
-Student *ManagerPersons::getStudent(int id)
-{
-    CsvRepository<Student> repo("students.csv");
-    return repo.findById(id, [](const QStringList &row) -> Student *
-                         {
-        if (row.size() < 8) return nullptr;
-    Student *s = PersonFactory::createStudent(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
+    private:
+        QString m_filename;
+    };
+
+    Student *parseStudent(const QStringList &row)
+    {
+        if (row.size() < 8)
+            return nullptr;
+        Student *s = PersonFactory::createStudent(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
         s->setUsername(row[3]);
         s->setPassword(row[4]);
 
@@ -41,23 +59,34 @@ Student *ManagerPersons::getStudent(int id)
         if (row.size() >= 10)
             s->setGpa(row[9].toDouble());
 
-        return s; });
-}
+        return s;
+    }
 
-Teacher *ManagerPersons::getTeacher(int id)
-{
-    CsvRepository<Teacher> repo("teachers.csv");
-    return repo.findById(id, [](const QStringList &row) -> Teacher *
-                         {
-        if (row.size() < 7) return nullptr;
-    Teacher *t = PersonFactory::createTeacher(row[0].toInt(), row[1], row[2], row[5], row[6]);
+    Teacher *parseTeacher(const QStringList &row)
+    {
+        if (row.size() < 7)
+            return nullptr;
+        Teacher *t = PersonFactory::createTeacher(row[0].toInt(), row[1], row[2], row[5], row[6]);
         t->setUsername(row[3]);
         t->setPassword(row[4]);
 
         if (row.size() >= 8)
             t->setSalary(row[7].toDouble());
 
-        return t; });
+        return t;
+    }
+}
+
+Student *ManagerPersons::getStudent(int id)
+{
+    CsvRepository<Student> repo("students.csv");
+    return repo.findById(id, parseStudent);
+}
+
+Teacher *ManagerPersons::getTeacher(int id)
+{
+    CsvRepository<Teacher> repo("teachers.csv");
+    return repo.findById(id, parseTeacher);
 }
 
 QPair<QString, QString> ManagerPersons::getAdminProfile(int id)
