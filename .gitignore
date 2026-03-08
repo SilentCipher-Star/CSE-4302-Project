@@ -69,8 +69,3 @@ cmake-build-*/
 *~
 .DS_Store
 Thumbs.db
-
-.Project/
-
-IMPROVEMENTS.md
-REFACTORING_SUMMARY.md
