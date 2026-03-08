@@ -35,6 +35,7 @@ public slots:
     void onCheckAttendanceWarningsClicked();
     void onGPACalculatorClicked();
     void onExportReportClicked();
+    void onAttendanceSimulatorClicked();
 
 private:
     Ui::MainWindow *ui;
@@ -42,6 +43,7 @@ private:
     QString userRole;
     int userId;
     QPushButton *btnCheckWarnings;
-    QPushButton *btnGPACalc  = nullptr;
-    QPushButton *btnExport   = nullptr;
+    QPushButton *btnGPACalc   = nullptr;
+    QPushButton *btnExport    = nullptr;
+    QPushButton *btnAttendSim = nullptr;
 };

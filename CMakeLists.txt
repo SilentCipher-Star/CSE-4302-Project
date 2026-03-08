@@ -86,6 +86,7 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     include/gpa_strategy.hpp
     include/report.hpp
     include/student_iterator.hpp
+    include/attendance_simulator.hpp
     include/ui_queries.hpp
     src/ui_queries.cpp
     include/ui_admin.hpp

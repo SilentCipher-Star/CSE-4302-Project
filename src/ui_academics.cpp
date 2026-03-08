@@ -7,6 +7,7 @@
 #include "../include/gpa_strategy.hpp"
 #include "../include/report.hpp"
 #include "../include/student_iterator.hpp"
+#include "../include/attendance_simulator.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
@@ -77,6 +78,11 @@ UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString r
         btnExport->setMaximumWidth(200);
         btnRow->addWidget(btnExport);
         connect(btnExport, &QPushButton::clicked, this, &UIAcademics::onExportReportClicked);
+
+        btnAttendSim = new QPushButton("Attendance Simulator");
+        btnAttendSim->setMaximumWidth(220);
+        btnRow->addWidget(btnAttendSim);
+        connect(btnAttendSim, &QPushButton::clicked, this, &UIAcademics::onAttendanceSimulatorClicked);
 
         btnRow->addStretch();
 
@@ -661,4 +667,24 @@ void UIAcademics::onExportReportClicked()
 
     QMessageBox::information(nullptr, "Export Successful",
         QString("%1 report exported to:\n%2").arg(report->formatName()).arg(path));
+}
+
+void UIAcademics::onAttendanceSimulatorClicked()
+{
+    QVector<AttendanceRecord> att = myManager->getStudentAttendance(userId);
+
+    if (att.isEmpty())
+    {
+        QMessageBox::information(nullptr, "No Data", "No attendance records found.");
+        return;
+    }
+
+    QVector<QPair<QString, QPair<int,int>>> courseData;
+    for (const auto &rec : att)
+    {
+        courseData.append({rec.getCourseName(), {rec.getAttendedClasses(), rec.getTotalClasses()}});
+    }
+
+    AttendanceSimulatorDialog dlg(courseData, nullptr);
+    dlg.exec();
 }
