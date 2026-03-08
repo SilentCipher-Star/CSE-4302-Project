@@ -1,4 +1,6 @@
 #include "../include/mainwindow.hpp"
+#include "../include/theme.hpp"
+#include <QApplication>
 #include "../include/ui_dashboard.hpp"
 #include "../include/ui_planner.hpp"
 #include "../include/ui_habits.hpp"
@@ -23,8 +25,20 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
 
     ui->setupUi(this);
 
-    // Setup Logout button
-    ui->tabWidget->setCornerWidget(ui->logoutButton, Qt::TopRightCorner);
+    // Corner widget: Dark Mode toggle + Logout
+    QWidget *cornerContainer = new QWidget(this);
+    QHBoxLayout *cornerLayout = new QHBoxLayout(cornerContainer);
+    cornerLayout->setContentsMargins(0, 0, 6, 0);
+    cornerLayout->setSpacing(6);
+
+    m_darkModeBtn = new QPushButton("Dark Mode", cornerContainer);
+    m_darkModeBtn->setFixedHeight(34);
+    m_darkModeBtn->setFixedWidth(110);
+    connect(m_darkModeBtn, &QPushButton::clicked, this, &MainWindow::toggleDarkMode);
+
+    cornerLayout->addWidget(m_darkModeBtn);
+    cornerLayout->addWidget(ui->logoutButton);
+    ui->tabWidget->setCornerWidget(cornerContainer, Qt::TopRightCorner);
 
     // Configure window state
     setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
@@ -171,7 +185,25 @@ void MainWindow::onDataChanged(DataType type)
     }
 }
 
-// Setup signal connections
+void MainWindow::toggleDarkMode()
+{
+    m_darkMode = !m_darkMode;
+
+    AppTheme theme;
+    if (m_darkMode)
+    {
+        theme = {"Midnight", "#1a1b2e", "#252641", "#e2e8f0", "#818cf8"};
+        m_darkModeBtn->setText("Light Mode");
+    }
+    else
+    {
+        theme = {"Sakura Dream", "#fdf0f3", "#fff5f7", "#3d1a2e", "#e91e8c"};
+        m_darkModeBtn->setText("Dark Mode");
+    }
+
+    ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), theme);
+}
+
 void MainWindow::setupConnections()
 {
     uiPlanner->setupConnections();

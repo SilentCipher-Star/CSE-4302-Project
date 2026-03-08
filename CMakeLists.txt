@@ -70,6 +70,7 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/manager_habits.cpp
     include/notifications.hpp
     include/notice_decorators.hpp
+    include/chart_widget.hpp
     include/ui_dashboard.hpp
     src/ui_dashboard.cpp
     include/ui_planner.hpp

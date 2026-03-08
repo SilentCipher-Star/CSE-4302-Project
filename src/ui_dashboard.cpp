@@ -1,4 +1,5 @@
 #include "../include/ui_dashboard.hpp"
+#include "../include/chart_widget.hpp"
 #include "../include/utils.hpp"
 #include "../include/exceptions.hpp"
 #include "../include/notifications.hpp"
@@ -21,6 +22,7 @@
 #include <QGroupBox>
 #include <QDateEdit>
 #include <QCalendarWidget>
+#include <QScrollArea>
 #include <QSet>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -70,8 +72,161 @@ UIDashboard::UIDashboard(Ui::MainWindow *ui, AcadenceManager *manager, QString r
             this, &UIDashboard::onNoticeListContextMenuRequested);
 }
 
+QFrame *UIDashboard::buildStatsCard(const QString &value, const QString &label, const QString &bgColor) const
+{
+    QFrame *card = new QFrame();
+    card->setFixedHeight(82);
+    card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    card->setStyleSheet(QString("QFrame { background: %1; border-radius: 16px; }").arg(bgColor));
+
+    QVBoxLayout *l = new QVBoxLayout(card);
+    l->setContentsMargins(14, 8, 14, 8);
+    l->setSpacing(2);
+
+    QLabel *valLbl = new QLabel(value, card);
+    valLbl->setAlignment(Qt::AlignCenter);
+    valLbl->setStyleSheet("font-size:24px; font-weight:bold; color:white; background:transparent;");
+
+    QLabel *descLbl = new QLabel(label, card);
+    descLbl->setAlignment(Qt::AlignCenter);
+    descLbl->setStyleSheet("font-size:12px; color:rgba(255,255,255,0.85); background:transparent;");
+
+    l->addWidget(valLbl);
+    l->addWidget(descLbl);
+    return card;
+}
+
+void UIDashboard::refreshStatsCards()
+{
+    QVBoxLayout *dashLayout = qobject_cast<QVBoxLayout *>(ui->tab_dashboard->layout());
+    if (!dashLayout)
+        return;
+
+    if (m_statsFrame)
+    {
+        dashLayout->removeWidget(m_statsFrame);
+        delete m_statsFrame;
+        m_statsFrame = nullptr;
+    }
+
+    m_statsFrame = new QFrame();
+    m_statsFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QVBoxLayout *outerL = new QVBoxLayout(m_statsFrame);
+    outerL->setContentsMargins(0, 4, 0, 4);
+    outerL->setSpacing(6);
+
+    QHBoxLayout *cardsL = new QHBoxLayout();
+    cardsL->setSpacing(10);
+
+    if (userRole == Constants::Role::Student)
+    {
+        // GPA
+        QString statsStr = myManager->getDashboardStats(userId, userRole);
+        QString gpa = "N/A";
+        if (statsStr.contains("GPA:"))
+            gpa = statsStr.split("GPA:").last().trimmed();
+
+        // Attendance average
+        double avgAtt = 0;
+        int    attCnt = 0;
+        try
+        {
+            for (const auto &rec : myManager->getStudentAttendance(userId))
+            {
+                if (rec.getTotalClasses() > 0)
+                {
+                    avgAtt += 100.0 * rec.getAttendedClasses() / rec.getTotalClasses();
+                    ++attCnt;
+                }
+            }
+        }
+        catch (...) {}
+        const QString attStr = attCnt > 0 ? QString::number(avgAtt / attCnt, 'f', 1) + "%" : "N/A";
+
+        // Pending tasks
+        int pending = 0;
+        try { for (const auto &t : myManager->getTasks(userId)) if (!t.getIsCompleted()) ++pending; }
+        catch (...) {}
+
+        cardsL->addWidget(buildStatsCard(gpa,                         "Current GPA",       "#7c3aed"));
+        cardsL->addWidget(buildStatsCard(attStr,                      "Avg Attendance",    "#0891b2"));
+        cardsL->addWidget(buildStatsCard(QString::number(pending),    "Pending Tasks",     "#d97706"));
+
+        // View Charts button
+        QPushButton *chartBtn = new QPushButton("View Attendance Chart");
+        chartBtn->setFixedHeight(34);
+        connect(chartBtn, &QPushButton::clicked, this, &UIDashboard::onViewChartsClicked);
+        outerL->addLayout(cardsL);
+        outerL->addWidget(chartBtn, 0, Qt::AlignRight);
+    }
+    else if (userRole == Constants::Role::Teacher)
+    {
+        int courseCount = 0;
+        try
+        {
+            QVector<Course *> courses = myManager->getTeacherCourses(userId);
+            courseCount = courses.size();
+            qDeleteAll(courses);
+        }
+        catch (...) {}
+
+        cardsL->addWidget(buildStatsCard(QString::number(courseCount), "Active Courses", "#7c3aed"));
+        outerL->addLayout(cardsL);
+    }
+    else
+    {
+        cardsL->addWidget(buildStatsCard("Active", "System Status", "#059669"));
+        outerL->addLayout(cardsL);
+    }
+
+    dashLayout->insertWidget(1, m_statsFrame);
+}
+
+void UIDashboard::onViewChartsClicked()
+{
+    QVector<AttendanceRecord> records;
+    try { records = myManager->getStudentAttendance(userId); }
+    catch (...) {}
+
+    QDialog dlg;
+    dlg.setWindowTitle("Attendance Chart");
+    dlg.resize(640, 420);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dlg);
+
+    QLabel *title = new QLabel("Attendance % per Course", &dlg);
+    title->setAlignment(Qt::AlignCenter);
+    title->setStyleSheet("font-size:15px; font-weight:bold;");
+    layout->addWidget(title);
+
+    BarChartWidget *chart = new BarChartWidget(&dlg);
+    QVector<QPair<QString, double>> data;
+    for (const auto &rec : records)
+    {
+        if (rec.getTotalClasses() > 0)
+        {
+            double pct = 100.0 * rec.getAttendedClasses() / rec.getTotalClasses();
+            data.append({rec.getCourseName(), pct});
+        }
+    }
+    chart->setData(data, 100.0);
+
+    if (data.isEmpty())
+        title->setText("No attendance data available.");
+
+    layout->addWidget(chart, 1);
+
+    QDialogButtonBox *btns = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+    connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    layout->addWidget(btns);
+
+    dlg.exec();
+}
+
 void UIDashboard::refreshDashboard()
 {
+    refreshStatsCards();
     ui->noticeListWidget->clear();
     QVector<Notice> notices;
     try

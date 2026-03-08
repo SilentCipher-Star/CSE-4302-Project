@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QListWidgetItem>
 #include <QSet>
+#include <QFrame>
 #include "appmanager.hpp"
 #include "notice_decorators.hpp"
 
@@ -13,7 +14,6 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
-// Dashboard module: handles notices, profile display, and password changes
 class UIDashboard : public QObject
 {
     Q_OBJECT
@@ -33,10 +33,13 @@ public slots:
     void onChangePasswordClicked();
     void onLogoutClicked();
     void onSearchNoticesChanged(const QString &searchText);
+    void onViewChartsClicked();
 
 private:
     void updateNoticeItemDisplay(QListWidgetItem *item);
     QString summarizeNotice(const QString &content) const;
+    void refreshStatsCards();
+    QFrame *buildStatsCard(const QString &value, const QString &label, const QString &bgColor) const;
 
     bool noticeVisibleForCurrentUser(const QString &content) const;
     QString stripAudienceTag(const QString &content) const;
@@ -54,4 +57,6 @@ private:
     QString userRole;
     int userId;
     QString userName;
+
+    QFrame *m_statsFrame = nullptr;
 };

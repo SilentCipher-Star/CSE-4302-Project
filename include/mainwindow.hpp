@@ -5,6 +5,7 @@
 #include <QListWidgetItem>
 #include <QPushButton>
 #include "appmanager.hpp"
+#include "theme.hpp"
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 
@@ -63,4 +64,8 @@ private:
     // Initialization Helpers
     void setupTables();
     void setupConnections();
+    void toggleDarkMode();
+
+    QPushButton *m_darkModeBtn = nullptr;
+    bool         m_darkMode    = false;
 };
