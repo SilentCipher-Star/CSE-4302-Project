@@ -14,6 +14,10 @@ protected:
 
 public:
     Person(int id, QString name, QString email, QString username = "", QString password = "");
+
+    Person(const Person &other);
+    Person &operator=(const Person &other);
+
     virtual ~Person();
     virtual QString getRole() const = 0;
 

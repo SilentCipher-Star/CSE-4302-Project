@@ -19,6 +19,10 @@ private:
 public:
     Student(int id, QString name, QString email, QString dept = "", QString batch = "", int sem = 1);
 
+    Student(const Student &other);
+    Student &operator=(const Student &other);
+    Student clone() const;
+
     QString getRole() const override { return "Student"; }
 
     QString getDepartment() const { return department; }

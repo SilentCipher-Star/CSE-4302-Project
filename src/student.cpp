@@ -12,6 +12,30 @@ Student::Student(int id, QString name, QString email, QString dept, QString batc
     totalCumulativeCGPA += m_gpa;
 }
 
+Student::Student(const Student &other)
+    : Person(other), department(other.department), batch(other.batch),
+      semester(other.semester), m_gpa(other.m_gpa), dateAdmission(other.dateAdmission)
+{
+}
+
+Student &Student::operator=(const Student &other)
+{
+    if (this == &other)
+        return *this;
+    Person::operator=(other);
+    department    = other.department;
+    batch         = other.batch;
+    semester      = other.semester;
+    m_gpa         = other.m_gpa;
+    dateAdmission = other.dateAdmission;
+    return *this;
+}
+
+Student Student::clone() const
+{
+    return Student(*this);
+}
+
 double Student::calculateGPA() const
 {
     return m_gpa;
