@@ -20,6 +20,7 @@ private:
     QString content;
 
 public:
+    Notice() = default;
     Notice(QString d, QString a, QString c) : date(d), author(a), content(c) {}
     QString getDate() const { return date; }
     QString getAuthor() const { return author; }

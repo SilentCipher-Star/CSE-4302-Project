@@ -4,6 +4,7 @@
 #include <QListWidgetItem>
 #include <QSet>
 #include "appmanager.hpp"
+#include "notice_decorators.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -41,8 +42,10 @@ private:
     QString stripAudienceTag(const QString &content) const;
     QString audienceTagForRole(const QString &role) const;
     QString audienceLabelFromContent(const QString &content) const;
-    QString composeNoticeStorageContent(const QString &audienceTag, const QStringList &courseIds, const QString &subject, const QString &body) const;
-    bool parseStructuredNoticeContent(const QString &raw, QString &audienceTag, QStringList &courseIds, QString &subject, QString &body) const;
+    QString composeNoticeStorageContent(const QString &audienceTag, const QStringList &courseIds, const QString &subject, const QString &body,
+                                         bool isUrgent = false, bool isPinned = false, const QString &expiresOn = {}) const;
+    bool parseStructuredNoticeContent(const QString &raw, QString &audienceTag, QStringList &courseIds, QString &subject, QString &body,
+                                      bool *isUrgent = nullptr, bool *isPinned = nullptr, QString *expiresOn = nullptr) const;
     QSet<int> currentStudentCourseIds() const;
     QString courseNameById(int courseId) const;
 

@@ -16,10 +16,16 @@
 #include <QPushButton>
 #include <QTextEdit>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QCheckBox>
+#include <QGroupBox>
+#include <QDateEdit>
+#include <QCalendarWidget>
 #include <QSet>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <algorithm>
 #include <memory>
 
 namespace
@@ -34,6 +40,12 @@ constexpr int NoticeSubjectRole = Qt::UserRole + 26;
 constexpr int NoticeCourseIdsRole = Qt::UserRole + 27;
 constexpr int NoticeRawAuthorRole = Qt::UserRole + 28;
 constexpr int NoticeRawContentRole = Qt::UserRole + 29;
+// Decorator-pattern roles
+constexpr int NoticeIsUrgentRole       = Qt::UserRole + 30;
+constexpr int NoticeIsPinnedRole       = Qt::UserRole + 31;
+constexpr int NoticeExpiresOnRole      = Qt::UserRole + 32;
+constexpr int NoticeBadgesRole         = Qt::UserRole + 33;
+constexpr int NoticeHighlightColorRole = Qt::UserRole + 34;
 
 QString normalizeAudience(const QString &raw)
 {
@@ -70,54 +82,108 @@ void UIDashboard::refreshDashboard()
     {
         // Ignore error if notices fail to load
     }
+    // Parsed notice info for sorting before inserting into the list widget
+    struct ParsedEntry {
+        Notice raw;
+        QString audienceTag, subject, body, authorDisplay, expiresOn, badges;
+        QStringList courseIds;
+        QColor highlight;
+        bool isUrgent = false, isPinned = false, priority = false;
+    };
+
+    QVector<ParsedEntry> priorityEntries, regularEntries;
+
     for (const auto &n : notices)
     {
         if (!noticeVisibleForCurrentUser(n.getContent()))
             continue;
 
-        QString audienceTag;
-        QStringList courseIds;
-        QString subject;
-        QString body;
-        const bool structured = parseStructuredNoticeContent(n.getContent(), audienceTag, courseIds, subject, body);
+        ParsedEntry e;
+        e.raw = n;
+
+        bool isUrgent = false, isPinned = false;
+        QString expiresOn;
+        const bool structured = parseStructuredNoticeContent(
+            n.getContent(), e.audienceTag, e.courseIds, e.subject, e.body,
+            &isUrgent, &isPinned, &expiresOn);
 
         if (!structured)
         {
-            audienceTag = normalizeAudience(audienceLabelFromContent(n.getContent()));
-            body = stripAudienceTag(n.getContent());
-            subject = body.left(60).replace('\n', ' ').simplified();
-            if (subject.isEmpty())
-                subject = "No Subject";
-            if (body.size() > 60)
-                subject += "...";
+            e.audienceTag = normalizeAudience(audienceLabelFromContent(n.getContent()));
+            e.body = stripAudienceTag(n.getContent());
+            e.subject = e.body.left(60).replace('\n', ' ').simplified();
+            if (e.subject.isEmpty())
+                e.subject = "No Subject";
+            if (e.body.size() > 60)
+                e.subject += "...";
         }
 
-        QString authorDisplay = n.getAuthor();
-        if (isAdminLikeAuthor(authorDisplay))
-            authorDisplay = "Register of the Campus";
+        e.isUrgent   = isUrgent;
+        e.isPinned   = isPinned;
+        e.expiresOn  = expiresOn;
 
-        QString previewLine = authorDisplay + "  |  " + subject;
+        e.authorDisplay = n.getAuthor();
+        if (isAdminLikeAuthor(e.authorDisplay))
+            e.authorDisplay = "Register of the Campus";
+
+        // ---- Decorator Pattern: build the decorated notice ----
+        auto decorated = buildDecoratedNotice(
+            e.subject, e.body, e.authorDisplay, n.getDate(),
+            e.isUrgent, e.isPinned, e.expiresOn);
+
+        e.badges    = decorated->getBadges();
+        e.highlight = decorated->getHighlightColor();
+        e.priority  = decorated->isPriority();
+        // -------------------------------------------------------
+
+        if (e.priority)
+            priorityEntries.append(e);
+        else
+            regularEntries.append(e);
+    }
+
+    // Helper lambda: build a QListWidgetItem from stored ParsedEntry + preview
+    auto makeItem = [&](const ParsedEntry &e) -> QListWidgetItem *
+    {
+        QString previewLine;
+        if (!e.badges.isEmpty())
+            previewLine = e.badges + "  " + e.authorDisplay + "  |  " + e.subject;
+        else
+            previewLine = e.authorDisplay + "  |  " + e.subject;
+
         if (userRole == Constants::Role::Admin)
         {
-            const QString audienceLabel = audienceTag.isEmpty() ? "ALL" : audienceTag;
+            const QString audienceLabel = e.audienceTag.isEmpty() ? "ALL" : e.audienceTag;
             previewLine += "  [" + audienceLabel + "]";
         }
-        previewLine += "\n" + summarizeNotice(body);
+        previewLine += "\n" + summarizeNotice(e.body);
 
         QListWidgetItem *item = new QListWidgetItem();
-        item->setData(NoticeHeaderRole, previewLine);
-        item->setData(NoticeBodyRole, body);
-        item->setData(NoticeExpandedRole, false);
-        item->setData(NoticeDateRole, n.getDate());
-        item->setData(NoticeAuthorRole, authorDisplay);
-        item->setData(NoticeAudienceRole, audienceTag);
-        item->setData(NoticeSubjectRole, subject);
-        item->setData(NoticeCourseIdsRole, courseIds.join(","));
-        item->setData(NoticeRawAuthorRole, n.getAuthor());
-        item->setData(NoticeRawContentRole, n.getContent());
+        item->setData(NoticeHeaderRole,         previewLine);
+        item->setData(NoticeBodyRole,            e.body);
+        item->setData(NoticeExpandedRole,        false);
+        item->setData(NoticeDateRole,            e.raw.getDate());
+        item->setData(NoticeAuthorRole,          e.authorDisplay);
+        item->setData(NoticeAudienceRole,        e.audienceTag);
+        item->setData(NoticeSubjectRole,         e.subject);
+        item->setData(NoticeCourseIdsRole,       e.courseIds.join(","));
+        item->setData(NoticeRawAuthorRole,       e.raw.getAuthor());
+        item->setData(NoticeRawContentRole,      e.raw.getContent());
+        item->setData(NoticeIsUrgentRole,        e.isUrgent);
+        item->setData(NoticeIsPinnedRole,        e.isPinned);
+        item->setData(NoticeExpiresOnRole,       e.expiresOn);
+        item->setData(NoticeBadgesRole,          e.badges);
+        item->setData(NoticeHighlightColorRole,  e.highlight);
         updateNoticeItemDisplay(item);
-        ui->noticeListWidget->addItem(item);
-    }
+        return item;
+    };
+
+    // Add pinned/urgent notices first, then ordinary notices (each group
+    // already sorted newest-first by ManagerNotices::getNotices)
+    for (const auto &e : priorityEntries)
+        ui->noticeListWidget->addItem(makeItem(e));
+    for (const auto &e : regularEntries)
+        ui->noticeListWidget->addItem(makeItem(e));
 
     if (userRole == Constants::Role::Student)
         ui->label_notices->setText("Notices For Students:");
@@ -215,10 +281,34 @@ void UIDashboard::onAddNoticeClicked()
     hintLabel->setStyleSheet("color: #666;");
     hintLabel->setText("Tip: Students will see sender, subject, and a preview. Clicking opens full notice.");
 
+    // ---- Decorator Pattern: notice options ----
+    QGroupBox *optionsBox = new QGroupBox("Notice Options", &editor);
+    QVBoxLayout *optLayout = new QVBoxLayout(optionsBox);
+
+    QCheckBox *urgentCheck = new QCheckBox("Mark as Urgent  (red highlight, sorted to top)", optionsBox);
+    QCheckBox *pinnedCheck = new QCheckBox("Pin this Notice  (yellow highlight, sorted to top)", optionsBox);
+    optLayout->addWidget(urgentCheck);
+    optLayout->addWidget(pinnedCheck);
+
+    QHBoxLayout *expiryRow = new QHBoxLayout();
+    QCheckBox *expiryCheck = new QCheckBox("Set Expiry Date:", optionsBox);
+    QDateEdit *expiresEdit = new QDateEdit(QDate::currentDate().addDays(7), optionsBox);
+    expiresEdit->setCalendarPopup(true);
+    expiresEdit->setDisplayFormat("yyyy-MM-dd");
+    expiresEdit->setMinimumDate(QDate::currentDate());
+    expiresEdit->setEnabled(false);
+    expiryRow->addWidget(expiryCheck);
+    expiryRow->addWidget(expiresEdit);
+    expiryRow->addStretch();
+    optLayout->addLayout(expiryRow);
+    connect(expiryCheck, &QCheckBox::toggled, expiresEdit, &QDateEdit::setEnabled);
+    // -------------------------------------------
+
     mainLayout->addLayout(form);
     mainLayout->addWidget(new QLabel("Message:", &editor));
     mainLayout->addWidget(bodyEdit, 1);
     mainLayout->addWidget(hintLabel);
+    mainLayout->addWidget(optionsBox);
 
     QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &editor);
     buttons->button(QDialogButtonBox::Ok)->setText("Send Notice");
@@ -243,6 +333,10 @@ void UIDashboard::onAddNoticeClicked()
         return;
     }
 
+    const QString expiresOn = expiryCheck->isChecked()
+                              ? expiresEdit->date().toString("yyyy-MM-dd")
+                              : QString{};
+
     QStringList courseIds;
     if (userRole == Constants::Role::Teacher && audienceTag == "STUDENTS")
     {
@@ -251,8 +345,10 @@ void UIDashboard::onAddNoticeClicked()
             courseIds << selected;
     }
 
+    const bool isUrgent = urgentCheck->isChecked();
+    const bool isPinned = pinnedCheck->isChecked();
     const QString author = (userRole == Constants::Role::Admin) ? "Register of the Campus" : userName;
-    const QString payload = composeNoticeStorageContent(audienceTag, courseIds, subject, body);
+    const QString payload = composeNoticeStorageContent(audienceTag, courseIds, subject, body, isUrgent, isPinned, expiresOn);
 
     try
     {
@@ -283,10 +379,24 @@ void UIDashboard::onNoticeItemClicked(QListWidgetItem *item)
     const QString audience = item->data(NoticeAudienceRole).toString();
     const QString body = item->data(NoticeBodyRole).toString();
 
+    // Decorator Pattern: show badges if the notice has any decorator applied
+    const QString badges = item->data(NoticeBadgesRole).toString();
+    if (!badges.isEmpty())
+    {
+        QLabel *badgesLabel = new QLabel(badges, &viewer);
+        badgesLabel->setStyleSheet("font-weight: bold; color: #8B0000; font-size: 11px;");
+        layout->addWidget(badgesLabel);
+    }
+
     QLabel *subjectLabel = new QLabel("<b>" + subject.toHtmlEscaped() + "</b>", &viewer);
     subjectLabel->setWordWrap(true);
     QLabel *fromLabel = new QLabel("From: " + author, &viewer);
     QLabel *dateLabel = new QLabel("Date: " + date, &viewer);
+
+    const QString expiresOn = item->data(NoticeExpiresOnRole).toString();
+    if (!expiresOn.isEmpty())
+        dateLabel->setText(dateLabel->text() + "   |   Expires: " + expiresOn);
+
     QLabel *audienceLabel = new QLabel("Audience: " + (audience.isEmpty() ? "ALL" : audience), &viewer);
 
     const QString courseIds = item->data(NoticeCourseIdsRole).toString();
@@ -420,9 +530,47 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
         bodyEdit->setAcceptRichText(false);
         bodyEdit->setPlainText(body);
 
+        // ---- Decorator Pattern: pre-populate existing decorator options ----
+        QGroupBox *editOptionsBox = new QGroupBox("Notice Options", &editor);
+        QVBoxLayout *editOptLayout = new QVBoxLayout(editOptionsBox);
+
+        QCheckBox *editUrgentCheck = new QCheckBox("Mark as Urgent", editOptionsBox);
+        QCheckBox *editPinnedCheck = new QCheckBox("Pin this Notice", editOptionsBox);
+        editUrgentCheck->setChecked(item->data(NoticeIsUrgentRole).toBool());
+        editPinnedCheck->setChecked(item->data(NoticeIsPinnedRole).toBool());
+        editOptLayout->addWidget(editUrgentCheck);
+        editOptLayout->addWidget(editPinnedCheck);
+
+        const QString existingExpiry = item->data(NoticeExpiresOnRole).toString();
+        const QDate existingExpiryDate = QDate::fromString(existingExpiry, "yyyy-MM-dd");
+
+        QHBoxLayout *editExpiryRow = new QHBoxLayout();
+        QCheckBox *editExpiryCheck = new QCheckBox("Set Expiry Date:", editOptionsBox);
+        QDateEdit *editExpiresEdit = new QDateEdit(editOptionsBox);
+        editExpiresEdit->setCalendarPopup(true);
+        editExpiresEdit->setDisplayFormat("yyyy-MM-dd");
+        editExpiresEdit->setMinimumDate(QDate::currentDate());
+        if (existingExpiryDate.isValid())
+        {
+            editExpiryCheck->setChecked(true);
+            editExpiresEdit->setDate(existingExpiryDate);
+        }
+        else
+        {
+            editExpiresEdit->setDate(QDate::currentDate().addDays(7));
+            editExpiresEdit->setEnabled(false);
+        }
+        editExpiryRow->addWidget(editExpiryCheck);
+        editExpiryRow->addWidget(editExpiresEdit);
+        editExpiryRow->addStretch();
+        editOptLayout->addLayout(editExpiryRow);
+        connect(editExpiryCheck, &QCheckBox::toggled, editExpiresEdit, &QDateEdit::setEnabled);
+        // -------------------------------------------------------------------
+
         mainLayout->addLayout(form);
         mainLayout->addWidget(new QLabel("Message:", &editor));
         mainLayout->addWidget(bodyEdit, 1);
+        mainLayout->addWidget(editOptionsBox);
 
         QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &editor);
         buttons->button(QDialogButtonBox::Ok)->setText("Save Changes");
@@ -447,6 +595,10 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
             return;
         }
 
+        const QString newExpiresOn = editExpiryCheck->isChecked()
+                                     ? editExpiresEdit->date().toString("yyyy-MM-dd")
+                                     : QString{};
+
         QStringList newCourseIds;
         if (userRole == Constants::Role::Teacher && newAudience == "STUDENTS")
         {
@@ -455,7 +607,10 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
                 newCourseIds << selectedCourse;
         }
 
-        const QString newContent = composeNoticeStorageContent(newAudience, newCourseIds, newSubject, newBody);
+        const bool newIsUrgent = editUrgentCheck->isChecked();
+        const bool newIsPinned = editPinnedCheck->isChecked();
+        const QString newContent = composeNoticeStorageContent(newAudience, newCourseIds, newSubject, newBody,
+                                                               newIsUrgent, newIsPinned, newExpiresOn);
         const bool ok = myManager->updateNotice(oldDate, oldAuthor, oldContent, newContent);
         if (!ok)
         {
@@ -700,8 +855,14 @@ void UIDashboard::updateNoticeItemDisplay(QListWidgetItem *item)
     if (!item)
         return;
 
-    const QString header = item->data(NoticeHeaderRole).toString();
-    item->setText(header);
+    item->setText(item->data(NoticeHeaderRole).toString());
+
+    // Decorator pattern: apply the highlight colour computed by the decorator chain
+    const QColor highlight = item->data(NoticeHighlightColorRole).value<QColor>();
+    if (highlight.isValid())
+        item->setBackground(highlight);
+    else
+        item->setBackground(QBrush());  // reset to default
 }
 
 QString UIDashboard::summarizeNotice(const QString &content) const
@@ -714,12 +875,20 @@ QString UIDashboard::summarizeNotice(const QString &content) const
     return singleLine.left(90) + "...";
 }
 
-QString UIDashboard::composeNoticeStorageContent(const QString &audienceTag, const QStringList &courseIds, const QString &subject, const QString &body) const
+QString UIDashboard::composeNoticeStorageContent(const QString &audienceTag, const QStringList &courseIds,
+                                                  const QString &subject, const QString &body,
+                                                  bool isUrgent, bool isPinned, const QString &expiresOn) const
 {
     QJsonObject obj;
     obj.insert("audience", audienceTag.trimmed().toUpper());
     obj.insert("subject", subject.trimmed());
     obj.insert("body", body.trimmed());
+
+    // Decorator flags – only persist when set (keeps CSV compact for plain notices)
+    if (isUrgent)  obj.insert("isUrgent", true);
+    if (isPinned)  obj.insert("isPinned", true);
+    if (!expiresOn.trimmed().isEmpty())
+        obj.insert("expiresOn", expiresOn.trimmed());
 
     QJsonArray ids;
     for (const QString &courseId : courseIds)
@@ -730,12 +899,17 @@ QString UIDashboard::composeNoticeStorageContent(const QString &audienceTag, con
     return "@notice:" + json;
 }
 
-bool UIDashboard::parseStructuredNoticeContent(const QString &raw, QString &audienceTag, QStringList &courseIds, QString &subject, QString &body) const
+bool UIDashboard::parseStructuredNoticeContent(const QString &raw, QString &audienceTag, QStringList &courseIds,
+                                               QString &subject, QString &body,
+                                               bool *isUrgent, bool *isPinned, QString *expiresOn) const
 {
     audienceTag.clear();
     courseIds.clear();
     subject.clear();
     body.clear();
+    if (isUrgent)  *isUrgent  = false;
+    if (isPinned)  *isPinned  = false;
+    if (expiresOn) expiresOn->clear();
 
     if (!raw.startsWith("@notice:"))
         return false;
@@ -748,8 +922,13 @@ bool UIDashboard::parseStructuredNoticeContent(const QString &raw, QString &audi
 
     const QJsonObject obj = doc.object();
     audienceTag = obj.value("audience").toString().trimmed().toUpper();
-    subject = obj.value("subject").toString().trimmed();
-    body = obj.value("body").toString().trimmed();
+    subject     = obj.value("subject").toString().trimmed();
+    body        = obj.value("body").toString().trimmed();
+
+    // Decorator flags
+    if (isUrgent)  *isUrgent  = obj.value("isUrgent").toBool(false);
+    if (isPinned)  *isPinned  = obj.value("isPinned").toBool(false);
+    if (expiresOn) *expiresOn = obj.value("expiresOn").toString().trimmed();
 
     const QJsonArray ids = obj.value("courseIds").toArray();
     for (const QJsonValue &v : ids)
