@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <QPushButton>
 #include "appmanager.hpp"
 
 QT_BEGIN_NAMESPACE
@@ -10,8 +11,6 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
-// Academics module: manages academic tools for teachers (assessments, grading, attendance)
-// and academic view for students
 class UIAcademics : public QObject
 {
     Q_OBJECT
@@ -24,6 +23,8 @@ public:
     void refreshTeacherGrades();
     void refreshTeacherAttendance();
 
+    QPushButton *getCheckWarningsButton() const { return btnCheckWarnings; }
+
 public slots:
     void onCreateAssessmentClicked();
     void onTeacherAssessmentChanged(int index);
@@ -31,10 +32,12 @@ public slots:
     void onAttendanceCourseChanged(int index);
     void onAddClassDateClicked();
     void onSaveAttendanceClicked();
+    void onCheckAttendanceWarningsClicked();
 
 private:
     Ui::MainWindow *ui;
     AcadenceManager *myManager;
     QString userRole;
     int userId;
+    QPushButton *btnCheckWarnings;
 };

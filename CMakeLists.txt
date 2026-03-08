@@ -30,6 +30,7 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/course.cpp
     include/appmanager.hpp
     src/appmanager.cpp
+    src/appmanager_analytics.cpp
     include/timer.hpp
     src/timer.cpp
     include/habit.hpp

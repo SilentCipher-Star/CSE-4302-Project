@@ -2,6 +2,8 @@
 #include "../include/utils.hpp"
 #include "../include/course.hpp"
 #include "../include/student.hpp"
+#include "../include/notifications.hpp"
+#include "../include/exceptions.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
@@ -9,8 +11,15 @@
 #include <memory>
 
 UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString role, int uid, QObject *parent)
-    : QObject(parent), ui(ui), myManager(manager), userRole(role), userId(uid)
+    : QObject(parent), ui(ui), myManager(manager), userRole(role), userId(uid), btnCheckWarnings(nullptr)
 {
+    if (role == "Teacher")
+    {
+        btnCheckWarnings = new QPushButton("Check Attendance Warnings");
+        btnCheckWarnings->setMaximumWidth(250);
+        ui->hbox_attendance_controls->addWidget(btnCheckWarnings);
+        connect(btnCheckWarnings, &QPushButton::clicked, this, &UIAcademics::onCheckAttendanceWarningsClicked);
+    }
 }
 
 void UIAcademics::refreshAcademics()
@@ -24,24 +33,80 @@ void UIAcademics::refreshAcademics()
 
     ui->tableAcademics->setRowCount(0);
     QVector<AttendanceRecord> att = myManager->getStudentAttendance(userId);
+
+    double overallPct = myManager->getOverallAttendancePercentage(userId);
+    QString overallColor;
+    if (overallPct >= 85.0)
+        overallColor = "green";
+    else if (overallPct >= 60.0)
+        overallColor = "orange";
+    else
+        overallColor = "red";
+
+    ui->lbl_attendance->setText(
+        QString("Attendance & Grades | Overall Attendance: <span style='color:%1; font-weight:bold;'>%2%</span>")
+            .arg(overallColor)
+            .arg(QString::number(overallPct, 'f', 1)));
+
+    bool hasCritical = false;
+    QString criticalCourses;
+
     for (int i = 0; i < att.size(); ++i)
     {
         ui->tableAcademics->insertRow(i);
         ui->tableAcademics->setItem(i, 0, new QTableWidgetItem(att[i].getCourseName()));
 
         double pct = (att[i].getTotalClasses() > 0) ? (double)att[i].getAttendedClasses() / att[i].getTotalClasses() * 100.0 : 0.0;
+
         QTableWidgetItem *pctItem = new QTableWidgetItem(QString::number(pct, 'f', 1) + "%");
-        if (pct < 85.0)
-            pctItem->setForeground(Qt::red);
+        QString status;
+        QColor rowColor;
+
+        if (pct >= 85.0)
+        {
+            status = "Good";
+            rowColor = QColor(34, 139, 34);
+        }
+        else if (pct >= 60.0)
+        {
+            status = "At Risk";
+            rowColor = QColor(255, 165, 0);
+        }
+        else
+        {
+            status = "Critical";
+            rowColor = QColor(220, 20, 60);
+            hasCritical = true;
+            if (!criticalCourses.isEmpty())
+                criticalCourses += ", ";
+            criticalCourses += att[i].getCourseName();
+        }
+
+        pctItem->setForeground(rowColor);
         ui->tableAcademics->setItem(i, 1, pctItem);
 
         QString scoreStr = QString::number(att[i].getTotalMarksObtained()) + " / " + QString::number(att[i].getTotalMaxMarks());
         ui->tableAcademics->setItem(i, 2, new QTableWidgetItem(scoreStr));
 
-        QString status = (pct < 85.0) ? "Low Attendance" : "Good";
-        ui->tableAcademics->setItem(i, 3, new QTableWidgetItem(status));
+        QTableWidgetItem *statusItem = new QTableWidgetItem(status);
+        statusItem->setForeground(rowColor);
+        ui->tableAcademics->setItem(i, 3, statusItem);
     }
     Utils::adjustColumnWidths(ui->tableAcademics);
+
+    if (hasCritical)
+    {
+        try
+        {
+            throw Acadence::InsufficientAttendanceException(
+                "Your attendance is critically low in: " + criticalCourses +
+                ". You may be barred from exams.");
+        }
+        catch (const Acadence::InsufficientAttendanceException &e)
+        {
+            Notifications::warning(nullptr, QString::fromStdString(e.what()));
+        }
+    }
 }
 
 void UIAcademics::refreshTeacherTools()
@@ -225,7 +290,12 @@ void UIAcademics::refreshTeacherAttendance()
         }
 
         double pct = dates.isEmpty() ? 0.0 : (double)presentCount / dates.size() * 100.0;
-        ui->tableAttendance->setItem(i, 2, new QTableWidgetItem(QString::number(pct, 'f', 1) + "%"));
+        QTableWidgetItem *pctItem = new QTableWidgetItem(QString::number(pct, 'f', 1) + "%");
+        if (pct < 60.0)
+            pctItem->setForeground(QColor(220, 20, 60));
+        else if (pct < 75.0)
+            pctItem->setForeground(QColor(255, 165, 0));
+        ui->tableAttendance->setItem(i, 2, pctItem);
         ui->tableAttendance->setItem(i, 3, new QTableWidgetItem(QString::number(presentCount) + "/" + QString::number(dates.size())));
     }
 
@@ -299,4 +369,27 @@ void UIAcademics::onSaveAttendanceClicked()
         }
     }
     QMessageBox::information(nullptr, "Success", "Attendance Saved");
+}
+
+void UIAcademics::onCheckAttendanceWarningsClicked()
+{
+    if (ui->comboAttendanceCourse->count() == 0)
+    {
+        Notifications::warning(nullptr, "No courses available.");
+        return;
+    }
+
+    int courseId = ui->comboAttendanceCourse->currentData().toInt();
+    if (courseId <= 0)
+    {
+        Notifications::warning(nullptr, "Please select a course first.");
+        return;
+    }
+
+    int count = myManager->generateAttendanceWarnings(courseId, userId);
+
+    if (count == 0)
+        Notifications::info(nullptr, "All students have sufficient attendance (>= 75%) in this course.");
+    else
+        Notifications::success(nullptr, QString("Generated %1 attendance warning notice(s) for students below 75% attendance.").arg(count));
 }

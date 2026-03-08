@@ -91,6 +91,17 @@ public:
     double getTotalMaxMarks() const { return totalMaxMarks; }
 };
 
+struct AttendanceAnalytics
+{
+    int studentId;
+    QString studentName;
+    int courseId;
+    QString courseName;
+    int totalClasses;
+    int attendedClasses;
+    double percentage;
+};
+
 class Query
 {
 private:
@@ -205,6 +216,10 @@ public:
     void addQuery(int userId, int teacherId, QString question);
     void answerQuery(int queryId, QString answer);
     QVector<QPair<int, QString>> getTeacherList();
+
+    QVector<AttendanceAnalytics> getLowAttendanceStudents(int courseId, double threshold = 75.0);
+    double getOverallAttendancePercentage(int studentId);
+    int generateAttendanceWarnings(int courseId, int teacherId, double threshold = 75.0);
 
     // Observer pattern
     void addObserver(IDataObserver *observer);

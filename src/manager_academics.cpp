@@ -309,3 +309,116 @@ void ManagerAcademics::addGrade(int studentId, int assessmentId, double marks)
     }
     CsvHandler::writeCsv("grades.csv", data);
 }
+
+QVector<AttendanceAnalytics> ManagerAcademics::getLowAttendanceStudents(int courseId, double threshold)
+{
+    QVector<AttendanceAnalytics> result;
+
+    Course *course = getCourse(courseId);
+    if (!course)
+        return result;
+
+    QString courseName = course->getName();
+    int semester = course->getSemester();
+    delete course;
+
+    QVector<Student *> students = getStudentsBySemester(semester);
+    QVector<QStringList> attData = CsvHandler::readCsv("attendance.csv");
+
+    QSet<QString> uniqueDates;
+    for (const auto &row : attData)
+    {
+        if (row.size() >= 4 && row[1].toInt() == courseId)
+            uniqueDates.insert(row[2]);
+    }
+    int totalClasses = uniqueDates.size();
+
+    if (totalClasses == 0)
+    {
+        qDeleteAll(students);
+        return result;
+    }
+
+    for (auto *s : students)
+    {
+        int attended = 0;
+        for (const auto &row : attData)
+        {
+            if (row.size() >= 4 && row[0].toInt() == s->getId() &&
+                row[1].toInt() == courseId && row[3] == "1")
+            {
+                attended++;
+            }
+        }
+
+        double pct = (double)attended / totalClasses * 100.0;
+        if (pct < threshold)
+        {
+            AttendanceAnalytics analytics;
+            analytics.studentId = s->getId();
+            analytics.studentName = s->getName();
+            analytics.courseId = courseId;
+            analytics.courseName = courseName;
+            analytics.totalClasses = totalClasses;
+            analytics.attendedClasses = attended;
+            analytics.percentage = pct;
+            result.append(analytics);
+        }
+    }
+
+    qDeleteAll(students);
+    return result;
+}
+
+double ManagerAcademics::getOverallAttendancePercentage(int studentId)
+{
+    Student *s = ManagerPersons::getStudent(studentId);
+    if (!s)
+        return 0.0;
+    int semester = s->getSemester();
+    delete s;
+
+    QVector<QStringList> courseData = CsvHandler::readCsv("courses.csv");
+    QVector<int> courseIds;
+    for (const auto &row : courseData)
+    {
+        if (row.size() >= 6 && row[4].toInt() == semester)
+            courseIds.append(row[0].toInt());
+    }
+
+    if (courseIds.isEmpty())
+        return 0.0;
+
+    QVector<QStringList> attData = CsvHandler::readCsv("attendance.csv");
+
+    double totalPct = 0.0;
+    int coursesWithClasses = 0;
+
+    for (int cid : courseIds)
+    {
+        QSet<QString> uniqueDates;
+        int attended = 0;
+
+        for (const auto &row : attData)
+        {
+            if (row.size() >= 4 && row[1].toInt() == cid)
+            {
+                uniqueDates.insert(row[2]);
+                if (row[0].toInt() == studentId && row[3] == "1")
+                    attended++;
+            }
+        }
+
+        int total = uniqueDates.size();
+        if (total > 0)
+        {
+            totalPct += (double)attended / total * 100.0;
+            coursesWithClasses++;
+        }
+    }
+
+    if (coursesWithClasses == 0)
+        return 0.0;
+
+    return totalPct / coursesWithClasses;
+}

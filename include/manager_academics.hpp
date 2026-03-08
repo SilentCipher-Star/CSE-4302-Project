@@ -27,6 +27,9 @@ public:
 
     static double getGrade(int studentId, int assessmentId);
     static void addGrade(int studentId, int assessmentId, double marks);
+
+    static QVector<AttendanceAnalytics> getLowAttendanceStudents(int courseId, double threshold = 75.0);
+    static double getOverallAttendancePercentage(int studentId);
 };
 
 #endif // MANAGER_ACADEMICS_HPP
