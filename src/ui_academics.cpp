@@ -4,11 +4,25 @@
 #include "../include/student.hpp"
 #include "../include/notifications.hpp"
 #include "../include/exceptions.hpp"
+#include "../include/gpa_strategy.hpp"
+#include "../include/report.hpp"
+#include "../include/student_iterator.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QDate>
 #include <memory>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QDoubleSpinBox>
+#include <QSpinBox>
+#include <QComboBox>
+#include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
 
 UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString role, int uid, QObject *parent)
     : QObject(parent), ui(ui), myManager(manager), userRole(role), userId(uid), btnCheckWarnings(nullptr)
@@ -20,15 +34,75 @@ UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString r
         ui->hbox_attendance_controls->addWidget(btnCheckWarnings);
         connect(btnCheckWarnings, &QPushButton::clicked, this, &UIAcademics::onCheckAttendanceWarningsClicked);
     }
+    else if (role == "Student")
+    {
+        ui->listAssessments->setMinimumHeight(160);
+        ui->listAssessments->setMaximumHeight(260);
+
+        QHBoxLayout *btnRow = new QHBoxLayout();
+
+        btnGPACalc = new QPushButton("GPA Calculator");
+        btnGPACalc->setMaximumWidth(200);
+        btnRow->addWidget(btnGPACalc);
+        connect(btnGPACalc, &QPushButton::clicked, this, &UIAcademics::onGPACalculatorClicked);
+
+        btnExport = new QPushButton("Export Report");
+        btnExport->setMaximumWidth(200);
+        btnRow->addWidget(btnExport);
+        connect(btnExport, &QPushButton::clicked, this, &UIAcademics::onExportReportClicked);
+
+        btnRow->addStretch();
+
+        ui->verticalLayout_academics->addLayout(btnRow);
+    }
 }
 
 void UIAcademics::refreshAcademics()
 {
     ui->listAssessments->clear();
     QVector<Assessment> assessments = myManager->getStudentAssessments(userId);
+    QDate today = QDate::currentDate();
     for (const auto &a : assessments)
     {
-        ui->listAssessments->addItem(a.getDate() + " - " + a.getCourseName() + ": " + a.getTitle() + " (" + a.getType() + ")");
+        QDate assessDate = QDate::fromString(a.getDate(), "yyyy-MM-dd");
+        QString countdownText;
+        QColor itemColor;
+
+        if (assessDate.isValid())
+        {
+            int daysLeft = today.daysTo(assessDate);
+            if (daysLeft < 0)
+            {
+                countdownText = " [Past]";
+                itemColor = QColor(150, 150, 150);
+            }
+            else if (daysLeft == 0)
+            {
+                countdownText = " [TODAY]";
+                itemColor = QColor(220, 20, 60);
+            }
+            else if (daysLeft <= 3)
+            {
+                countdownText = QString(" [%1 day(s) left]").arg(daysLeft);
+                itemColor = QColor(220, 20, 60);
+            }
+            else if (daysLeft <= 7)
+            {
+                countdownText = QString(" [%1 day(s) left]").arg(daysLeft);
+                itemColor = QColor(255, 140, 0);
+            }
+            else
+            {
+                countdownText = QString(" [%1 day(s) left]").arg(daysLeft);
+                itemColor = QColor(34, 139, 34);
+            }
+        }
+
+        QString text = a.getDate() + " - " + a.getCourseName() + ": " + a.getTitle() + " (" + a.getType() + ")" + countdownText;
+        QListWidgetItem *item = new QListWidgetItem(text);
+        if (itemColor.isValid())
+            item->setForeground(itemColor);
+        ui->listAssessments->addItem(item);
     }
 
     ui->tableAcademics->setRowCount(0);
@@ -48,6 +122,8 @@ void UIAcademics::refreshAcademics()
             .arg(overallColor)
             .arg(QString::number(overallPct, 'f', 1)));
 
+    bool hasWarning = false;
+    QString warningCourses;
     bool hasCritical = false;
     QString criticalCourses;
 
@@ -62,7 +138,7 @@ void UIAcademics::refreshAcademics()
         QString status;
         QColor rowColor;
 
-        if (pct >= 85.0)
+        if (pct >= 75.0)
         {
             status = "Good";
             rowColor = QColor(34, 139, 34);
@@ -71,6 +147,10 @@ void UIAcademics::refreshAcademics()
         {
             status = "At Risk";
             rowColor = QColor(255, 165, 0);
+            hasWarning = true;
+            if (!warningCourses.isEmpty())
+                warningCourses += ", ";
+            warningCourses += att[i].getCourseName();
         }
         else
         {
@@ -106,6 +186,12 @@ void UIAcademics::refreshAcademics()
         {
             Notifications::warning(nullptr, QString::fromStdString(e.what()));
         }
+    }
+    else if (hasWarning)
+    {
+        Notifications::warning(nullptr,
+            "Attendance below 75% in: " + warningCourses +
+            ". You are at risk of being barred from exams.");
     }
 }
 
@@ -178,15 +264,23 @@ void UIAcademics::refreshTeacherGrades()
         students = myManager->getStudentsBySemester(c->getSemester());
     }
 
-    for (int i = 0; i < students.size(); ++i)
-    {
-        ui->tableGrading->insertRow(i);
-        ui->tableGrading->setItem(i, 0, new QTableWidgetItem(QString::number(students[i]->getId())));
-        ui->tableGrading->setItem(i, 1, new QTableWidgetItem(students[i]->getName()));
+    StudentCollection collection;
+    for (auto *s : students)
+        collection.add(s);
 
-        double currentGrade = myManager->getGrade(students[i]->getId(), assessmentId);
+    StudentIterator iter = collection.createIterator();
+    int i = 0;
+    while (iter.hasNext())
+    {
+        Student *stu = iter.next();
+        ui->tableGrading->insertRow(i);
+        ui->tableGrading->setItem(i, 0, new QTableWidgetItem(QString::number(stu->getId())));
+        ui->tableGrading->setItem(i, 1, new QTableWidgetItem(stu->getName()));
+
+        double currentGrade = myManager->getGrade(stu->getId(), assessmentId);
         QString gradeStr = (currentGrade >= 0) ? QString::number(currentGrade) : "";
         ui->tableGrading->setItem(i, 2, new QTableWidgetItem(gradeStr));
+        ++i;
     }
     qDeleteAll(students);
     Utils::adjustColumnWidths(ui->tableGrading);
@@ -392,4 +486,170 @@ void UIAcademics::onCheckAttendanceWarningsClicked()
         Notifications::info(nullptr, "All students have sufficient attendance (>= 75%) in this course.");
     else
         Notifications::success(nullptr, QString("Generated %1 attendance warning notice(s) for students below 75% attendance.").arg(count));
+}
+
+void UIAcademics::onGPACalculatorClicked()
+{
+    QVector<AttendanceRecord> att = myManager->getStudentAttendance(userId);
+
+    double totalMarks = 0.0;
+    double totalMax = 0.0;
+    int courseCount = 0;
+    for (const auto &rec : att)
+    {
+        if (rec.getTotalMaxMarks() > 0)
+        {
+            totalMarks += rec.getTotalMarksObtained();
+            totalMax   += rec.getTotalMaxMarks();
+            ++courseCount;
+        }
+    }
+
+    double currentPct = (totalMax > 0) ? (totalMarks / totalMax * 100.0) : 0.0;
+
+    Acadence::PercentageGPAStrategy pctStrategy;
+    Acadence::LetterGradeGPAStrategy letterStrategy;
+
+    double currentGPA = pctStrategy.calculate(currentPct);
+
+    QDialog dlg;
+    dlg.setWindowTitle("GPA Calculator");
+    dlg.setMinimumWidth(400);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dlg);
+
+    QHBoxLayout *schemeRow = new QHBoxLayout();
+    schemeRow->addWidget(new QLabel("GPA Scheme:"));
+    QComboBox *comboScheme = new QComboBox();
+    comboScheme->addItem(pctStrategy.schemeName());
+    comboScheme->addItem(letterStrategy.schemeName());
+    schemeRow->addWidget(comboScheme);
+    layout->addLayout(schemeRow);
+
+    QLabel *lblCurrent = new QLabel();
+    lblCurrent->setStyleSheet("font-size: 13px; font-weight: bold; padding: 8px;");
+    layout->addWidget(lblCurrent);
+
+    auto updateCurrentLabel = [&](double gpa) {
+        lblCurrent->setText(
+            QString("Current Average: %1%\nEstimated GPA: %2 / 4.0\nCourses Completed: %3")
+                .arg(QString::number(currentPct, 'f', 1))
+                .arg(QString::number(gpa, 'f', 2))
+                .arg(courseCount));
+    };
+    updateCurrentLabel(currentGPA);
+
+    QLabel *sep = new QLabel("── What-If Simulator ──");
+    sep->setAlignment(Qt::AlignCenter);
+    layout->addWidget(sep);
+
+    QHBoxLayout *targetRow = new QHBoxLayout();
+    targetRow->addWidget(new QLabel("Target GPA:"));
+    QDoubleSpinBox *spinTarget = new QDoubleSpinBox();
+    spinTarget->setRange(0.0, 4.0);
+    spinTarget->setSingleStep(0.1);
+    spinTarget->setDecimals(2);
+    spinTarget->setValue(3.5);
+    targetRow->addWidget(spinTarget);
+    layout->addLayout(targetRow);
+
+    QHBoxLayout *remRow = new QHBoxLayout();
+    remRow->addWidget(new QLabel("Remaining Courses:"));
+    QSpinBox *spinRem = new QSpinBox();
+    spinRem->setRange(1, 40);
+    spinRem->setValue(4);
+    remRow->addWidget(spinRem);
+    layout->addLayout(remRow);
+
+    QLabel *lblResult = new QLabel("");
+    lblResult->setStyleSheet("font-size: 13px; padding: 8px; color: #1a73e8;");
+    lblResult->setWordWrap(true);
+    layout->addWidget(lblResult);
+
+    QPushButton *btnCalc = new QPushButton("Calculate");
+    layout->addWidget(btnCalc);
+
+    QObject::connect(comboScheme, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int idx) {
+        double gpa = (idx == 0) ? pctStrategy.calculate(currentPct) : letterStrategy.calculate(currentPct);
+        updateCurrentLabel(gpa);
+        lblResult->setText("");
+    });
+
+    QObject::connect(btnCalc, &QPushButton::clicked, [&]() {
+        int schemeIdx = comboScheme->currentIndex();
+        Acadence::IGPAStrategy *strategy = (schemeIdx == 0)
+            ? static_cast<Acadence::IGPAStrategy*>(&pctStrategy)
+            : static_cast<Acadence::IGPAStrategy*>(&letterStrategy);
+
+        double usedGPA = strategy->calculate(currentPct);
+        double targetGPA = spinTarget->value();
+        int remaining = spinRem->value();
+        int total = courseCount + remaining;
+
+        double requiredTotal    = targetGPA * total;
+        double requiredFromRem  = requiredTotal - usedGPA * courseCount;
+        double requiredPerCourse = requiredFromRem / remaining;
+
+        if (requiredPerCourse > 4.0)
+        {
+            lblResult->setText("Target GPA is not achievable with the given number of remaining courses.");
+            lblResult->setStyleSheet("font-size: 13px; padding: 8px; color: #d32f2f;");
+        }
+        else if (requiredPerCourse < 0.0)
+        {
+            lblResult->setText("You have already exceeded your target GPA!");
+            lblResult->setStyleSheet("font-size: 13px; padding: 8px; color: #2e7d32;");
+        }
+        else
+        {
+            lblResult->setText(
+                QString("Using scheme: %1\nYou need an average GPA of %2 per course\nin your remaining %3 course(s).")
+                    .arg(strategy->schemeName())
+                    .arg(QString::number(requiredPerCourse, 'f', 2))
+                    .arg(remaining));
+            lblResult->setStyleSheet("font-size: 13px; padding: 8px; color: #1a73e8;");
+        }
+    });
+
+    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Close);
+    layout->addWidget(bbox);
+    QObject::connect(bbox, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
+
+    dlg.exec();
+}
+
+void UIAcademics::onExportReportClicked()
+{
+    bool ok;
+    QStringList formats = {"CSV (.csv)", "Text (.txt)"};
+    QString chosen = QInputDialog::getItem(nullptr, "Export Format", "Select format:", formats, 0, false, &ok);
+    if (!ok)
+        return;
+
+    bool isCsv = chosen.startsWith("CSV");
+    QString filter = isCsv ? "CSV Files (*.csv)" : "Text Files (*.txt)";
+    QString defaultName = isCsv ? "academic_report.csv" : "academic_report.txt";
+
+    QString path = QFileDialog::getSaveFileName(nullptr, "Export Report", defaultName, filter);
+    if (path.isEmpty())
+        return;
+
+    Student *stu = myManager->getStudent(userId);
+    QString studentName = stu ? stu->getName() : QString::number(userId);
+    delete stu;
+
+    QVector<AttendanceRecord> att = myManager->getStudentAttendance(userId);
+    QVector<Assessment> assessments = myManager->getStudentAssessments(userId);
+
+    std::unique_ptr<Acadence::IReport> report;
+    if (isCsv)
+        report = std::make_unique<Acadence::CSVReport>();
+    else
+        report = std::make_unique<Acadence::TextReport>();
+
+    report->setData(studentName, att, assessments);
+    report->generate(path);
+
+    QMessageBox::information(nullptr, "Export Successful",
+        QString("%1 report exported to:\n%2").arg(report->formatName()).arg(path));
 }

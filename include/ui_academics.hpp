@@ -33,6 +33,8 @@ public slots:
     void onAddClassDateClicked();
     void onSaveAttendanceClicked();
     void onCheckAttendanceWarningsClicked();
+    void onGPACalculatorClicked();
+    void onExportReportClicked();
 
 private:
     Ui::MainWindow *ui;
@@ -40,4 +42,6 @@ private:
     QString userRole;
     int userId;
     QPushButton *btnCheckWarnings;
+    QPushButton *btnGPACalc  = nullptr;
+    QPushButton *btnExport   = nullptr;
 };

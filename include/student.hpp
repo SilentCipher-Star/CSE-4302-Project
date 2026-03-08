@@ -3,6 +3,7 @@
 #include <QDate>
 #include <QMap>
 #include <QList>
+#include <ostream>
 
 class Student : public Person
 {
@@ -21,7 +22,21 @@ public:
 
     Student(const Student &other);
     Student &operator=(const Student &other);
+
+    Student(Student &&other) noexcept;
+    Student &operator=(Student &&other) noexcept;
+
     Student clone() const;
+
+    friend std::ostream &operator<<(std::ostream &os, const Student &s)
+    {
+        os << "Student[" << s.getId() << "] "
+           << s.getName().toStdString()
+           << " | Dept: " << s.getDepartment().toStdString()
+           << " | Sem: " << s.getSemester()
+           << " | GPA: " << s.getCGPA();
+        return os;
+    }
 
     QString getRole() const override { return "Student"; }
 

@@ -4,6 +4,7 @@
 #include <QString>
 #include <QVector>
 #include <QDate>
+#include <QDebug>
 #include "student.hpp"
 #include "teacher.hpp"
 #include "course.hpp"
@@ -70,6 +71,16 @@ public:
     QString getType() const { return type; }
     QString getDate() const { return date; }
     int getMaxMarks() const { return maxMarks; }
+
+    friend QDebug operator<<(QDebug dbg, const Assessment &a)
+    {
+        dbg.nospace() << "Assessment(id=" << a.id
+                      << ", title=" << a.title
+                      << ", course=" << a.courseName
+                      << ", date=" << a.date
+                      << ", maxMarks=" << a.maxMarks << ")";
+        return dbg.space();
+    }
 };
 
 class AttendanceRecord

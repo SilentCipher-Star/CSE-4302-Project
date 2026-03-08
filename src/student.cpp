@@ -31,6 +31,30 @@ Student &Student::operator=(const Student &other)
     return *this;
 }
 
+Student::Student(Student &&other) noexcept
+    : Person(std::move(other)), department(std::move(other.department)),
+      batch(std::move(other.batch)), semester(other.semester),
+      m_gpa(other.m_gpa), dateAdmission(std::move(other.dateAdmission))
+{
+    other.semester = 0;
+    other.m_gpa    = 0.0;
+}
+
+Student &Student::operator=(Student &&other) noexcept
+{
+    if (this == &other)
+        return *this;
+    Person::operator=(std::move(other));
+    department    = std::move(other.department);
+    batch         = std::move(other.batch);
+    semester      = other.semester;
+    m_gpa         = other.m_gpa;
+    dateAdmission = std::move(other.dateAdmission);
+    other.semester = 0;
+    other.m_gpa    = 0.0;
+    return *this;
+}
+
 Student Student::clone() const
 {
     return Student(*this);

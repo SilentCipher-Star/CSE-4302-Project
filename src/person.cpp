@@ -27,6 +27,26 @@ Person &Person::operator=(const Person &other)
     return *this;
 }
 
+Person::Person(Person &&other) noexcept
+    : id(other.id), name(std::move(other.name)), email(std::move(other.email)),
+      username(std::move(other.username)), password(std::move(other.password))
+{
+    other.id = 0;
+}
+
+Person &Person::operator=(Person &&other) noexcept
+{
+    if (this == &other)
+        return *this;
+    id       = other.id;
+    name     = std::move(other.name);
+    email    = std::move(other.email);
+    username = std::move(other.username);
+    password = std::move(other.password);
+    other.id = 0;
+    return *this;
+}
+
 Person::~Person()
 {
     personCount--;

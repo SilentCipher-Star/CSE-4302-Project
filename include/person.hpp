@@ -1,5 +1,6 @@
 #pragma once
 #include <QString>
+#include <ostream>
 
 class Person
 {
@@ -17,6 +18,9 @@ public:
 
     Person(const Person &other);
     Person &operator=(const Person &other);
+
+    Person(Person &&other) noexcept;
+    Person &operator=(Person &&other) noexcept;
 
     virtual ~Person();
     virtual QString getRole() const = 0;
