@@ -27,7 +27,6 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     ThemeManager::applyTheme(m_app, themes[currentThemeIdx]);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(14);
     mainLayout->addStretch();
 
     QLabel *welcomeLabel = new QLabel("Welcome to Acadence", this);
@@ -61,10 +60,10 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     frameLayout->addWidget(cardTitle);
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(centerFrame);
-    shadow->setBlurRadius(50);
+    shadow->setBlurRadius(30);
     shadow->setXOffset(0);
-    shadow->setYOffset(16);
-    shadow->setColor(QColor(0, 0, 0, 80));
+    shadow->setYOffset(10);
+    shadow->setColor(QColor(0, 0, 0, 60));
     centerFrame->setGraphicsEffect(shadow);
 
     // Define username and password fields
@@ -168,7 +167,7 @@ void LoginDialog::updateThemeButton(const AppTheme &t)
     QFrame *frame = findChild<QFrame *>("loginFrame");
     if (frame)
     {
-        frame->setStyleSheet(QString(".QFrame { border: 1.5px solid %1; border-radius: 22px; background-color: palette(base); }").arg(t.accent));
+        frame->setStyleSheet(QString(".QFrame { border: 2px solid %1; border-radius: 18px; background-color: palette(base); }").arg(t.accent));
     }
 
     QFrame *bar = findChild<QFrame *>("loginAccentBar");
