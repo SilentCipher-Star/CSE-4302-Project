@@ -7,6 +7,7 @@
 #include "../include/ui_timers.hpp"
 #include "../include/ui_routine.hpp"
 #include "../include/ui_academics.hpp"
+#include "../include/ui_tamagotchi.hpp"
 #include "../include/ui_queries.hpp"
 #include "../include/ui_admin.hpp"
 #include "../include/utils.hpp"
@@ -92,6 +93,9 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     // Configure UI based on role
     if (role == Constants::Role::Student)
     {
+        uiTamagotchi = new UITamagotchi(&myManager, role, uid, this);
+        ui->tabWidget->addTab(uiTamagotchi->getWidget(), "Tamagotchi");
+
         ui->addNoticeButton->setVisible(false);
         ui->tabWidget->setTabVisible(5, false);
         ui->tabWidget->setTabVisible(6, false);

@@ -26,6 +26,7 @@ class UIRoutine;
 class UIAcademics;
 class UIQueries;
 class UIAdmin;
+class UITamagotchi;
 
 // The main application window
 class MainWindow : public QMainWindow, public IDataObserver
@@ -57,9 +58,10 @@ private:
     UIHabits *uiHabits;
     UITimers *uiTimers;
     UIRoutine *uiRoutine;
-    UIAcademics *uiAcademics;
-    UIQueries *uiQueries;
-    UIAdmin *uiAdmin;
+    UIAcademics  *uiAcademics;
+    UIQueries    *uiQueries;
+    UIAdmin      *uiAdmin;
+    UITamagotchi *uiTamagotchi = nullptr;
 
     // Initialization Helpers
     void setupTables();
