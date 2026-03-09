@@ -27,6 +27,7 @@ class UIAcademics;
 class UIQueries;
 class UIAdmin;
 class UITamagotchi;
+class UICalendar;
 
 // The main application window
 class MainWindow : public QMainWindow, public IDataObserver
@@ -62,6 +63,7 @@ private:
     UIQueries    *uiQueries;
     UIAdmin      *uiAdmin;
     UITamagotchi *uiTamagotchi = nullptr;
+    UICalendar   *uiCalendar   = nullptr;
 
     // Initialization Helpers
     void setupTables();

@@ -8,6 +8,7 @@
 #include "../include/ui_routine.hpp"
 #include "../include/ui_academics.hpp"
 #include "../include/ui_tamagotchi.hpp"
+#include "../include/ui_calendar.hpp"
 #include "../include/ui_queries.hpp"
 #include "../include/ui_admin.hpp"
 #include "../include/utils.hpp"
@@ -95,6 +96,9 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     {
         uiTamagotchi = new UITamagotchi(&myManager, role, uid, this);
         ui->tabWidget->addTab(uiTamagotchi->getWidget(), "Tamagotchi");
+
+        uiCalendar = new UICalendar(&myManager, role, uid, this);
+        ui->tabWidget->addTab(uiCalendar->getWidget(), "Calendar");
 
         ui->addNoticeButton->setVisible(false);
         ui->tabWidget->setTabVisible(5, false);
