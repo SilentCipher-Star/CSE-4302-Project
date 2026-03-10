@@ -8,6 +8,7 @@
 #include "../include/report.hpp"
 #include "../include/student_iterator.hpp"
 #include "../include/attendance_simulator.hpp"
+#include "../include/ui_teacher_attendance.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
@@ -61,6 +62,11 @@ UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString r
         btnCheckWarnings = new QPushButton("Check Attendance Warnings");
         ui->hbox_attendance_controls->addWidget(btnCheckWarnings);
         connect(btnCheckWarnings, &QPushButton::clicked, this, &UIAcademics::onCheckAttendanceWarningsClicked);
+
+        btnDailyAttendance = new QPushButton("Daily Attendance Tracker");
+        btnDailyAttendance->setStyleSheet("padding: 6px 14px; font-weight: bold;");
+        ui->hbox_attendance_controls->addWidget(btnDailyAttendance);
+        connect(btnDailyAttendance, &QPushButton::clicked, this, &UIAcademics::onDailyAttendanceClicked);
     }
     else if (role == "Student")
     {
@@ -687,4 +693,11 @@ void UIAcademics::onAttendanceSimulatorClicked()
 
     AttendanceSimulatorDialog dlg(courseData, nullptr);
     dlg.exec();
+}
+
+void UIAcademics::onDailyAttendanceClicked()
+{
+    TeacherAttendanceDialog dlg(myManager, userId, nullptr);
+    dlg.exec();
+    refreshTeacherAttendance();
 }

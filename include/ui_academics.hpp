@@ -33,6 +33,7 @@ public slots:
     void onAddClassDateClicked();
     void onSaveAttendanceClicked();
     void onCheckAttendanceWarningsClicked();
+    void onDailyAttendanceClicked();
     void onGPACalculatorClicked();
     void onExportReportClicked();
     void onAttendanceSimulatorClicked();
@@ -46,4 +47,5 @@ private:
     QPushButton *btnGPACalc   = nullptr;
     QPushButton *btnExport    = nullptr;
     QPushButton *btnAttendSim = nullptr;
+    QPushButton *btnDailyAttendance = nullptr;
 };

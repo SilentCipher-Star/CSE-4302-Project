@@ -93,6 +93,8 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/ui_queries.cpp
     include/ui_admin.hpp
     src/ui_admin.cpp
+    include/ui_teacher_attendance.hpp
+    src/ui_teacher_attendance.cpp
     include/ui_calendar.hpp
     src/ui_calendar.cpp
     include/theme_toggle.hpp

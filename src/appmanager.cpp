@@ -8,6 +8,7 @@
 #include "../include/manager_queries.hpp"
 #include "../include/manager_tasks.hpp"
 #include "../include/manager_habits.hpp"
+#include "../include/manager_messages.hpp"
 #include <QMap>
 
 AcadenceManager::AcadenceManager() {}
@@ -269,3 +270,23 @@ void AcadenceManager::answerQuery(int queryId, QString answer)
     notifyObservers(DataType::Queries);
 }
 QVector<QPair<int, QString>> AcadenceManager::getTeacherList() { return ManagerQueries::getTeacherList(); }
+
+// ============ Personal Messages ============
+QVector<PersonalMessage> AcadenceManager::getMessages(int userId) { return ManagerMessages::getMessages(userId); }
+int AcadenceManager::getUnreadMessageCount(int userId) { return ManagerMessages::getUnreadCount(userId); }
+void AcadenceManager::sendMessage(int senderId, const QString &senderRole, int receiverId,
+                                  const QString &subject, const QString &content)
+{
+    ManagerMessages::sendMessage(senderId, senderRole, receiverId, subject, content);
+    notifyObservers(DataType::Messages);
+}
+void AcadenceManager::markMessageRead(int messageId)
+{
+    ManagerMessages::markRead(messageId);
+    notifyObservers(DataType::Messages);
+}
+void AcadenceManager::deleteMessage(int messageId)
+{
+    ManagerMessages::deleteMessage(messageId);
+    notifyObservers(DataType::Messages);
+}

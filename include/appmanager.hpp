@@ -140,6 +140,36 @@ public:
     QString getTimestamp() const { return timestamp; }
 };
 
+class PersonalMessage
+{
+private:
+    int id;
+    int senderId;
+    QString senderRole;
+    QString senderName;
+    int receiverId;
+    QString subject;
+    QString content;
+    QString timestamp;
+    bool isRead;
+
+public:
+    PersonalMessage(int id, int sid, QString srole, QString sname, int rid,
+                    QString subj, QString cont, QString ts, bool read)
+        : id(id), senderId(sid), senderRole(srole), senderName(sname),
+          receiverId(rid), subject(subj), content(cont), timestamp(ts), isRead(read) {}
+
+    int getId() const { return id; }
+    int getSenderId() const { return senderId; }
+    QString getSenderRole() const { return senderRole; }
+    QString getSenderName() const { return senderName; }
+    int getReceiverId() const { return receiverId; }
+    QString getSubject() const { return subject; }
+    QString getContent() const { return content; }
+    QString getTimestamp() const { return timestamp; }
+    bool getIsRead() const { return isRead; }
+};
+
 struct RescheduleOption
 {
     QString displayText;
@@ -156,7 +186,8 @@ enum class DataType
     Notices,
     Academics,
     Queries,
-    Profile
+    Profile,
+    Messages
 };
 
 class IDataObserver
@@ -232,6 +263,15 @@ public:
     QVector<AttendanceAnalytics> getLowAttendanceStudents(int courseId, double threshold = 75.0);
     double getOverallAttendancePercentage(int studentId);
     int generateAttendanceWarnings(int courseId, int teacherId, double threshold = 75.0);
+
+    // Personal Messages
+    QVector<PersonalMessage> getMessages(int userId);
+    int getUnreadMessageCount(int userId);
+    void sendMessage(int senderId, const QString &senderRole, int receiverId,
+                     const QString &subject, const QString &content);
+    void markMessageRead(int messageId);
+    void deleteMessage(int messageId);
+    int sendBulkGradeReports(int teacherId, int assessmentId, const QString &extraNote = "");
 
     // Observer pattern
     void addObserver(IDataObserver *observer);
