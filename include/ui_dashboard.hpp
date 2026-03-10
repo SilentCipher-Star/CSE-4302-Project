@@ -39,7 +39,11 @@ private:
     void updateNoticeItemDisplay(QListWidgetItem *item);
     QString summarizeNotice(const QString &content) const;
     void refreshStatsCards();
+    void refreshUpcomingEvents();
     QFrame *buildStatsCard(const QString &value, const QString &label, const QString &bgColor) const;
+    QFrame *buildUpcomingSection(const QString &title, const QString &icon,
+                                  const QVector<QPair<QString,QString>> &rows,
+                                  const QString &accentColor) const;
 
     bool noticeVisibleForCurrentUser(const QString &content) const;
     QString stripAudienceTag(const QString &content) const;
@@ -58,5 +62,6 @@ private:
     int userId;
     QString userName;
 
-    QFrame *m_statsFrame = nullptr;
+    QFrame *m_statsFrame    = nullptr;
+    QFrame *m_upcomingFrame = nullptr;
 };
