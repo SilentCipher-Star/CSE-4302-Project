@@ -40,6 +40,11 @@ private:
     int      m_floatFrame   = 0;
     QVector<QPoint> m_stickerBase;
 
+    // Role selector
+    QPushButton *m_roleButtons[3] = {nullptr, nullptr, nullptr};
+    QString      m_selectedRole   = "Student";
+    void updateRoleButtons();
+
     AcadenceManager Manager;
 
     QString role;

@@ -9,4 +9,3 @@ QString Admin::getRole() const
 {
     return "Admin";
 }
-//meow

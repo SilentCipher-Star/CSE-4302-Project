@@ -26,3 +26,8 @@
 2026-03-08,System Administrator,"@notice:{""audience"":""ALL"",""body"":""Hello, how's your days been goind? Be prepared for the finals you have some days after. In OUT CGPA matters\n\n--- Admin"",""courseIds"":[],""subject"":""Hello, how's your days been goind? Be prepared for the final...""}"
 2026-03-08,Register of the Campus,"@notice:{""audience"":""STUDENTS"",""body"":""LALALALA"",""courseIds"":[],""isUrgent"":true,""subject"":""lLALA""}"
 >>>>>>> c493f1e0aeb6f830b1d9eb22c2ff04225925fa43
+2026-03-10,John Doe,[CRITICAL] James Anderson (ID: 201) has 50.0% attendance in Islamiat (1/2 classes). Minimum required: 75%
+2026-03-10,John Doe,[CRITICAL] Olivia Mitchell (ID: 202) has 0.0% attendance in Islamiat (0/2 classes). Minimum required: 75%
+2026-03-10,John Doe,[CRITICAL] Liam Reynolds (ID: 203) has 0.0% attendance in Islamiat (0/2 classes). Minimum required: 75%
+2026-03-10,John Doe,[CRITICAL] Emma Hayes (ID: 204) has 0.0% attendance in Islamiat (0/2 classes). Minimum required: 75%
+2026-03-10,John Doe,[CRITICAL] Noah Foster (ID: 205) has 0.0% attendance in Islamiat (0/2 classes). Minimum required: 75%

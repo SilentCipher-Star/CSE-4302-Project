@@ -113,7 +113,38 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
                            "font-size:27px; font-weight:700; letter-spacing:2px; background:transparent;");
     frameLayout->addWidget(cardTitle);
 
-    frameLayout->addSpacing(4);
+    frameLayout->addSpacing(8);
+
+    // ── Role selector ──────────────────────────────────────────────────────
+    QFrame *roleSelector = new QFrame(centerFrame);
+    roleSelector->setObjectName("roleSelector");
+    roleSelector->setFixedHeight(44);
+    QHBoxLayout *roleLayout = new QHBoxLayout(roleSelector);
+    roleLayout->setContentsMargins(3, 3, 3, 3);
+    roleLayout->setSpacing(0);
+
+    struct RoleDef { const char *label; const char *role; };
+    const RoleDef roleDefs[3] = {
+        {"\xf0\x9f\x8e\x93  Student", "Student"},
+        {"\xf0\x9f\x93\x96  Teacher", "Teacher"},
+        {"\xf0\x9f\x94\x91  Admin",   "Admin"  }
+    };
+
+    for (int i = 0; i < 3; ++i)
+    {
+        m_roleButtons[i] = new QPushButton(QString::fromUtf8(roleDefs[i].label), roleSelector);
+        m_roleButtons[i]->setProperty("roleValue", QString(roleDefs[i].role));
+        m_roleButtons[i]->setCursor(Qt::PointingHandCursor);
+        m_roleButtons[i]->setFixedHeight(38);
+        m_roleButtons[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        connect(m_roleButtons[i], &QPushButton::clicked, this, [this, i]() {
+            m_selectedRole = m_roleButtons[i]->property("roleValue").toString();
+            updateRoleButtons();
+        });
+        roleLayout->addWidget(m_roleButtons[i]);
+    }
+    frameLayout->addWidget(roleSelector);
+    frameLayout->addSpacing(10);
 
     // Drop shadow on card
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect(centerFrame);
@@ -186,6 +217,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     userEdit->setFocus();
 
     updateThemeButton(themes[currentThemeIdx]);
+    updateRoleButtons();
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -298,6 +330,43 @@ void LoginDialog::onFloatTick()
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+void LoginDialog::updateRoleButtons()
+{
+    const AppTheme &t = themes[currentThemeIdx];
+    QFrame *roleSelector = findChild<QFrame *>("roleSelector");
+    if (roleSelector)
+    {
+        roleSelector->setStyleSheet(
+            QString("QFrame#roleSelector { background:%1; border:2px solid %2; border-radius:12px; }")
+                .arg(t.surface, t.accent));
+    }
+
+    for (int i = 0; i < 3; ++i)
+    {
+        if (!m_roleButtons[i]) continue;
+        bool selected = m_roleButtons[i]->property("roleValue").toString() == m_selectedRole;
+
+        // Determine border-radius per position
+        QString radius;
+        if      (i == 0) radius = "border-radius:9px 0 0 9px;";
+        else if (i == 2) radius = "border-radius:0 9px 9px 0;";
+        else             radius = "border-radius:0;";
+
+        if (selected)
+            m_roleButtons[i]->setStyleSheet(QString(
+                "QPushButton { background:%1; color:%2; border:none; font-weight:700;"
+                " font-size:13px; padding:0 10px; %3 }"
+                "QPushButton:hover { background:%1; }")
+                .arg(t.accent, t.background, radius));
+        else
+            m_roleButtons[i]->setStyleSheet(QString(
+                "QPushButton { background:transparent; color:%1; border:none; font-weight:500;"
+                " font-size:13px; padding:0 10px; %2 }"
+                "QPushButton:hover { background:%3; color:%1; }")
+                .arg(t.accent, radius, t.background));
+    }
+}
+
 void LoginDialog::updateThemeButton(const AppTheme &t)
 {
     themeBtn->setStyleSheet(QString(
@@ -350,6 +419,8 @@ void LoginDialog::updateThemeButton(const AppTheme &t)
                                .arg(sz)
                                .arg(t.accent));
     }
+
+    updateRoleButtons();
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -379,6 +450,17 @@ void LoginDialog::onLoginClicked()
 
     if (!role.isEmpty())
     {
+        // Validate selected role matches actual credentials
+        if (role != m_selectedRole)
+        {
+            QMessageBox::warning(this, "Wrong Role",
+                QString("These credentials belong to a %1 account.\nPlease select \"%1\" and try again.")
+                    .arg(role));
+            passEdit->clear();
+            passEdit->setFocus();
+            return;
+        }
+
         if (role == Constants::Role::Admin)
         {
             QVector<QStringList> admins = CsvHandler::readCsv("admins.csv");
