@@ -34,9 +34,12 @@ public slots:
     void onSaveAttendanceClicked();
     void onCheckAttendanceWarningsClicked();
     void onDailyAttendanceClicked();
+    void onSendGradeReportsClicked();
+    void onSendPersonalMessageClicked();
     void onGPACalculatorClicked();
     void onExportReportClicked();
     void onAttendanceSimulatorClicked();
+    void onOpenInboxClicked();
 
 private:
     Ui::MainWindow *ui;
@@ -48,4 +51,7 @@ private:
     QPushButton *btnExport    = nullptr;
     QPushButton *btnAttendSim = nullptr;
     QPushButton *btnDailyAttendance = nullptr;
+    QPushButton *btnSendGradeReports = nullptr;
+    QPushButton *btnSendMessage = nullptr;
+    QPushButton *btnInbox     = nullptr;
 };

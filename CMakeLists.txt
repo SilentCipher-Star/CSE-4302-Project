@@ -95,6 +95,10 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/ui_admin.cpp
     include/ui_teacher_attendance.hpp
     src/ui_teacher_attendance.cpp
+    include/manager_messages.hpp
+    src/manager_messages.cpp
+    include/ui_personal_inbox.hpp
+    src/ui_personal_inbox.cpp
     include/ui_calendar.hpp
     src/ui_calendar.cpp
     include/theme_toggle.hpp

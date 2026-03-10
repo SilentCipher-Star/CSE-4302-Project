@@ -9,6 +9,7 @@
 #include "../include/student_iterator.hpp"
 #include "../include/attendance_simulator.hpp"
 #include "../include/ui_teacher_attendance.hpp"
+#include "../include/ui_personal_inbox.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
@@ -26,6 +27,8 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
+#include <QLineEdit>
+#include <QTextEdit>
 
 namespace
 {
@@ -67,6 +70,16 @@ UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString r
         btnDailyAttendance->setStyleSheet("padding: 6px 14px; font-weight: bold;");
         ui->hbox_attendance_controls->addWidget(btnDailyAttendance);
         connect(btnDailyAttendance, &QPushButton::clicked, this, &UIAcademics::onDailyAttendanceClicked);
+
+        btnSendGradeReports = new QPushButton("Send Grade Reports");
+        btnSendGradeReports->setStyleSheet("padding: 6px 14px; font-weight: bold;");
+        ui->hbox_attendance_controls->addWidget(btnSendGradeReports);
+        connect(btnSendGradeReports, &QPushButton::clicked, this, &UIAcademics::onSendGradeReportsClicked);
+
+        btnSendMessage = new QPushButton("Send Personal Message");
+        btnSendMessage->setStyleSheet("padding: 6px 14px;");
+        ui->hbox_attendance_controls->addWidget(btnSendMessage);
+        connect(btnSendMessage, &QPushButton::clicked, this, &UIAcademics::onSendPersonalMessageClicked);
     }
     else if (role == "Student")
     {
@@ -89,6 +102,11 @@ UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString r
         btnAttendSim->setMaximumWidth(220);
         btnRow->addWidget(btnAttendSim);
         connect(btnAttendSim, &QPushButton::clicked, this, &UIAcademics::onAttendanceSimulatorClicked);
+
+        btnInbox = new QPushButton("Inbox");
+        btnInbox->setMaximumWidth(200);
+        btnRow->addWidget(btnInbox);
+        connect(btnInbox, &QPushButton::clicked, this, &UIAcademics::onOpenInboxClicked);
 
         btnRow->addStretch();
 
@@ -700,4 +718,153 @@ void UIAcademics::onDailyAttendanceClicked()
     TeacherAttendanceDialog dlg(myManager, userId, nullptr);
     dlg.exec();
     refreshTeacherAttendance();
+}
+
+void UIAcademics::onSendGradeReportsClicked()
+{
+    if (ui->comboTeacherAssessment->count() == 0)
+    {
+        QMessageBox::warning(nullptr, "No Assessments", "No assessments found. Create an assessment first.");
+        return;
+    }
+
+    int assessmentId = ui->comboTeacherAssessment->currentData().toInt();
+    QString assessName = ui->comboTeacherAssessment->currentText();
+
+    // Ask for optional note
+    bool ok;
+    QString note = QInputDialog::getMultiLineText(nullptr, "Send Grade Reports",
+        QString("Sending personal grade reports for:\n%1\n\nAdd an optional note to all students (leave empty for none):").arg(assessName),
+        "", &ok);
+    if (!ok) return;
+
+    int count = myManager->sendBulkGradeReports(userId, assessmentId, note);
+
+    if (count > 0)
+        QMessageBox::information(nullptr, "Sent",
+            QString("Successfully sent %1 personal grade report(s).\n\nEach student will see their own marks privately in their Inbox.").arg(count));
+    else
+        QMessageBox::warning(nullptr, "Failed", "No grade reports could be sent. Make sure students are enrolled.");
+}
+
+void UIAcademics::onSendPersonalMessageClicked()
+{
+    // Get list of courses to find students
+    QVector<Course *> courses = myManager->getTeacherCourses(userId);
+    if (courses.isEmpty())
+    {
+        QMessageBox::warning(nullptr, "No Courses", "You have no courses assigned.");
+        return;
+    }
+
+    QDialog dlg;
+    dlg.setWindowTitle("Send Personal Message");
+    dlg.setMinimumWidth(450);
+
+    QVBoxLayout *layout = new QVBoxLayout(&dlg);
+
+    // Course selection
+    layout->addWidget(new QLabel("Select Course:"));
+    QComboBox *comboCourse = new QComboBox();
+    for (auto *c : courses)
+        comboCourse->addItem(c->getCode() + " - " + c->getName(), c->getId());
+    layout->addWidget(comboCourse);
+
+    // Student selection
+    layout->addWidget(new QLabel("Select Student:"));
+    QComboBox *comboStudent = new QComboBox();
+    layout->addWidget(comboStudent);
+
+    // Populate students when course changes
+    auto populateStudents = [&](int index) {
+        comboStudent->clear();
+        if (index < 0) return;
+        int cid = comboCourse->currentData().toInt();
+        std::unique_ptr<Course> c(myManager->getCourse(cid));
+        if (!c) return;
+
+        QVector<Student *> students = myManager->getStudentsByEnrollment(cid);
+        if (students.isEmpty())
+            students = myManager->getStudentsBySemester(c->getSemester());
+
+        comboStudent->addItem("-- All Students --", -1);
+        for (auto *s : students)
+            comboStudent->addItem(QString("%1 - %2").arg(s->getId()).arg(s->getName()), s->getId());
+        qDeleteAll(students);
+    };
+    connect(comboCourse, QOverload<int>::of(&QComboBox::currentIndexChanged), populateStudents);
+    populateStudents(0);
+
+    // Subject
+    layout->addWidget(new QLabel("Subject:"));
+    QLineEdit *editSubject = new QLineEdit();
+    editSubject->setPlaceholderText("e.g., Regarding your performance...");
+    layout->addWidget(editSubject);
+
+    // Message body
+    layout->addWidget(new QLabel("Message:"));
+    QTextEdit *editBody = new QTextEdit();
+    editBody->setMinimumHeight(120);
+    editBody->setPlaceholderText("Type your message here...");
+    layout->addWidget(editBody);
+
+    QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    bbox->button(QDialogButtonBox::Ok)->setText("Send");
+    layout->addWidget(bbox);
+    connect(bbox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(bbox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+
+    qDeleteAll(courses);
+
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    QString subject = editSubject->text().trimmed();
+    QString body = editBody->toPlainText().trimmed();
+    if (subject.isEmpty() || body.isEmpty())
+    {
+        QMessageBox::warning(nullptr, "Incomplete", "Please provide both subject and message.");
+        return;
+    }
+
+    int targetStudentId = comboStudent->currentData().toInt();
+
+    if (targetStudentId == -1)
+    {
+        // Send to all students in course
+        int cid = comboCourse->currentData().toInt();
+        std::unique_ptr<Course> c(myManager->getCourse(cid));
+        if (!c) return;
+
+        QVector<Student *> students = myManager->getStudentsByEnrollment(cid);
+        if (students.isEmpty())
+            students = myManager->getStudentsBySemester(c->getSemester());
+
+        for (auto *s : students)
+            myManager->sendMessage(userId, "Teacher", s->getId(), subject, body);
+
+        int count = students.size();
+        qDeleteAll(students);
+        QMessageBox::information(nullptr, "Sent", QString("Message sent to %1 student(s).").arg(count));
+    }
+    else
+    {
+        myManager->sendMessage(userId, "Teacher", targetStudentId, subject, body);
+        QMessageBox::information(nullptr, "Sent", "Message sent successfully!");
+    }
+}
+
+void UIAcademics::onOpenInboxClicked()
+{
+    PersonalInboxDialog dlg(myManager, userId, userRole, nullptr);
+    dlg.exec();
+
+    // Update inbox button text with unread count
+    int unread = myManager->getUnreadMessageCount(userId);
+    if (btnInbox)
+    {
+        if (unread > 0)
+            btnInbox->setText(QString("Inbox (%1)").arg(unread));
+        else
+            btnInbox->setText("Inbox");
+    }
 }
