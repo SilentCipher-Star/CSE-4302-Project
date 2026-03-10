@@ -172,7 +172,7 @@ public:
     AcadenceManager();
 
     // Add delegates - these call the manager modules and notify observers
-    QString login(const QString &username, const QString &password, int &userId);
+    QString login(const QString &username, const QString &password, int &userId, const QString &role);
     bool changePassword(int userId, const QString &role, const QString &oldPass, const QString &newPass);
 
     QVector<Notice> getNotices();

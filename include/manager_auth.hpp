@@ -8,7 +8,7 @@
 class ManagerAuth
 {
 public:
-    static QString login(const QString &username, const QString &password, int &userId);
+    static QString login(const QString &username, const QString &password, int &userId, const QString &role);
     static bool changePassword(int userId, const QString &role, const QString &oldPass, const QString &newPass);
     static QString getDashboardStats(int userId, QString role);
 };

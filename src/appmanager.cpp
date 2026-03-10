@@ -30,9 +30,9 @@ void AcadenceManager::notifyObservers(DataType type)
 }
 
 // ============ Authentication ============
-QString AcadenceManager::login(const QString &username, const QString &password, int &userId)
+QString AcadenceManager::login(const QString &username, const QString &password, int &userId, const QString &role)
 {
-    return ManagerAuth::login(username, password, userId);
+    return ManagerAuth::login(username, password, userId, role);
 }
 
 bool AcadenceManager::changePassword(int userId, const QString &role, const QString &oldPass, const QString &newPass)

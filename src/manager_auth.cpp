@@ -4,37 +4,50 @@
 #include <QDebug>
 #include <algorithm>
 
-QString ManagerAuth::login(const QString &username, const QString &password, int &userId)
+QString ManagerAuth::login(const QString &username, const QString &password, int &userId, const QString &role)
 {
-    QVector<QStringList> admins = CsvHandler::readCsv("admins.csv");
-    for (const auto &row : admins)
+    if (role == "Admin")
     {
-        if (row.size() >= 3 && row[1] == username && row[2] == password)
+        QVector<QStringList> admins = CsvHandler::readCsv("admins.csv");
+        for (const auto &row : admins)
         {
-            userId = row[0].toInt();
-            return "Admin";
+            if (row.size() >= 3 && row[1].trimmed() == username && row[2].trimmed() == password)
+            {
+                userId = row[0].toInt();
+                return "Admin";
+            }
         }
+        return "";
     }
 
-    QVector<QStringList> students = CsvHandler::readCsv("students.csv");
-    for (const auto &row : students)
+    if (role == "Student")
     {
-        if (row.size() >= 5 && row[3] == username && row[4] == password)
+        QVector<QStringList> students = CsvHandler::readCsv("students.csv");
+        for (const auto &row : students)
         {
-            userId = row[0].toInt();
-            return "Student";
+            if (row.size() >= 5 && row[3].trimmed() == username && row[4].trimmed() == password)
+            {
+                userId = row[0].toInt();
+                return "Student";
+            }
         }
+        return "";
     }
 
-    QVector<QStringList> teachers = CsvHandler::readCsv("teachers.csv");
-    for (const auto &row : teachers)
+    if (role == "Teacher")
     {
-        if (row.size() >= 5 && row[3] == username && row[4] == password)
+        QVector<QStringList> teachers = CsvHandler::readCsv("teachers.csv");
+        for (const auto &row : teachers)
         {
-            userId = row[0].toInt();
-            return "Teacher";
+            if (row.size() >= 5 && row[3].trimmed() == username && row[4].trimmed() == password)
+            {
+                userId = row[0].toInt();
+                return "Teacher";
+            }
         }
+        return "";
     }
+
     return "";
 }
 

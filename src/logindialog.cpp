@@ -440,7 +440,7 @@ void LoginDialog::onLoginClicked()
     AcadenceManager manager;
     try
     {
-        role = manager.login(inputUsername, inputPassword, userId);
+        role = manager.login(inputUsername, inputPassword, userId, m_selectedRole);
     }
     catch (const Acadence::Exception &e)
     {
@@ -450,16 +450,6 @@ void LoginDialog::onLoginClicked()
 
     if (!role.isEmpty())
     {
-        // Validate selected role matches actual credentials
-        if (role != m_selectedRole)
-        {
-            QMessageBox::warning(this, "Wrong Role",
-                QString("These credentials belong to a %1 account.\nPlease select \"%1\" and try again.")
-                    .arg(role));
-            passEdit->clear();
-            passEdit->setFocus();
-            return;
-        }
 
         if (role == Constants::Role::Admin)
         {
