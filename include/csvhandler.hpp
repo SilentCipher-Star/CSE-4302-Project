@@ -1,0 +1,14 @@
+#pragma once
+#include <QString>
+#include <QVector>
+#include <QStringList>
+
+class CsvHandler
+{
+public:
+    static QString getDataDirectory();
+    static QVector<QStringList> readCsv(const QString &filename);
+    static void writeCsv(const QString &filename, const QVector<QStringList> &data);
+    static void appendCsv(const QString &filename, const QStringList &fields);
+    static void initialize();
+};

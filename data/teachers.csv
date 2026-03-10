@@ -1,0 +1,66 @@
+101, John Doe      , john.doe@school.edu      , jdoe     , 123456, CSE, Professor          , 80000.00
+102, Jane Smith    , jane.smith@school.edu    , jsmith   , 123456, CSE, Lecturer           , 60000.00
+103, Peter Jones   , peter.jones@school.edu   , pjones   , 123456, CSE, Professor          , 75000.00
+104, Alice Brown   , alice.brown@school.edu   , abrown   , 123456, CSE, Assistant Professor, 65000.00
+105, Bob Johnson   , bob.johnson@school.edu   , bjohn    , 123456, CSE, Lecturer           , 60000.00
+106, Lisa Davis    , lisa.davis@school.edu    , ldavis   , 123456, CSE, Professor          , 75000.00
+107, Mike Wilson   , mike.wilson@school.edu   , mwilson  , 123456, CSE, Assistant Professor, 65000.00
+108, Sarah Lee     , sarah.lee@school.edu     , slee     , 123456, CSE, Lecturer           , 60000.00
+109, David Garcia  , david.garcia@school.edu  , dgarcia  , 123456, CSE, Professor          , 75000.00
+110, Emma Martinez , emma.martinez@school.edu , emartinez, 123456, CSE, Assistant Professor, 65000.00
+111, Alex Johnson  , alex.johnson@school.edu  , ajohn    , 123456, CSE, Lecturer           , 60000.00
+112, Thomas Lee    , thomas.lee@school.edu    , tlee     , 123456, CSE, Professor          , 75000.00
+113, Olivia Brown  , olivia.brown@school.edu  , obrown   , 123456, CEE, Assistant Professor, 65000.00
+114, James Wilson  , james.wilson@school.edu  , jwilson  , 123456, CSE, Lecturer           , 60000.00
+115, Lily Davis    , lily.davis@school.edu    , ldavis   , 123456, CSE, Professor          , 75000.00
+116, William Garcia, william.garcia@school.edu, wgarcia  , 123456, CSE, Assistant Professor, 65000.00
+117, Ava Martinez  , ava.martinez@school.edu  , amartinez, 123456, CSE, Lecturer           , 60000.00
+118, Daniel Lee    , daniel.lee@school.edu    , dlee     , 123456, CSE, Professor          , 75000.00
+119, Sophia Brown  , sophia.brown@school.edu  , sbrown   , 123456, CSE, Assistant Professor, 65000.00
+120, John Smith    , john.smith@school.edu    , jsmith   , 123456, CEE, Lecturer           , 60000.00
+121, Robert Taylor , robert.taylor@school.edu , rtaylor  , 123456, CSE, Assistant Professor, 65000.00
+122, Mary Anderson , mary.anderson@school.edu , manderson, 123456, CSE, Lecturer           , 60000.00
+123, Patricia Thomas, patricia.thomas@school.edu, pthomas, 123456, CSE, Professor          , 75000.00
+124, Jennifer Jackson, jennifer.jackson@school.edu, jjackson, 123456, CSE, Assistant Professor, 65000.00
+125, Linda White   , linda.white@school.edu   , lwhite   , 123456, CSE, Lecturer           , 60000.00
+126, Elizabeth Harris, elizabeth.harris@school.edu, eharris, 123456, CSE, Professor          , 75000.00
+127, Barbara Martin, barbara.martin@school.edu, bmartin  , 123456, CSE, Assistant Professor, 65000.00
+128, Susan Thompson, susan.thompson@school.edu, sthompson, 123456, CSE, Lecturer           , 60000.00
+129, Jessica Garcia, jessica.garcia@school.edu, jgarcia  , 123456, CSE, Professor          , 75000.00
+130, Sarah Martinez, sarah.martinez@school.edu, smartinez, 123456, CSE, Assistant Professor, 65000.00
+131, Karen Robinson, karen.robinson@school.edu, krobinson, 123456, CSE, Lecturer           , 60000.00
+132, Nancy Clark   , nancy.clark@school.edu   , nclark   , 123456, CSE, Professor          , 75000.00
+133, Lisa Rodriguez, lisa.rodriguez@school.edu, lrodriguez, 123456, CSE, Assistant Professor, 65000.00
+134, Margaret Lewis, margaret.lewis@school.edu, mlewis   , 123456, CSE, Lecturer           , 60000.00
+135, Betty Lee     , betty.lee@school.edu     , blee     , 123456, CSE, Professor          , 75000.00
+136, Sandra Walker , sandra.walker@school.edu , swalker  , 123456, CSE, Assistant Professor, 65000.00
+137, Ashley Hall   , ashley.hall@school.edu   , ahall    , 123456, CSE, Lecturer           , 60000.00
+138, Dorothy Allen , dorothy.allen@school.edu , dallen   , 123456, CSE, Professor          , 75000.00
+139, Kimberly Young, kimberly.young@school.edu, kyoung   , 123456, CSE, Assistant Professor, 65000.00
+140, Emily Hernandez, emily.hernandez@school.edu, ehernandez, 123456, CSE, Lecturer           , 60000.00
+141, Donna King    , donna.king@school.edu    , dking    , 123456, CSE, Professor          , 75000.00
+142, Michelle Wright, michelle.wright@school.edu, mwright, 123456, CSE, Assistant Professor, 65000.00
+143, Carol Lopez   , carol.lopez@school.edu   , clopez   , 123456, CSE, Lecturer           , 60000.00
+144, Amanda Hill   , amanda.hill@school.edu   , ahill    , 123456, CSE, Professor          , 75000.00
+145, Melissa Scott , melissa.scott@school.edu , mscott   , 123456, CSE, Assistant Professor, 65000.00
+146, Deborah Green , deborah.green@school.edu , dgreen   , 123456, CSE, Lecturer           , 60000.00
+147, Stephanie Adams, stephanie.adams@school.edu, sadams , 123456, CSE, Professor          , 75000.00
+148, Rebecca Baker , rebecca.baker@school.edu , rbaker   , 123456, CSE, Assistant Professor, 65000.00
+149, Sharon Gonzalez, sharon.gonzalez@school.edu, sgonzalez, 123456, CSE, Lecturer           , 60000.00
+150, Laura Nelson  , laura.nelson@school.edu  , lnelson  , 123456, CSE, Professor          , 75000.00
+151, Cynthia Carter, cynthia.carter@school.edu, ccarter  , 123456, CSE, Assistant Professor, 65000.00
+152, Kathleen Mitchell, kathleen.mitchell@school.edu, kmitchell, 123456, CSE, Lecturer           , 60000.00
+153, Amy Perez     , amy.perez@school.edu     , aperez   , 123456, CSE, Professor          , 75000.00
+154, Shirley Roberts, shirley.roberts@school.edu, sroberts, 123456, CSE, Assistant Professor, 65000.00
+155, Angela Turner , angela.turner@school.edu , aturner  , 123456, CSE, Lecturer           , 60000.00
+156, Helen Phillips, helen.phillips@school.edu, hphillips, 123456, CSE, Professor          , 75000.00
+157, Anna Campbell , anna.campbell@school.edu , acampbell, 123456, CSE, Assistant Professor, 65000.00
+158, Brenda Parker , brenda.parker@school.edu , bparker  , 123456, CSE, Lecturer           , 60000.00
+159, Pamela Evans  , pamela.evans@school.edu  , pevans   , 123456, CSE, Professor          , 75000.00
+160, Nicole Edwards, nicole.edwards@school.edu, nedwards , 123456, CSE, Assistant Professor, 65000.00
+161, Samantha Collins, samantha.collins@school.edu, scollins, 123456, CSE, Lecturer           , 60000.00
+162, Katherine Stewart, katherine.stewart@school.edu, kstewart, 123456, CSE, Professor          , 75000.00
+163, Christine Sanchez, christine.sanchez@school.edu, csanchez, 123456, CSE, Assistant Professor, 65000.00
+164, Debra Morris  , debra.morris@school.edu  , dmorris  , 123456, CSE, Lecturer           , 60000.00
+165, Rachel Rogers , rachel.rogers@school.edu , rrogers  , 123456, CSE, Professor          , 75000.00
+   
