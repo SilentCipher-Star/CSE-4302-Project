@@ -95,6 +95,7 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/ui_admin.cpp
     include/ui_calendar.hpp
     src/ui_calendar.cpp
+    include/theme_toggle.hpp
 )
 
 target_link_libraries(Acadence PRIVATE Qt6::Widgets)

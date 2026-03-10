@@ -8,6 +8,7 @@
 #include "theme.hpp"
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
+#include "theme_toggle.hpp"
 
 // Forward declarations
 QT_BEGIN_NAMESPACE
@@ -68,11 +69,12 @@ private:
     // Initialization Helpers
     void setupTables();
     void setupConnections();
-    void toggleDarkMode();
+    void toggleDarkMode(bool isDark);
     void onThemeClicked();
 
-    QPushButton *m_darkModeBtn = nullptr;
-    QPushButton *m_themeBtn = nullptr;
-    bool m_darkMode = false;
-    AppTheme m_userTheme;
+    ThemeToggle *m_toggle     = nullptr;
+    QPushButton *m_themeBtn   = nullptr;
+    bool         m_darkMode   = false;
+    int          m_darkThemeIndex = 0;
+    AppTheme     m_userTheme;
 };

@@ -1,7 +1,7 @@
-1,201,test,Duration,Daily,1,0.0000,1,2026-03-09,0,
-2,201,test2,Workout,Daily,1|10,0.2358|1,0,2026-03-09,0,pushups
-3,201,Read textbook,Count,Daily,20,20,1,2026-03-09,1,pages
-4,201,Focused study,Duration,Daily,90,0.0000,0,2026-03-09,0,
+1,201,test,Duration,Daily,1,0.0000,0,2026-03-10,0,
+2,201,test2,Workout,Daily,1|10,0.0000|0,0,2026-03-10,0,pushups
+3,201,Read textbook,Count,Daily,20,0,1,2026-03-10,0,pages
+4,201,Focused study,Duration,Daily,90,0.0000,0,2026-03-10,0,
 5,202,Read textbook,Count,Daily,20,16,3,2026-03-06,0,pages
 6,202,Focused study,Duration,Daily,90,32.8742,2,2026-03-06,0,
 7,203,Read textbook,Count,Daily,20,12,1,2026-03-06,0,pages

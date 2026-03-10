@@ -19,6 +19,7 @@
 #include <QResizeEvent>
 #include <QTimer>
 #include <QDate>
+#include <QSettings>
 
 MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), userRole(role), userId(uid), userName(name)
@@ -33,29 +34,44 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     cornerLayout->setContentsMargins(0, 0, 6, 0);
     cornerLayout->setSpacing(6);
 
-    // Detect the current theme applied from LoginDialog
-    auto themes = ThemeManager::getAvailableThemes();
-    if (!themes.isEmpty())
-        m_userTheme = themes[0]; // Default fallback
+    // ── Load persisted theme settings ──
+    QSettings settings("Acadence", "Acadence");
+    m_darkMode        = settings.value("theme/darkMode",  false).toBool();
+    m_darkThemeIndex  = settings.value("theme/darkIndex", 0).toInt();
+    QString savedName = settings.value("theme/name",      "").toString();
 
-    QString currentBg = QApplication::palette().color(QPalette::Window).name(QColor::HexRgb);
+    auto themes = ThemeManager::getAvailableThemes();
+    if (!themes.isEmpty()) m_userTheme = themes[0];
     for (const auto &t : themes)
     {
-        if (QColor(t.background).name(QColor::HexRgb) == currentBg)
-        {
-            m_userTheme = t;
-            break;
-        }
+        if (t.name.trimmed() == savedName.trimmed())
+        { m_userTheme = t; break; }
     }
 
-    m_themeBtn = new QPushButton("Theme", cornerContainer);
+    // Apply the persisted theme now
+    if (m_darkMode)
+    {
+        auto dark = ThemeManager::getDarkThemes();
+        m_darkThemeIndex = qBound(0, m_darkThemeIndex, dark.size() - 1);
+        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
+                                 dark[m_darkThemeIndex]);
+    }
+    else
+    {
+        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
+                                 m_userTheme);
+    }
+
+    // ── Corner widgets ──
+    m_themeBtn = new QPushButton(m_darkMode ? "Dark Theme" : "Theme", cornerContainer);
     connect(m_themeBtn, &QPushButton::clicked, this, &MainWindow::onThemeClicked);
 
-    m_darkModeBtn = new QPushButton("Dark Mode", cornerContainer);
-    connect(m_darkModeBtn, &QPushButton::clicked, this, &MainWindow::toggleDarkMode);
+    m_toggle = new ThemeToggle(cornerContainer);
+    m_toggle->setDark(m_darkMode);
+    connect(m_toggle, &ThemeToggle::toggled, this, &MainWindow::toggleDarkMode);
 
     cornerLayout->addWidget(m_themeBtn);
-    cornerLayout->addWidget(m_darkModeBtn);
+    cornerLayout->addWidget(m_toggle);
     cornerLayout->addWidget(ui->logoutButton);
     ui->tabWidget->setCornerWidget(cornerContainer, Qt::TopRightCorner);
 
@@ -210,45 +226,58 @@ void MainWindow::onDataChanged(DataType type)
     }
 }
 
-void MainWindow::toggleDarkMode()
+void MainWindow::toggleDarkMode(bool isDark)
 {
-    m_darkMode = !m_darkMode;
+    m_darkMode = isDark;
 
-    AppTheme theme;
+    QSettings settings("Acadence", "Acadence");
+    settings.setValue("theme/darkMode", m_darkMode);
+
     if (m_darkMode)
     {
-        theme = {"Midnight", "#1a1b2e", "#252641", "#e2e8f0", "#818cf8"};
-        m_darkModeBtn->setText("Light Mode");
-        m_themeBtn->setEnabled(false); // Disable theme cycling in dark mode
+        auto dark = ThemeManager::getDarkThemes();
+        m_darkThemeIndex = qBound(0, m_darkThemeIndex, dark.size() - 1);
+        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
+                                 dark[m_darkThemeIndex]);
+        m_themeBtn->setText("Dark Theme");
+        settings.setValue("theme/darkIndex", m_darkThemeIndex);
     }
     else
     {
-        theme = m_userTheme;
-        m_darkModeBtn->setText("Dark Mode");
-        m_themeBtn->setEnabled(true);
+        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
+                                 m_userTheme);
+        m_themeBtn->setText("Theme");
+        settings.setValue("theme/name", m_userTheme.name.trimmed());
     }
-
-    ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), theme);
 }
 
 void MainWindow::onThemeClicked()
 {
-    if (m_darkMode)
-        return;
+    QSettings settings("Acadence", "Acadence");
 
+    if (m_darkMode)
+    {
+        // Cycle through dark themes
+        auto dark = ThemeManager::getDarkThemes();
+        m_darkThemeIndex = (m_darkThemeIndex + 1) % dark.size();
+        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
+                                 dark[m_darkThemeIndex]);
+        settings.setValue("theme/darkIndex", m_darkThemeIndex);
+        return;
+    }
+
+    // Cycle through light themes
     auto themes = ThemeManager::getAvailableThemes();
     int idx = -1;
     for (int i = 0; i < themes.size(); ++i)
     {
-        if (themes[i].name == m_userTheme.name)
-        {
-            idx = i;
-            break;
-        }
+        if (themes[i].name.trimmed() == m_userTheme.name.trimmed())
+        { idx = i; break; }
     }
     int nextIdx = (idx + 1) % themes.size();
     m_userTheme = themes[nextIdx];
-    ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), m_userTheme);
+    ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()), m_userTheme);
+    settings.setValue("theme/name", m_userTheme.name.trimmed());
 }
 
 void MainWindow::setupConnections()

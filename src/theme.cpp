@@ -257,3 +257,14 @@ QVector<AppTheme> ThemeManager::getAvailableThemes()
 
     return themes;
 }
+
+QVector<AppTheme> ThemeManager::getDarkThemes()
+{
+    return {
+        {"Midnight",      "#1a1b2e", "#252641", "#e2e8f0", "#818cf8"},
+        {"Obsidian",      "#1c1c1e", "#2c2c2e", "#f2f2f7", "#30d158"},
+        {"Crimson Night", "#1a0808", "#2d1010", "#fde8e8", "#ef4444"},
+        {"Ocean Depth",   "#051020", "#0a1e38", "#dff0ff", "#38bdf8"},
+        {"Amber Dark",    "#1a1200", "#2a1f00", "#fff8e1", "#f59e0b"},
+    };
+}

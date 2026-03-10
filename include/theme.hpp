@@ -29,6 +29,7 @@ public:
     static void applyTheme(QApplication &a, const AppTheme &theme);
 
     static QVector<AppTheme> getAvailableThemes();
+    static QVector<AppTheme> getDarkThemes();
 };
 
 #endif // THEME_HPP
