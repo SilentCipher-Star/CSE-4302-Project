@@ -1,0 +1,206 @@
+Monday,1,101,Islamiat,Hum 4145,John Doe,1
+Monday,2,101,"Technology, Environment and Society",Hum 4147,Jane Smith,1
+Monday,3,101,Geometry and Differential Calculus,Math 4141,Peter Jones,1
+Monday,4,101,Physics I,Phy 4141,Alice Brown,1
+Monday,5,101,Computing for Engineers,CSE 4105,Bob Johnson,1
+Tuesday,1,101,Structured Programming I,CSE 4107,Lisa Davis,1
+Tuesday,2,101,Arabic I,Hum 4142,Mike Wilson,1
+Tuesday,3,101,English I,Hum 4144,Sarah Lee,1
+Tuesday,4,101,Physics I Lab,Phy 4142,David Garcia,1
+Tuesday,5,101,Engineering Drawing Lab,CSE 4104,Emma Martinez,1
+Wednesday,1,101,Structured Programming I Lab,CSE 4108,Alex Johnson,1
+Wednesday,2,101,Islamiat,Hum 4145,John Doe,1
+Wednesday,3,101,"Technology, Environment and Society",Hum 4147,Jane Smith,1
+Wednesday,4,101,Geometry and Differential Calculus,Math 4141,Peter Jones,1
+Wednesday,5,101,Physics I,Phy 4141,Alice Brown,1
+Thursday,1,101,Computing for Engineers,CSE 4105,Bob Johnson,1
+Thursday,2,101,Structured Programming I,CSE 4107,Lisa Davis,1
+Thursday,3,101,Arabic I,Hum 4142,Mike Wilson,1
+Thursday,4,101,English I,Hum 4144,Sarah Lee,1
+Thursday,5,101,Physics I Lab,Phy 4142,David Garcia,1
+Friday,1,101,Engineering Drawing Lab,CSE 4104,Emma Martinez,1
+Friday,2,101,Structured Programming I Lab,CSE 4108,Alex Johnson,1
+Friday,3,101,Islamiat,Hum 4145,John Doe,1
+Friday,4,101,"Technology, Environment and Society",Hum 4147,Jane Smith,1
+Friday,5,101,Geometry and Differential Calculus,Math 4141,Peter Jones,1
+Monday,1,102,Islamic History Science and Culture,Hum 4241,Thomas Lee,2
+Monday,2,102,Integral Calculus and Differential Equations,Math 4241,Olivia Brown,2
+Monday,3,102,Physics II,Phy 4241,James Wilson,2
+Monday,4,102,Chemistry,Chem 4241,Lily Davis,2
+Monday,5,102,Discrete Mathematics,CSE 4203,William Garcia,2
+Tuesday,1,102,Digital Logic Design,CSE 4205,Ava Martinez,2
+Tuesday,2,102,Arabic II,Hum 4242,Daniel Lee,2
+Tuesday,3,102,English II,Hum 4244,Sophia Brown,2
+Tuesday,4,102,Physics II Lab,Phy 4242,John Smith,2
+Tuesday,5,102,Chemistry Lab,Chem 4242,Robert Taylor,2
+Wednesday,1,102,Structured Programming II Lab,CSE 4202,Mary Anderson,2
+Wednesday,2,102,Digital Logic Design Lab,CSE 4206,Patricia Thomas,2
+Wednesday,3,102,Islamic History Science and Culture,Hum 4241,Thomas Lee,2
+Wednesday,4,102,Integral Calculus and Differential Equations,Math 4241,Olivia Brown,2
+Wednesday,5,102,Physics II,Phy 4241,James Wilson,2
+Thursday,1,102,Chemistry,Chem 4241,Lily Davis,2
+Thursday,2,102,Discrete Mathematics,CSE 4203,William Garcia,2
+Thursday,3,102,Digital Logic Design,CSE 4205,Ava Martinez,2
+Thursday,4,102,Arabic II,Hum 4242,Daniel Lee,2
+Thursday,5,102,English II,Hum 4244,Sophia Brown,2
+Friday,1,102,Physics II Lab,Phy 4242,John Smith,2
+Friday,2,102,Chemistry Lab,Chem 4242,Robert Taylor,2
+Friday,3,102,Structured Programming II Lab,CSE 4202,Mary Anderson,2
+Friday,4,102,Digital Logic Design Lab,CSE 4206,Patricia Thomas,2
+Friday,5,102,Islamic History Science and Culture,Hum 4241,Thomas Lee,2
+Monday,1,201,Linear Algebra,Math 4341,Jennifer Jackson,3
+Monday,2,201,Electronic Devices and Circuits,EEE 4383,Linda White,3
+Monday,3,201,Object Oriented Programming,CSE 4301,Elizabeth Harris,3
+Monday,4,201,Data Structures,CSE 4303,Barbara Martin,3
+Monday,5,201,Computer Organization and Architecture,CSE 4305,Susan Thompson,3
+Tuesday,1,201,Database Management Systems,CSE 4307,Jessica Garcia,3
+Tuesday,2,201,Electronic Devices and Circuits Lab,EEE 4384,Sarah Martinez,3
+Tuesday,3,201,Object Oriented Programming Lab,CSE 4302,Karen Robinson,3
+Tuesday,4,201,Data Structures Lab,CSE 4304,Nancy Clark,3
+Tuesday,5,201,Database Management Systems Lab,CSE 4308,Lisa Rodriguez,3
+Wednesday,1,201,Linear Algebra,Math 4341,Jennifer Jackson,3
+Wednesday,2,201,Electronic Devices and Circuits,EEE 4383,Linda White,3
+Wednesday,3,201,Object Oriented Programming,CSE 4301,Elizabeth Harris,3
+Wednesday,4,201,Data Structures,CSE 4303,Barbara Martin,3
+Wednesday,5,201,Computer Organization and Architecture,CSE 4305,Susan Thompson,3
+Thursday,1,201,Database Management Systems,CSE 4307,Jessica Garcia,3
+Thursday,2,201,Electronic Devices and Circuits Lab,EEE 4384,Sarah Martinez,3
+Thursday,3,201,Object Oriented Programming Lab,CSE 4302,Karen Robinson,3
+Thursday,4,201,Data Structures Lab,CSE 4304,Nancy Clark,3
+Thursday,5,201,Database Management Systems Lab,CSE 4308,Lisa Rodriguez,3
+Friday,1,201,Linear Algebra,Math 4341,Jennifer Jackson,3
+Friday,2,201,Electronic Devices and Circuits,EEE 4383,Linda White,3
+Friday,3,201,Object Oriented Programming,CSE 4301,Elizabeth Harris,3
+Friday,4,201,Data Structures,CSE 4303,Barbara Martin,3
+Friday,5,201,Computer Organization and Architecture,CSE 4305,Susan Thompson,3
+Monday,1,202,Engineering Ethics,Hum 4441,Margaret Lewis,4
+Monday,2,202,Probability and Statistics,Math 4441,Betty Lee,4
+Monday,3,202,Digital Electronics and Pulse Techniques,EEE 4483,Sandra Walker,4
+Monday,4,202,Algorithms,CSE 4403,Ashley Hall,4
+Monday,5,202,Data and Telecommunications,CSE 4405,Dorothy Allen,4
+Tuesday,1,202,System Analysis and Design,CSE 4407,Kimberly Young,4
+Tuesday,2,202,Digital Electronics and Pulse Techniques Lab,EEE 4484,Emily Hernandez,4
+Tuesday,3,202,Visual Programming Lab,CSE 4402,Donna King,4
+Tuesday,4,202,Algorithms Lab,CSE 4404,Michelle Wright,4
+Tuesday,5,202,System Analysis and Design Lab,CSE 4408,Carol Lopez,4
+Wednesday,1,202,Engineering Ethics,Hum 4441,Margaret Lewis,4
+Wednesday,2,202,Probability and Statistics,Math 4441,Betty Lee,4
+Wednesday,3,202,Digital Electronics and Pulse Techniques,EEE 4483,Sandra Walker,4
+Wednesday,4,202,Algorithms,CSE 4403,Ashley Hall,4
+Wednesday,5,202,Data and Telecommunications,CSE 4405,Dorothy Allen,4
+Thursday,1,202,System Analysis and Design,CSE 4407,Kimberly Young,4
+Thursday,2,202,Digital Electronics and Pulse Techniques Lab,EEE 4484,Emily Hernandez,4
+Thursday,3,202,Visual Programming Lab,CSE 4402,Donna King,4
+Thursday,4,202,Algorithms Lab,CSE 4404,Michelle Wright,4
+Thursday,5,202,System Analysis and Design Lab,CSE 4408,Carol Lopez,4
+Friday,1,202,Engineering Ethics,Hum 4441,Margaret Lewis,4
+Friday,2,202,Probability and Statistics,Math 4441,Betty Lee,4
+Friday,3,202,Digital Electronics and Pulse Techniques,EEE 4483,Sandra Walker,4
+Friday,4,202,Algorithms,CSE 4403,Ashley Hall,4
+Friday,5,202,Data and Telecommunications,CSE 4405,Dorothy Allen,4
+Monday,1,301,Operating Systems,CSE 4501,Amanda Hill,5
+Monday,2,301,Microprocessor and Assembly Language,CSE 4503,Melissa Scott,5
+Monday,3,301,Computer Networks,CSE 4511,Deborah Green,5
+Monday,4,301,Software Engineering and ObjectOriented Design,CSE 4513,Stephanie Adams,5
+Monday,5,301,Operating Systems Lab,CSE 4502,Rebecca Baker,5
+Tuesday,1,301,Microprocessor and Assembly Language Lab,CSE 4504,Sharon Gonzalez,5
+Tuesday,2,301,RDBMS Programming Lab,CSE 4508,Laura Nelson,5
+Tuesday,3,301,Software Development,CSE 4510,Cynthia Carter,5
+Tuesday,4,301,Computer Networks Lab,CSE 4512,Kathleen Mitchell,5
+Tuesday,5,301,Multivariable Calculus and Complex Variables,Math 4541,Amy Perez,5
+Wednesday,1,301,E-Commerce and Web Security,CSE 4531,Shirley Roberts,5
+Wednesday,2,301,Decision Support Systems,CSE 4537,Angela Turner,5
+Wednesday,3,301,Parallel and Distributed Systems,CSE 4547,Helen Phillips,5
+Wednesday,4,301,Web Programming,CSE 4539,Anna Campbell,5
+Wednesday,5,301,Geographical Information Systems,CSE 4543,Brenda Parker,5
+Thursday,1,301,Simulation and Modeling,CSE 4549,Pamela Evans,5
+Thursday,2,301,Computer Graphics and Multimedia Systems,CSE 4551,Nicole Edwards,5
+Thursday,3,301,Web Programming Lab,CSE 4540,Samantha Collins,5
+Thursday,4,301,Geographical Information Systems Lab,CSE 4544,Katherine Stewart,5
+Thursday,5,301,Simulation and Modeling Lab,CSE 4550,Christine Sanchez,5
+Friday,1,301,Computer Graphics and Multimedia Systems Lab,CSE 4552,Debra Morris,5
+Friday,2,301,Operating Systems,CSE 4501,Amanda Hill,5
+Friday,3,301,Microprocessor and Assembly Language,CSE 4503,Melissa Scott,5
+Friday,4,301,Computer Networks,CSE 4511,Deborah Green,5
+Friday,5,301,Software Engineering and ObjectOriented Design,CSE 4513,Stephanie Adams,5
+Monday,1,302,Accounting,Hum 4641,John Doe,6
+Monday,2,302,Wireless Networks,CSE 4615,Jane Smith,6
+Monday,3,302,Peripherals and Interfacing,CSE 4619,Peter Jones,6
+Monday,4,302,Machine Learning,CSE 4621,Alice Brown,6
+Monday,5,302,Design Project,CSE 4610,Bob Johnson,6
+Tuesday,1,302,Technical Report Writing,CSE 4614,Lisa Davis,6
+Tuesday,2,302,Wireless Networks Lab,CSE 4616,Mike Wilson,6
+Tuesday,3,302,Peripherals and Interfacing Lab,CSE 4620,Sarah Lee,6
+Tuesday,4,302,Machine Learning Lab,CSE 4622,David Garcia,6
+Tuesday,5,302,Numerical Methods,Math 4641,Emma Martinez,6
+Wednesday,1,302,Distributed Operating Systems,CSE 4641,Alex Johnson,6
+Wednesday,2,302,Mobile Application Development,CSE 4643,Thomas Lee,6
+Wednesday,3,302,Distributed Database Systems,CSE 4647,Olivia Brown,6
+Wednesday,4,302,Numerical Methods Lab,Math 4642,James Wilson,6
+Wednesday,5,302,Distributed Operating Systems Lab,CSE 4642,Lily Davis,6
+Thursday,1,302,Mobile Application Development Lab,CSE 4644,William Garcia,6
+Thursday,2,302,Distributed Database Systems Lab,CSE 4648,Ava Martinez,6
+Thursday,3,302,Digital Signal Processing,CSE 4631,Daniel Lee,6
+Thursday,4,302,Web Architecture,CSE 4635,Sophia Brown,6
+Thursday,5,302,Systems Programming,CSE 4649,John Smith,6
+Friday,1,302,Unix Programming,CSE 4651,Robert Taylor,6
+Friday,2,302,Digital Signal Processing Lab,CSE 4632,Mary Anderson,6
+Friday,3,302,Web Architecture Lab,CSE 4636,Patricia Thomas,6
+Friday,4,302,Systems Programming Lab,CSE 4650,Jennifer Jackson,6
+Friday,5,302,Unix Programming Lab,CSE 4652,Linda White,6
+Monday,1,401,Business Communication and Law,Hum 4741,Elizabeth Harris,7
+Monday,2,401,Engineering Economics,Hum 4743,Barbara Martin,7
+Monday,3,401,International Relationship,Hum 4745,Susan Thompson,7
+Monday,4,401,Mathematical Analysis,Math 4741,Jessica Garcia,7
+Monday,5,401,Theory of Computing,CSE 4703,Sarah Martinez,7
+Tuesday,1,401,Artificial Intelligence,CSE 4711,Karen Robinson,7
+Tuesday,2,401,Artificial Intelligence Lab,CSE 4712,Nancy Clark,7
+Tuesday,3,401,Project/Thesis,CSE 4700,Lisa Rodriguez,7
+Tuesday,4,401,Industrial Training,CSE 4790,Margaret Lewis,7
+Tuesday,5,401,Data Mining,CSE 4739,Betty Lee,7
+Wednesday,1,401,Cryptography and Network Security,CSE 4743,Sandra Walker,7
+Wednesday,2,401,Embedded Systems Design,CSE 4745,Ashley Hall,7
+Wednesday,3,401,Computational Biology,CSE 4747,Dorothy Allen,7
+Wednesday,4,401,Digital Image Processing,CSE 4733,Kimberly Young,7
+Wednesday,5,401,Digital Systems Design,CSE 4735,Emily Hernandez,7
+Thursday,1,401,Introduction to Cloud Computing,CSE 4749,Donna King,7
+Thursday,2,401,Network Programming,CSE 4751,Michelle Wright,7
+Thursday,3,401,Bioinformatics,CSE 4753,Carol Lopez,7
+Thursday,4,401,Digital Image Processing Lab,CSE 4734,Amanda Hill,7
+Thursday,5,401,Digital Systems Design Lab,CSE 4736,Melissa Scott,7
+Friday,1,401,Introduction to Cloud Computing Lab,CSE 4750,Deborah Green,7
+Friday,2,401,Network Programming Lab,CSE 4752,Stephanie Adams,7
+Friday,3,401,Bioinformatics Lab,CSE 4754,Rebecca Baker,7
+Friday,4,401,Business Communication and Law,Hum 4741,Elizabeth Harris,7
+Friday,5,401,Engineering Economics,Hum 4743,Barbara Martin,7
+Monday,1,402,Compiler Design,CSE 4801,Sharon Gonzalez,8
+Monday,2,402,Graph Theory,CSE 4803,Laura Nelson,8
+Monday,3,402,IT Organization and Management,CSE 4807,Cynthia Carter,8
+Monday,4,402,Algorithm Engineering,CSE 4809,Kathleen Mitchell,8
+Monday,5,402,Compiler Design Lab,CSE 4802,Amy Perez,8
+Tuesday,1,402,Algorithm Engineering Lab,CSE 4810,Shirley Roberts,8
+Tuesday,2,402,Project/Thesis,CSE 4800,Angela Turner,8
+Tuesday,3,402,Introduction to Optimization,CSE 4841,Helen Phillips,8
+Tuesday,4,402,Introduction to Information Retrieval,CSE 4845,Anna Campbell,8
+Tuesday,5,402,Information and OS Security,CSE 4847,Brenda Parker,8
+Wednesday,1,402,Human Computer Interaction,CSE 4849,Pamela Evans,8
+Wednesday,2,402,Design Pattern,CSE 4851,Nicole Edwards,8
+Wednesday,3,402,VLSI Design and Testing,CSE 4833,Samantha Collins,8
+Wednesday,4,402,Pattern Recognition,CSE 4835,Katherine Stewart,8
+Wednesday,5,402,Internetworking Protocols,CSE 4839,Christine Sanchez,8
+Thursday,1,402,VLSI Design and Testing Lab,CSE 4834,Debra Morris,8
+Thursday,2,402,Pattern Recognition Lab,CSE 4836,Rachel Rogers,8
+Thursday,3,402,Internetworking Protocols Lab,CSE 4840,John Doe,8
+Thursday,4,402,Compiler Design,CSE 4801,Sharon Gonzalez,8
+Thursday,5,402,Graph Theory,CSE 4803,Laura Nelson,8
+Friday,1,402,IT Organization and Management,CSE 4807,Cynthia Carter,8
+Friday,2,402,Algorithm Engineering,CSE 4809,Kathleen Mitchell,8
+Friday,3,402,Compiler Design Lab,CSE 4802,Amy Perez,8
+Friday,4,402,Algorithm Engineering Lab,CSE 4810,Shirley Roberts,8
+Friday,5,402,Project/Thesis,CSE 4800,Angela Turner,8
+Saturday,1,CSE 4301,Object Oriented Programming,201,Dr. Smith,1
+Saturday,2,CSE 4302,OOP Lab,Lab-1,Dr. Johnson,1
+Saturday,3,Math 4201,Linear Algebra,102,Prof. Lee,1
+Saturday,1,CSE 4301,Object Oriented Programming,201,Dr. Smith,1
+Saturday,2,CSE 4302,OOP Lab,Lab-1,Dr. Johnson,1
+Saturday,3,Math 4201,Linear Algebra,102,Prof. Lee,1
