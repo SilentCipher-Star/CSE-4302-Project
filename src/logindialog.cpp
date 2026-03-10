@@ -13,6 +13,10 @@
 #include <QKeyEvent>
 #include <QScreen>
 #include <QTimer>
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
+#include <QParallelAnimationGroup>
+#include <QtMath>
 
 // ── Sticker definitions: symbol · x-ratio · y-ratio · font-size (px) ──────
 struct StickerDef
@@ -67,21 +71,21 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     mainLayout->addSpacing(10);
 
     // App title
-    QLabel *welcomeLabel = new QLabel("Acadence", this);
-    welcomeLabel->setAlignment(Qt::AlignCenter);
-    welcomeLabel->setStyleSheet(
+    m_welcomeLabel = new QLabel("Acadence", this);
+    m_welcomeLabel->setAlignment(Qt::AlignCenter);
+    m_welcomeLabel->setStyleSheet(
         QString("font-size:%1; font-weight:bold; letter-spacing:4px; background:transparent;")
             .arg(AppFonts::Title));
-    mainLayout->addWidget(welcomeLabel, 0, Qt::AlignCenter);
+    mainLayout->addWidget(m_welcomeLabel, 0, Qt::AlignCenter);
 
     // Dreamy subtitle
-    QLabel *taglineLabel = new QLabel(
+    m_taglineLabel = new QLabel(
         QString::fromUtf8("\xe2\x9c\xa7  your campus  \xc2\xb7  your schedule  \xc2\xb7  your success  \xe2\x9c\xa7"), this);
-    taglineLabel->setAlignment(Qt::AlignCenter);
-    taglineLabel->setObjectName("decoLabel");
-    taglineLabel->setProperty("baseStyle",
+    m_taglineLabel->setAlignment(Qt::AlignCenter);
+    m_taglineLabel->setObjectName("decoLabel");
+    m_taglineLabel->setProperty("baseStyle",
                               "font-size:17px; font-weight:400; letter-spacing:1.2px; background:transparent;");
-    mainLayout->addWidget(taglineLabel, 0, Qt::AlignCenter);
+    mainLayout->addWidget(m_taglineLabel, 0, Qt::AlignCenter);
 
     mainLayout->addSpacing(24);
 
@@ -143,16 +147,6 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
 
     mainLayout->addWidget(centerFrame, 0, Qt::AlignCenter);
     mainLayout->addStretch(2);
-
-    // Cute footer
-    QLabel *footer = new QLabel(QString::fromUtf8("\xcb\x9a \xc2\xb7  made with love  \xc2\xb7 \xcb\x9a"), this);
-    footer->setAlignment(Qt::AlignCenter);
-    footer->setObjectName("decoLabel");
-    footer->setProperty("baseStyle",
-                        "font-size:15px; letter-spacing:2.5px; background:transparent;");
-    mainLayout->addWidget(footer, 0, Qt::AlignCenter);
-
-    mainLayout->addSpacing(8);
 
     // Theme toggle button
     QHBoxLayout *bottomLayout = new QHBoxLayout();
@@ -231,23 +225,76 @@ void LoginDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
     QTimer::singleShot(100, this, [this]()
-                       {
+    {
         int w = width();
         int h = height();
+
+        // ── Position stickers and store base coords ──
+        m_stickerBase.clear();
         for (QLabel *lbl : findChildren<QLabel *>("stickerLabel"))
         {
-            int sz = lbl->property("stickerSize").toInt();
+            int   sz = lbl->property("stickerSize").toInt();
             float xr = lbl->property("xRatio").toFloat();
             float yr = lbl->property("yRatio").toFloat();
             lbl->setStyleSheet(QString(
                 "font-size:%1px; color:%2; background:transparent; "
                 "font-family:'Segoe UI Emoji','Segoe UI Symbol',sans-serif;")
                 .arg(sz).arg(themes[currentThemeIdx].accent));
-            lbl->move(int(w * xr) - (sz + 24) / 2,
-                      int(h * yr) - (sz + 24) / 2);
+            QPoint base(int(w * xr) - (sz + 24) / 2,
+                        int(h * yr) - (sz + 24) / 2);
+            lbl->move(base);
             lbl->show();
             lbl->raise();
-        } });
+            m_stickerBase.append(base);
+        }
+
+        // ── Start floating animation ──
+        if (!m_floatTimer)
+        {
+            m_floatTimer = new QTimer(this);
+            connect(m_floatTimer, &QTimer::timeout, this, &LoginDialog::onFloatTick);
+        }
+        m_floatFrame = 0;
+        m_floatTimer->start(33); // ~30 fps
+
+        // ── Entrance: title fade in ──
+        auto *titleEff = new QGraphicsOpacityEffect(m_welcomeLabel);
+        m_welcomeLabel->setGraphicsEffect(titleEff);
+        titleEff->setOpacity(0.0);
+        auto *titleAnim = new QPropertyAnimation(titleEff, "opacity", this);
+        titleAnim->setDuration(900);
+        titleAnim->setStartValue(0.0);
+        titleAnim->setEndValue(1.0);
+        titleAnim->setEasingCurve(QEasingCurve::OutCubic);
+        titleAnim->start(QAbstractAnimation::DeleteWhenStopped);
+
+        // ── Entrance: tagline fade in (delayed) ──
+        auto *tagEff = new QGraphicsOpacityEffect(m_taglineLabel);
+        m_taglineLabel->setGraphicsEffect(tagEff);
+        tagEff->setOpacity(0.0);
+        QTimer::singleShot(300, this, [tagEff, this]()
+        {
+            auto *tagAnim = new QPropertyAnimation(tagEff, "opacity", this);
+            tagAnim->setDuration(800);
+            tagAnim->setStartValue(0.0);
+            tagAnim->setEndValue(1.0);
+            tagAnim->setEasingCurve(QEasingCurve::OutCubic);
+            tagAnim->start(QAbstractAnimation::DeleteWhenStopped);
+        });
+    });
+}
+
+void LoginDialog::onFloatTick()
+{
+    ++m_floatFrame;
+    const QList<QLabel *> stickers = findChildren<QLabel *>("stickerLabel");
+    for (int i = 0; i < stickers.size() && i < m_stickerBase.size(); ++i)
+    {
+        float phase = i * 0.65f;
+        int yOff = (int)(qSin(m_floatFrame * 0.045f + phase) * 7.0f);
+        int xOff = (int)(qCos(m_floatFrame * 0.028f + phase * 0.5f) * 4.0f);
+        stickers[i]->move(m_stickerBase[i] + QPoint(xOff, yOff));
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────────
