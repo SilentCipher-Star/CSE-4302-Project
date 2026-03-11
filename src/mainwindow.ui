@@ -116,7 +116,7 @@
           <item>
            <widget class="QPushButton" name="addNoticeButton">
             <property name="text"><string>Post Notice</string></property>
-            <property name="maximumWidth"><number>200</number></property>
+                  <property name="maximumWidth"><number>280</number></property>
             <property name="toolTip"><string>Post a new notice (Teachers only)</string></property>
            </widget>
           </item>
