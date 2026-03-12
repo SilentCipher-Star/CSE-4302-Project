@@ -1,5 +1,6 @@
 #include "../include/mainwindow.hpp"
 #include "../include/theme.hpp"
+#include "../include/assetmanager.hpp"
 #include <QApplication>
 #include "../include/ui_dashboard.hpp"
 #include "../include/ui_planner.hpp"
@@ -20,6 +21,7 @@
 #include <QTimer>
 #include <QDate>
 #include <QSettings>
+#include <QProgressBar>
 
 MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), userRole(role), userId(uid), userName(name)
@@ -36,30 +38,35 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
 
     // ── Load persisted theme settings ──
     QSettings settings("Acadence", "Acadence");
-    m_darkMode        = settings.value("theme/darkMode",  false).toBool();
-    m_darkThemeIndex  = settings.value("theme/darkIndex", 0).toInt();
-    QString savedName = settings.value("theme/name",      "").toString();
+    m_darkMode = settings.value("theme/darkMode", false).toBool();
+    m_darkThemeIndex = settings.value("theme/darkIndex", 0).toInt();
+    QString savedName = settings.value("theme/name", "").toString();
 
     auto themes = ThemeManager::getAvailableThemes();
-    if (!themes.isEmpty()) m_userTheme = themes[0];
+    if (!themes.isEmpty())
+        m_userTheme = themes[0];
     for (const auto &t : themes)
     {
         if (t.name.trimmed() == savedName.trimmed())
-        { m_userTheme = t; break; }
+        {
+            m_userTheme = t;
+            break;
+        }
     }
 
     // Apply the persisted theme now
+    AppTheme currentTheme;
     if (m_darkMode)
     {
         auto dark = ThemeManager::getDarkThemes();
         m_darkThemeIndex = qBound(0, m_darkThemeIndex, dark.size() - 1);
-        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
-                                 dark[m_darkThemeIndex]);
+        currentTheme = dark[m_darkThemeIndex];
+        ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), currentTheme);
     }
     else
     {
-        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
-                                 m_userTheme);
+        currentTheme = m_userTheme;
+        ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), m_userTheme);
     }
 
     // ── Corner widgets ──
@@ -131,8 +138,6 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         ui->tabWidget->setTabVisible(4, false);
         ui->tabWidget->setTabVisible(10, false);
         ui->addNoticeButton->setText("Post Notice");
-        uiRoutine->refreshTeacherRoutine();
-        uiAcademics->refreshTeacherTools();
     }
     else if (role == Constants::Role::Admin)
     {
@@ -146,29 +151,75 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         ui->tabWidget->setTabVisible(8, false);
         ui->tabWidget->setTabVisible(9, false);
         ui->addNoticeButton->setText("Post Targeted Notice");
-        uiAdmin->initialize();
     }
+
+    // ── Create Loading Overlay ──
+    m_loadingOverlay = new QWidget(this);
+    m_loadingOverlay->setObjectName("loadingOverlay");
+
+    QColor bgColor(currentTheme.background);
+    bgColor.setAlpha(245);
+    QString bgRgba = QString("rgba(%1, %2, %3, %4)").arg(bgColor.red()).arg(bgColor.green()).arg(bgColor.blue()).arg(bgColor.alpha());
+    m_loadingOverlay->setStyleSheet(QString("background-color: %1; color: %2;").arg(bgRgba, currentTheme.text));
+
+    QVBoxLayout *overlayLayout = new QVBoxLayout(m_loadingOverlay);
+    overlayLayout->setAlignment(Qt::AlignCenter);
+
+    QLabel *lblLoading = new QLabel("Loading Acadence...", m_loadingOverlay);
+    lblLoading->setStyleSheet(QString("font-size: 24px; font-weight: bold; background: transparent; color: %1;").arg(currentTheme.text));
+    overlayLayout->addWidget(lblLoading);
+
+    QProgressBar *loadingBar = new QProgressBar(m_loadingOverlay);
+    loadingBar->setRange(0, 0); // Indeterminate
+    loadingBar->setFixedWidth(250);
+    loadingBar->setTextVisible(false);
+    QString barStyle = QString("QProgressBar { border: none; background: %1; height: 6px; border-radius: 3px; } QProgressBar::chunk { background: %2; border-radius: 3px; }")
+                           .arg(currentTheme.surface, currentTheme.accent);
+    loadingBar->setStyleSheet(barStyle);
+
+    overlayLayout->addSpacing(20);
+    overlayLayout->addWidget(loadingBar);
+    m_loadingOverlay->resize(width(), height());
+    m_loadingOverlay->show();
 
     // Load data
-    try
-    {
-        uiDashboard->refreshDashboard();
-        uiQueries->refreshQueries();
-        if (role == Constants::Role::Student)
+    QTimer::singleShot(100, this, [this, role]()
+                       {
+        try
         {
-            uiPlanner->refreshPlanner();
-            uiHabits->refreshHabits();
+            if (role == Constants::Role::Teacher)
+            {
+                uiRoutine->refreshTeacherRoutine();
+                uiAcademics->refreshTeacherTools();
+            }
+            else if (role == Constants::Role::Admin)
+            {
+                uiAdmin->initialize();
+            }
 
-            int currentDayIndex = QDate::currentDate().dayOfWeek() % 7;
-            ui->comboRoutineDay->setCurrentIndex(currentDayIndex);
+            uiDashboard->refreshDashboard();
+            uiQueries->refreshQueries();
+            if (role == Constants::Role::Student)
+            {
+                uiPlanner->refreshPlanner();
+                uiHabits->refreshHabits();
 
-            uiAcademics->refreshAcademics();
+                int currentDayIndex = QDate::currentDate().dayOfWeek() % 7;
+                ui->comboRoutineDay->setCurrentIndex(currentDayIndex);
+
+                uiAcademics->refreshAcademics();
+            }
         }
-    }
-    catch (const Acadence::Exception &e)
-    {
-        QMessageBox::critical(this, "Data Error", QString("Failed to load initial data:\n%1").arg(e.what()));
-    }
+        catch (const Acadence::Exception &e)
+        {
+            QMessageBox::critical(this, "Data Error", QString("Failed to load initial data:\n%1").arg(e.what()));
+        }
+        
+        if (m_loadingOverlay)
+        {
+            m_loadingOverlay->deleteLater();
+            m_loadingOverlay = nullptr;
+        } });
 }
 
 MainWindow::~MainWindow()
@@ -181,7 +232,7 @@ MainWindow::~MainWindow()
 void MainWindow::setupTables()
 {
     QList<QTableView *> tables = {
-        ui->adminTableView, ui->tableRoutine, ui->tableTeacherRoutine,
+        ui->adminTableView, ui->habitTableWidget, ui->tableRoutine, ui->tableTeacherRoutine,
         ui->tableAcademics, ui->tableGrading, ui->tableAttendance};
 
     for (auto table : tables)
@@ -237,14 +288,14 @@ void MainWindow::toggleDarkMode(bool isDark)
     {
         auto dark = ThemeManager::getDarkThemes();
         m_darkThemeIndex = qBound(0, m_darkThemeIndex, dark.size() - 1);
-        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
+        ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()),
                                  dark[m_darkThemeIndex]);
         m_themeBtn->setText("Dark Theme");
         settings.setValue("theme/darkIndex", m_darkThemeIndex);
     }
     else
     {
-        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
+        ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()),
                                  m_userTheme);
         m_themeBtn->setText("Theme");
         settings.setValue("theme/name", m_userTheme.name.trimmed());
@@ -260,7 +311,7 @@ void MainWindow::onThemeClicked()
         // Cycle through dark themes
         auto dark = ThemeManager::getDarkThemes();
         m_darkThemeIndex = (m_darkThemeIndex + 1) % dark.size();
-        ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()),
+        ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()),
                                  dark[m_darkThemeIndex]);
         settings.setValue("theme/darkIndex", m_darkThemeIndex);
         return;
@@ -272,11 +323,14 @@ void MainWindow::onThemeClicked()
     for (int i = 0; i < themes.size(); ++i)
     {
         if (themes[i].name.trimmed() == m_userTheme.name.trimmed())
-        { idx = i; break; }
+        {
+            idx = i;
+            break;
+        }
     }
     int nextIdx = (idx + 1) % themes.size();
     m_userTheme = themes[nextIdx];
-    ThemeManager::applyTheme(*static_cast<QApplication*>(QApplication::instance()), m_userTheme);
+    ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), m_userTheme);
     settings.setValue("theme/name", m_userTheme.name.trimmed());
 }
 
@@ -318,6 +372,7 @@ void MainWindow::setupConnections()
     connect(ui->chkAsr, &QCheckBox::toggled, uiHabits, &UIHabits::onAsrToggled);
     connect(ui->chkMaghrib, &QCheckBox::toggled, uiHabits, &UIHabits::onMaghribToggled);
     connect(ui->chkIsha, &QCheckBox::toggled, uiHabits, &UIHabits::onIshaToggled);
+    connect(ui->btnPrayerHistory, &QPushButton::clicked, uiHabits, &UIHabits::onPrayerHistoryClicked);
 
     // Routine connections
     connect(ui->comboRoutineDay, QOverload<int>::of(&QComboBox::currentIndexChanged), uiRoutine, &UIRoutine::onRoutineDayChanged);
@@ -348,14 +403,19 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
 
+    if (m_loadingOverlay)
+        m_loadingOverlay->resize(size());
+
     QTimer::singleShot(0, this, [=]()
                        {
         if (ui->adminTableView->isVisible())
-            Utils::adjustColumnWidths(ui->adminTableView);
+            ui->adminTableView->adjustColumnWidths();
+        if (ui->habitTableWidget->isVisible())
+            ui->habitTableWidget->adjustColumnWidths();
         if (ui->tableRoutine->isVisible())
-            Utils::adjustColumnWidths(ui->tableRoutine);
+            ui->tableRoutine->adjustColumnWidths();
         if (ui->tableTeacherRoutine->isVisible())
-            Utils::adjustColumnWidths(ui->tableTeacherRoutine);
+            ui->tableTeacherRoutine->adjustColumnWidths();
         if (ui->tableAttendance->isVisible())
-            Utils::adjustColumnWidths(ui->tableAttendance); });
+            ui->tableAttendance->adjustColumnWidths(); });
 }

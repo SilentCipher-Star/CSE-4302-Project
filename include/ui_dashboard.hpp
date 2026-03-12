@@ -42,15 +42,15 @@ private:
     void refreshUpcomingEvents();
     QFrame *buildStatsCard(const QString &value, const QString &label, const QString &bgColor) const;
     QFrame *buildUpcomingSection(const QString &title, const QString &icon,
-                                  const QVector<QPair<QString,QString>> &rows,
-                                  const QString &accentColor) const;
+                                 const QVector<QPair<QString, QString>> &rows,
+                                 const QString &accentColor) const;
 
     bool noticeVisibleForCurrentUser(const QString &content) const;
     QString stripAudienceTag(const QString &content) const;
     QString audienceTagForRole(const QString &role) const;
     QString audienceLabelFromContent(const QString &content) const;
     QString composeNoticeStorageContent(const QString &audienceTag, const QStringList &courseIds, const QString &subject, const QString &body,
-                                         bool isUrgent = false, bool isPinned = false, const QString &expiresOn = {}) const;
+                                        bool isUrgent = false, bool isPinned = false, const QString &expiresOn = {}) const;
     bool parseStructuredNoticeContent(const QString &raw, QString &audienceTag, QStringList &courseIds, QString &subject, QString &body,
                                       bool *isUrgent = nullptr, bool *isPinned = nullptr, QString *expiresOn = nullptr) const;
     QSet<int> currentStudentCourseIds() const;
@@ -62,6 +62,5 @@ private:
     int userId;
     QString userName;
 
-    QFrame *m_statsFrame    = nullptr;
     QFrame *m_upcomingFrame = nullptr;
 };

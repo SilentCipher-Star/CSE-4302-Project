@@ -90,7 +90,7 @@ void UIAdmin::onTableComboBoxChanged(const QString &tableName)
             { Utils::saveTableData(adminModel, tableName); });
 
     QTimer::singleShot(10, this, [this]()
-                       { Utils::adjustColumnWidths(ui->adminTableView); });
+                       { ui->adminTableView->adjustColumnWidths(); });
 }
 
 void UIAdmin::onAddRowClicked()

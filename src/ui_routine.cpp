@@ -5,6 +5,7 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QTimer>
 #include <QDate>
 #include <memory>
 
@@ -44,7 +45,8 @@ void UIRoutine::refreshRoutine()
         ui->tableRoutine->setItem(row, 3, new QTableWidgetItem(i.getInstructor()));
         ui->tableRoutine->setItem(row, 4, new QTableWidgetItem("Scheduled"));
     }
-    Utils::adjustColumnWidths(ui->tableRoutine);
+    QTimer::singleShot(0, [this]()
+                       { ui->tableRoutine->adjustColumnWidths(); });
 }
 
 void UIRoutine::onRoutineDayChanged(int index)
@@ -91,7 +93,8 @@ void UIRoutine::refreshTeacherRoutine()
         ui->tableTeacherRoutine->item(row, 0)->setData(Qt::UserRole, i.getStartTime());
         ui->tableTeacherRoutine->item(row, 1)->setData(Qt::UserRole, i.getCourseCode());
     }
-    Utils::adjustColumnWidths(ui->tableTeacherRoutine);
+    QTimer::singleShot(0, [this]()
+                       { ui->tableTeacherRoutine->adjustColumnWidths(); });
 }
 
 void UIRoutine::onTeacherRoutineDayChanged(int index)

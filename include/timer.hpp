@@ -2,6 +2,8 @@
 #include <QObject>
 #include <QTimer>
 
+class QSoundEffect;
+
 class Timer : public QObject
 {
     Q_OBJECT
@@ -22,10 +24,15 @@ private slots:
     void onTimeout();
 
 private:
+    void emitCountdownTime(int milliseconds);
+    void emitStopwatchTime(int milliseconds);
     QTimer *internalTimer;
     int remainingTime = 0;
     int totalTime = 0;
     int elapsedTime = 0;
+    int lastSecond = -1;
     bool isPaused;
     bool isStopwatch;
+    QSoundEffect *tickSound = nullptr;
+    QSoundEffect *endSound = nullptr;
 };

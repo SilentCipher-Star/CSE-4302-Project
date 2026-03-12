@@ -64,6 +64,8 @@ cmake-build-*/
 
 # IDE / Editor
 .vscode/
+.claude/
+.history/
 .idea/
 *.swp
 *~

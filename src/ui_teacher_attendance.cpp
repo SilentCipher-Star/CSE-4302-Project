@@ -1,4 +1,5 @@
 #include "../include/ui_teacher_attendance.hpp"
+#include "../include/theme.hpp"
 #include "../include/course.hpp"
 #include "../include/student.hpp"
 #include <QHeaderView>
@@ -25,7 +26,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     // ── Title ──
     QLabel *title = new QLabel("Daily Attendance Sheet");
-    title->setStyleSheet("font-size: 18px; font-weight: bold; padding: 4px 0;");
+    title->setStyleSheet(QString("font-size: %1; font-weight: bold; padding: 4px 0;").arg(AppFonts::Large));
     title->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(title);
 
@@ -39,13 +40,13 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     topBar->addSpacing(20);
     lblClassesHeld = new QLabel("Number of Classes Held: 0");
-    lblClassesHeld->setStyleSheet("font-size: 13px; font-weight: bold; color: #1a73e8;");
+    lblClassesHeld->setStyleSheet(QString("font-size: %1; font-weight: bold; color: #1a73e8;").arg(AppFonts::Normal));
     topBar->addWidget(lblClassesHeld);
 
     topBar->addStretch();
 
     lblStats = new QLabel();
-    lblStats->setStyleSheet("font-size: 12px; font-weight: bold;");
+    lblStats->setStyleSheet(QString("font-size: %1; font-weight: bold;").arg(AppFonts::Small));
     topBar->addWidget(lblStats);
 
     mainLayout->addLayout(topBar);
@@ -60,7 +61,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     lblWeekRange = new QLabel();
     lblWeekRange->setAlignment(Qt::AlignCenter);
-    lblWeekRange->setStyleSheet("font-size: 13px; font-weight: bold;");
+    lblWeekRange->setStyleSheet(QString("font-size: %1; font-weight: bold;").arg(AppFonts::Normal));
     navBar->addWidget(lblWeekRange, 1);
 
     btnNextWeek = new QPushButton("Next Week  >>");
@@ -115,7 +116,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
         box->setStyleSheet(QString("background-color: %1; border: 1px solid #555; border-radius: 2px;").arg(bgColor));
         legendRow->addWidget(box);
         QLabel *lbl = new QLabel(text);
-        lbl->setStyleSheet("font-size: 11px;");
+        lbl->setStyleSheet(QString("font-size: %1;").arg(AppFonts::Small));
         legendRow->addWidget(lbl);
         legendRow->addSpacing(14);
     };
@@ -124,7 +125,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
     addLegend("#555", "No Class");
     legendRow->addStretch();
     QLabel *hint = new QLabel("Click cells to toggle | Click column headers for column operations");
-    hint->setStyleSheet("font-size: 10px; color: #888;");
+    hint->setStyleSheet(QString("font-size: %1; color: #888;").arg(AppFonts::Small));
     legendRow->addWidget(hint);
     mainLayout->addLayout(legendRow);
 
@@ -135,10 +136,11 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
     table->verticalHeader()->setVisible(false);
     table->setAlternatingRowColors(true);
     table->setContextMenuPolicy(Qt::CustomContextMenu);
-    table->setStyleSheet(
-        "QTableWidget { gridline-color: #555; font-size: 12px; }"
-        "QTableWidget::item { padding: 4px; }"
-        "QHeaderView::section { font-weight: bold; padding: 4px; }");
+    table->setStyleSheet(QString(
+                             "QTableWidget { gridline-color: #555; font-size: %1; }"
+                             "QTableWidget::item { padding: 4px; }"
+                             "QHeaderView::section { font-weight: bold; padding: 4px; }")
+                             .arg(AppFonts::Small));
     mainLayout->addWidget(table, 1);
 
     // ── Bottom bar ──
@@ -200,21 +202,26 @@ TeacherAttendanceDialog::~TeacherAttendanceDialog()
 int TeacherAttendanceDialog::visibleDateCount() const
 {
     int start = (int)allDates.size() - datesPerPage - weekOffset * datesPerPage;
-    if (start < 0) start = 0;
+    if (start < 0)
+        start = 0;
     int end = start + datesPerPage;
-    if (end > allDates.size()) end = allDates.size();
+    if (end > allDates.size())
+        end = allDates.size();
     return end - start;
 }
 
 QVector<QString> TeacherAttendanceDialog::visibleDates() const
 {
-    if (allDates.isEmpty()) return {};
+    if (allDates.isEmpty())
+        return {};
 
     int total = allDates.size();
     int start = total - datesPerPage - weekOffset * datesPerPage;
-    if (start < 0) start = 0;
+    if (start < 0)
+        start = 0;
     int end = start + datesPerPage;
-    if (end > total) end = total;
+    if (end > total)
+        end = total;
 
     QVector<QString> result;
     for (int i = start; i < end; ++i)
@@ -231,18 +238,19 @@ void TeacherAttendanceDialog::buildTable()
     table->setColumnCount(0);
     selectedDateCol = -1;
 
-    if (currentCourseId <= 0) return;
+    if (currentCourseId <= 0)
+        return;
 
     QVector<QString> dates = visibleDates();
     int dateCols = dates.size();
-    int totalCols = 2 + dateCols + 2;  // ID, Name, [dates...], Absent, Absent%
+    int totalCols = 2 + dateCols + 2; // ID, Name, [dates...], Absent, Absent%
 
     QStringList headers;
     headers << "ID" << "Student Name";
     for (const QString &d : dates)
     {
         QDate dt = QDate::fromString(d, "yyyy-MM-dd");
-        headers << dt.toString("dd MMM\nddd");  // e.g. "10 Mar\nTue"
+        headers << dt.toString("dd MMM\nddd"); // e.g. "10 Mar\nTue"
     }
     headers << "Absent" << "Absent %";
 
@@ -254,12 +262,12 @@ void TeacherAttendanceDialog::buildTable()
     table->horizontalHeader()->setMinimumHeight(40);
 
     // Set column widths
-    table->setColumnWidth(0, 50);   // ID
-    table->setColumnWidth(1, 160);  // Name
+    table->setColumnWidth(0, 50);  // ID
+    table->setColumnWidth(1, 160); // Name
     for (int j = 0; j < dateCols; ++j)
         table->setColumnWidth(2 + j, 72);
-    table->setColumnWidth(2 + dateCols, 65);      // Absent
-    table->setColumnWidth(2 + dateCols + 1, 85);  // Absent %
+    table->setColumnWidth(2 + dateCols, 65);     // Absent
+    table->setColumnWidth(2 + dateCols + 1, 85); // Absent %
 
     for (int i = 0; i < students.size(); ++i)
     {
@@ -282,9 +290,9 @@ void TeacherAttendanceDialog::buildTable()
 
             QTableWidgetItem *cell = new QTableWidgetItem(present ? "P" : "A");
             cell->setTextAlignment(Qt::AlignCenter);
-            cell->setData(Qt::UserRole, dates[j]);         // store date
-            cell->setData(Qt::UserRole + 1, sid);           // store student id
-            cell->setData(Qt::UserRole + 2, present);       // store status
+            cell->setData(Qt::UserRole, dates[j]);    // store date
+            cell->setData(Qt::UserRole + 1, sid);     // store student id
+            cell->setData(Qt::UserRole + 2, present); // store status
 
             QFont f = cell->font();
             f.setBold(true);
@@ -306,7 +314,7 @@ void TeacherAttendanceDialog::buildTable()
     if (!dates.isEmpty())
     {
         QDate first = QDate::fromString(dates.first(), "yyyy-MM-dd");
-        QDate last  = QDate::fromString(dates.last(), "yyyy-MM-dd");
+        QDate last = QDate::fromString(dates.last(), "yyyy-MM-dd");
         lblWeekRange->setText(
             QString("Showing: %1  to  %2   (%3 of %4 dates)")
                 .arg(first.toString("dd MMM yyyy"))
@@ -330,7 +338,8 @@ void TeacherAttendanceDialog::buildTable()
 void TeacherAttendanceDialog::colorCell(int row, int col, bool present)
 {
     QTableWidgetItem *cell = table->item(row, col);
-    if (!cell) return;
+    if (!cell)
+        return;
 
     if (present)
     {
@@ -350,7 +359,8 @@ void TeacherAttendanceDialog::colorCell(int row, int col, bool present)
 
 void TeacherAttendanceDialog::recalcRowStats(int row)
 {
-    if (row < 0 || row >= students.size()) return;
+    if (row < 0 || row >= students.size())
+        return;
 
     int sid = students[row]->getId();
     int dateCols = visibleDateCount();
@@ -452,9 +462,9 @@ void TeacherAttendanceDialog::updateStatsLabel()
             .arg(lowCount));
 
     if (lowCount > 0)
-        lblStats->setStyleSheet("font-size: 12px; font-weight: bold; color: #dc143c;");
+        lblStats->setStyleSheet(QString("font-size: %1; font-weight: bold; color: #dc143c;").arg(AppFonts::Small));
     else
-        lblStats->setStyleSheet("font-size: 12px; font-weight: bold; color: #22a85a;");
+        lblStats->setStyleSheet(QString("font-size: %1; font-weight: bold; color: #22a85a;").arg(AppFonts::Small));
 }
 
 // ─── Slots ────────────────────────────────────────────────────
@@ -466,13 +476,16 @@ void TeacherAttendanceDialog::onCourseChanged(int index)
     allDates.clear();
     weekOffset = 0;
 
-    if (index < 0 || comboCourse->count() == 0) return;
+    if (index < 0 || comboCourse->count() == 0)
+        return;
 
     currentCourseId = comboCourse->currentData().toInt();
-    if (currentCourseId <= 0) return;
+    if (currentCourseId <= 0)
+        return;
 
     std::unique_ptr<Course> c(myManager->getCourse(currentCourseId));
-    if (!c) return;
+    if (!c)
+        return;
 
     students = myManager->getStudentsByEnrollment(currentCourseId);
 
@@ -490,10 +503,12 @@ void TeacherAttendanceDialog::onCellClicked(int row, int col)
 {
     // Only respond to clicks on date columns
     int dateCols = visibleDateCount();
-    if (col < 2 || col >= 2 + dateCols) return;
+    if (col < 2 || col >= 2 + dateCols)
+        return;
 
     QTableWidgetItem *cell = table->item(row, col);
-    if (!cell) return;
+    if (!cell)
+        return;
 
     bool wasPresent = cell->data(Qt::UserRole + 2).toBool();
     bool nowPresent = !wasPresent;
@@ -527,11 +542,13 @@ void TeacherAttendanceDialog::onHeaderClicked(int logicalIndex)
 void TeacherAttendanceDialog::onTableContextMenu(const QPoint &pos)
 {
     QTableWidgetItem *item = table->itemAt(pos);
-    if (!item) return;
+    if (!item)
+        return;
 
     int col = item->column();
     int dateCols = visibleDateCount();
-    if (col < 2 || col >= 2 + dateCols) return;
+    if (col < 2 || col >= 2 + dateCols)
+        return;
 
     selectedDateCol = col;
     QVector<QString> visDates = visibleDates();
@@ -561,7 +578,8 @@ void TeacherAttendanceDialog::onTableContextMenu(const QPoint &pos)
 
 void TeacherAttendanceDialog::onAddTodayClicked()
 {
-    if (currentCourseId <= 0) return;
+    if (currentCourseId <= 0)
+        return;
 
     QString today = QDate::currentDate().toString("yyyy-MM-dd");
 
@@ -583,13 +601,14 @@ void TeacherAttendanceDialog::onAddTodayClicked()
     buildTable();
 
     QMessageBox::information(this, "Date Added",
-        "Added class date: " + today + "\nAll students marked Absent by default.\nClick cells to mark Present.");
+                             "Added class date: " + today + "\nAll students marked Absent by default.\nClick cells to mark Present.");
 }
 
 void TeacherAttendanceDialog::onMarkAllPresentClicked()
 {
     int dateCols = visibleDateCount();
-    if (dateCols == 0) return;
+    if (dateCols == 0)
+        return;
 
     for (int i = 0; i < table->rowCount(); ++i)
     {
@@ -603,7 +622,8 @@ void TeacherAttendanceDialog::onMarkAllPresentClicked()
 void TeacherAttendanceDialog::onMarkAllAbsentClicked()
 {
     int dateCols = visibleDateCount();
-    if (dateCols == 0) return;
+    if (dateCols == 0)
+        return;
 
     for (int i = 0; i < table->rowCount(); ++i)
     {
@@ -620,7 +640,7 @@ void TeacherAttendanceDialog::onMarkColumnPresentClicked()
     if (selectedDateCol < 2 || selectedDateCol >= 2 + dateCols)
     {
         QMessageBox::information(this, "Select Column",
-            "Click on a date column header first, then use this button.");
+                                 "Click on a date column header first, then use this button.");
         return;
     }
 
@@ -638,7 +658,7 @@ void TeacherAttendanceDialog::onMarkColumnAbsentClicked()
     if (selectedDateCol < 2 || selectedDateCol >= 2 + dateCols)
     {
         QMessageBox::information(this, "Select Column",
-            "Click on a date column header first, then use this button.");
+                                 "Click on a date column header first, then use this button.");
         return;
     }
 
@@ -652,7 +672,8 @@ void TeacherAttendanceDialog::onMarkColumnAbsentClicked()
 
 void TeacherAttendanceDialog::onSaveClicked()
 {
-    if (currentCourseId <= 0) return;
+    if (currentCourseId <= 0)
+        return;
 
     QVector<QString> visDates = visibleDates();
     int dateCols = visDates.size();
@@ -663,7 +684,8 @@ void TeacherAttendanceDialog::onSaveClicked()
         for (int j = 0; j < dateCols; ++j)
         {
             QTableWidgetItem *cell = table->item(i, 2 + j);
-            if (!cell) continue;
+            if (!cell)
+                continue;
             bool present = cell->data(Qt::UserRole + 2).toBool();
             myManager->markAttendance(currentCourseId, sid, visDates[j], present);
         }
@@ -674,12 +696,14 @@ void TeacherAttendanceDialog::onSaveClicked()
 
 void TeacherAttendanceDialog::onExportClicked()
 {
-    if (currentCourseId <= 0 || students.isEmpty()) return;
+    if (currentCourseId <= 0 || students.isEmpty())
+        return;
 
     QString courseName = comboCourse->currentText().replace(" ", "_");
     QString defaultName = "attendance_" + courseName + ".csv";
     QString path = QFileDialog::getSaveFileName(this, "Export Attendance", defaultName, "CSV Files (*.csv)");
-    if (path.isEmpty()) return;
+    if (path.isEmpty())
+        return;
 
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -724,7 +748,8 @@ void TeacherAttendanceDialog::onExportClicked()
             }
 
             out << "," << (present ? "P" : "A");
-            if (present) presentCount++;
+            if (present)
+                presentCount++;
         }
 
         int absentCount = allDates.size() - presentCount;

@@ -1,4 +1,5 @@
 #include "../include/logindialog.hpp"
+#include "../include/theme.hpp"
 #include "../include/csvhandler.hpp"
 #include "../include/appmanager.hpp"
 #include "../include/utils.hpp"
@@ -17,6 +18,7 @@
 #include <QGraphicsOpacityEffect>
 #include <QParallelAnimationGroup>
 #include <QtMath>
+#include <QSettings>
 
 // ── Sticker definitions: symbol · x-ratio · y-ratio · font-size (px) ──────
 struct StickerDef
@@ -26,20 +28,18 @@ struct StickerDef
     int size;
 };
 static const QVector<StickerDef> k_stickers = {
-    {"\xe2\x98\x85", 0.04f, 0.07f, 56},
-    {"\xe2\x9c\xa6", 0.94f, 0.11f, 40},
-    {"\xe2\x9d\x80", 0.08f, 0.82f, 48},
-    {"\xe2\x9c\xa7", 0.91f, 0.80f, 52},
-    {"\xc2\xb7", 0.14f, 0.44f, 44},
-    {"\xe2\x9c\xa6", 0.85f, 0.48f, 36},
-    {"\xe2\x98\x85", 0.22f, 0.90f, 32},
-    {"\xe2\x99\xa5", 0.78f, 0.12f, 42},
-    {"\xe2\x98\x85", 0.50f, 0.04f, 48},
-    {"\xe2\x9c\xa7", 0.50f, 0.94f, 36},
-    {"\xc2\xb7", 0.35f, 0.20f, 30},
-    {"\xe2\x9c\xa6", 0.65f, 0.75f, 28},
-    {"\xe2\x98\x85", 0.88f, 0.55f, 34},
-    {"\xe2\x99\xa5", 0.12f, 0.60f, 30},
+    {"★", 0.04f, 0.07f, 56},
+    {"✦", 0.94f, 0.11f, 40},
+    {"❀", 0.08f, 0.82f, 48},
+    {"✧", 0.91f, 0.80f, 52},
+    {"✦", 0.85f, 0.48f, 36},
+    {"★", 0.22f, 0.90f, 32},
+    {"♥", 0.78f, 0.12f, 42},
+    {"★", 0.50f, 0.04f, 48},
+    {"✧", 0.50f, 0.94f, 36},
+    {"✦", 0.65f, 0.75f, 28},
+    {"★", 0.88f, 0.55f, 34},
+    {"♥", 0.12f, 0.60f, 30},
 };
 
 LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
@@ -51,7 +51,27 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
                    Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
     setWindowState(Qt::WindowMaximized);
 
-    themes = ThemeManager::getAvailableThemes();
+    QSettings settings("Acadence", "Acadence");
+    bool isDark = settings.value("theme/darkMode", false).toBool();
+
+    if (isDark)
+    {
+        themes = ThemeManager::getDarkThemes();
+        int savedIdx = settings.value("theme/darkIndex", 0).toInt();
+        currentThemeIdx = qBound(0, savedIdx, themes.size() - 1);
+    }
+    else
+    {
+        themes = ThemeManager::getAvailableThemes();
+        QString savedName = settings.value("theme/name", "").toString().trimmed();
+        for (int i = 0; i < themes.size(); ++i)
+            if (themes[i].name.trimmed() == savedName)
+            {
+                currentThemeIdx = i;
+                break;
+            }
+    }
+
     ThemeManager::applyTheme(m_app, themes[currentThemeIdx]);
 
     // Main layout
@@ -64,14 +84,13 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     QLabel *decoTop = new QLabel(QString::fromUtf8("\xe2\x9c\xbf   \xe2\x9c\xa6   \xcb\x9a \xc2\xb7 \xcb\x9a   \xe2\x9c\xa6   \xe2\x9c\xbf"), this);
     decoTop->setAlignment(Qt::AlignCenter);
     decoTop->setObjectName("decoLabel");
-    decoTop->setProperty("baseStyle",
-                         "font-size:30px; letter-spacing:14px; background:transparent;");
+    decoTop->setProperty("baseStyle", QString("font-size:%1; letter-spacing:14px; background:transparent;").arg(AppFonts::Title));
     mainLayout->addWidget(decoTop, 0, Qt::AlignCenter);
 
     mainLayout->addSpacing(10);
 
     // App title
-    m_welcomeLabel = new QLabel("Acadence", this);
+    m_welcomeLabel = new QLabel("ACADENCE", this);
     m_welcomeLabel->setAlignment(Qt::AlignCenter);
     m_welcomeLabel->setStyleSheet(
         QString("font-size:%1; font-weight:bold; letter-spacing:4px; background:transparent;")
@@ -83,8 +102,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
         QString::fromUtf8("\xe2\x9c\xa7  your campus  \xc2\xb7  your schedule  \xc2\xb7  your success  \xe2\x9c\xa7"), this);
     m_taglineLabel->setAlignment(Qt::AlignCenter);
     m_taglineLabel->setObjectName("decoLabel");
-    m_taglineLabel->setProperty("baseStyle",
-                              "font-size:17px; font-weight:400; letter-spacing:1.2px; background:transparent;");
+    m_taglineLabel->setProperty("baseStyle", QString("font-size:%1; font-weight:400; letter-spacing:1.2px; background:transparent;").arg(AppFonts::Small));
     mainLayout->addWidget(m_taglineLabel, 0, Qt::AlignCenter);
 
     mainLayout->addSpacing(24);
@@ -109,8 +127,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     QLabel *cardTitle = new QLabel(QString::fromUtf8("\xe2\x9c\xa6  Sign In  \xe2\x9c\xa6"), centerFrame);
     cardTitle->setAlignment(Qt::AlignCenter);
     cardTitle->setObjectName("cardDecoLabel");
-    cardTitle->setProperty("baseStyle",
-                           "font-size:27px; font-weight:700; letter-spacing:2px; background:transparent;");
+    cardTitle->setProperty("baseStyle", QString("font-size:%1; font-weight:700; letter-spacing:2px; background:transparent;").arg(AppFonts::Large));
     frameLayout->addWidget(cardTitle);
 
     frameLayout->addSpacing(8);
@@ -120,15 +137,18 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     roleSelector->setObjectName("roleSelector");
     roleSelector->setFixedHeight(44);
     QHBoxLayout *roleLayout = new QHBoxLayout(roleSelector);
-    roleLayout->setContentsMargins(3, 3, 3, 3);
-    roleLayout->setSpacing(0);
+    roleLayout->setContentsMargins(0, 0, 0, 0);
+    roleLayout->setSpacing(8);
 
-    struct RoleDef { const char *label; const char *role; };
+    struct RoleDef
+    {
+        const char *label;
+        const char *role;
+    };
     const RoleDef roleDefs[3] = {
         {"\xf0\x9f\x8e\x93  Student", "Student"},
         {"\xf0\x9f\x93\x96  Teacher", "Teacher"},
-        {"\xf0\x9f\x94\x91  Admin",   "Admin"  }
-    };
+        {"\xf0\x9f\x94\x91  Admin", "Admin"}};
 
     for (int i = 0; i < 3; ++i)
     {
@@ -137,10 +157,10 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
         m_roleButtons[i]->setCursor(Qt::PointingHandCursor);
         m_roleButtons[i]->setFixedHeight(38);
         m_roleButtons[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        connect(m_roleButtons[i], &QPushButton::clicked, this, [this, i]() {
+        connect(m_roleButtons[i], &QPushButton::clicked, this, [this, i]()
+                {
             m_selectedRole = m_roleButtons[i]->property("roleValue").toString();
-            updateRoleButtons();
-        });
+            updateRoleButtons(); });
         roleLayout->addWidget(m_roleButtons[i]);
     }
     frameLayout->addWidget(roleSelector);
@@ -257,7 +277,7 @@ void LoginDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
     QTimer::singleShot(100, this, [this]()
-    {
+                       {
         int w = width();
         int h = height();
 
@@ -312,8 +332,7 @@ void LoginDialog::showEvent(QShowEvent *event)
             tagAnim->setEndValue(1.0);
             tagAnim->setEasingCurve(QEasingCurve::OutCubic);
             tagAnim->start(QAbstractAnimation::DeleteWhenStopped);
-        });
-    });
+        }); });
 }
 
 void LoginDialog::onFloatTick()
@@ -336,34 +355,30 @@ void LoginDialog::updateRoleButtons()
     QFrame *roleSelector = findChild<QFrame *>("roleSelector");
     if (roleSelector)
     {
-        roleSelector->setStyleSheet(
-            QString("QFrame#roleSelector { background:%1; border:2px solid %2; border-radius:12px; }")
-                .arg(t.surface, t.accent));
+        roleSelector->setStyleSheet("background: transparent; border: none;");
     }
 
     for (int i = 0; i < 3; ++i)
     {
-        if (!m_roleButtons[i]) continue;
+        if (!m_roleButtons[i])
+            continue;
         bool selected = m_roleButtons[i]->property("roleValue").toString() == m_selectedRole;
 
-        // Determine border-radius per position
-        QString radius;
-        if      (i == 0) radius = "border-radius:9px 0 0 9px;";
-        else if (i == 2) radius = "border-radius:0 9px 9px 0;";
-        else             radius = "border-radius:0;";
+        QString radius = "border-radius:12px;";
 
         if (selected)
             m_roleButtons[i]->setStyleSheet(QString(
-                "QPushButton { background:%1; color:%2; border:none; font-weight:700;"
-                " font-size:13px; padding:0 10px; %3 }"
-                "QPushButton:hover { background:%1; }")
-                .arg(t.accent, t.background, radius));
+                                                "QPushButton { background: %1;"
+                                                " color:%2; border:none; font-weight:700;"
+                                                " font-size:%4; padding:0 10px; %3 }"
+                                                "QPushButton:hover { border: 1px solid %2; }")
+                                                .arg(t.accent, t.background, radius, AppFonts::Normal));
         else
             m_roleButtons[i]->setStyleSheet(QString(
-                "QPushButton { background:transparent; color:%1; border:none; font-weight:500;"
-                " font-size:13px; padding:0 10px; %2 }"
-                "QPushButton:hover { background:%3; color:%1; }")
-                .arg(t.accent, radius, t.background));
+                                                "QPushButton { background:transparent; color:%1; border:1px solid %1; font-weight:500;"
+                                                " font-size:%3; padding:0 10px; %2 }"
+                                                "QPushButton:hover { background:%4; color:%1; }")
+                                                .arg(t.accent, radius, AppFonts::Normal, t.surface));
     }
 }
 
@@ -372,9 +387,9 @@ void LoginDialog::updateThemeButton(const AppTheme &t)
     themeBtn->setStyleSheet(QString(
                                 "QPushButton {"
                                 "  background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 %1,stop:1 %2);"
-                                "  border:2px solid %2; border-radius:23px; font-size:22px; }"
+                                "  border:2px solid %2; border-radius:23px; font-size:%3; }"
                                 "QPushButton:hover { border-color:white; }")
-                                .arg(t.accent, t.background));
+                                .arg(t.accent, t.background, AppFonts::Large));
     themeBtn->setToolTip(QString("Theme: %1").arg(t.name));
 
     QFrame *frame = findChild<QFrame *>("loginFrame");
@@ -429,6 +444,13 @@ void LoginDialog::onThemeClicked()
     currentThemeIdx = (currentThemeIdx + 1) % themes.size();
     ThemeManager::applyTheme(m_app, themes[currentThemeIdx]);
     updateThemeButton(themes[currentThemeIdx]);
+
+    QSettings settings("Acadence", "Acadence");
+    bool isDark = settings.value("theme/darkMode", false).toBool();
+    if (isDark)
+        settings.setValue("theme/darkIndex", currentThemeIdx);
+    else
+        settings.setValue("theme/name", themes[currentThemeIdx].name.trimmed());
 }
 
 // ──────────────────────────────────────────────────────────────────────────

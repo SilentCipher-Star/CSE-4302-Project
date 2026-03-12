@@ -1,10 +1,92 @@
 #include "../include/ui_habits.hpp"
 #include "../include/timer.hpp"
 #include "../include/notifications.hpp"
+#include "../include/csvhandler.hpp"
+#include "../include/exceptions.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QDate>
+#include <QPainter>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QDialogButtonBox>
+
+namespace
+{
+    class PrayerChartWidget : public QWidget
+    {
+    public:
+        PrayerChartWidget(const QMap<QDate, int> &data, QWidget *parent = nullptr)
+            : QWidget(parent), m_data(data)
+        {
+            setMinimumHeight(250);
+            setBackgroundRole(QPalette::Base);
+            setAutoFillBackground(true);
+        }
+
+    protected:
+        void paintEvent(QPaintEvent *) override
+        {
+            QPainter painter(this);
+            painter.setRenderHint(QPainter::Antialiasing);
+
+            int w = width();
+            int h = height();
+            int margin = 40;
+            int xSpacing = (w - 2 * margin) / 7;
+            int maxVal = 5;
+
+            // Axes
+            painter.setPen(QPen(Qt::black, 2));
+            painter.drawLine(margin, h - margin, w - margin, h - margin);
+            painter.drawLine(margin, h - margin, margin, margin);
+
+            QDate today = QDate::currentDate();
+            QVector<QPoint> points;
+
+            for (int i = 6; i >= 0; --i)
+            {
+                QDate d = today.addDays(-i);
+                int count = m_data.value(d, 0);
+
+                int col = 6 - i;
+                int x = margin + col * xSpacing + xSpacing / 2;
+                int availableH = h - 2 * margin;
+                int pointH = (double)count / maxVal * availableH;
+                int y = h - margin - pointH;
+
+                points.append(QPoint(x, y));
+
+                painter.setPen(Qt::black);
+                painter.drawText(QRect(x - xSpacing / 2, h - margin + 5, xSpacing, 20), Qt::AlignCenter, d.toString("dd/MM"));
+            }
+
+            // Draw connecting lines
+            painter.setPen(QPen(QColor(100, 149, 237), 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            if (points.size() > 1)
+                painter.drawPolyline(points);
+
+            // Draw points
+            for (int i = 0; i < points.size(); ++i)
+            {
+                painter.setBrush(QColor(100, 149, 237));
+                painter.setPen(Qt::white);
+                painter.drawEllipse(points[i], 6, 6);
+
+                int count = m_data.value(today.addDays(-(6 - i)), 0);
+                if (count > 0)
+                {
+                    painter.setPen(Qt::black);
+                    painter.drawText(QRect(points[i].x() - 20, points[i].y() - 30, 40, 20), Qt::AlignCenter, QString::number(count));
+                }
+            }
+        }
+
+    private:
+        QMap<QDate, int> m_data;
+    };
+}
 
 UIHabits::UIHabits(Ui::MainWindow *ui, AcadenceManager *manager, int uid, Timer *workoutTimer, QObject *parent)
     : QObject(parent), ui(ui), myManager(manager), userId(uid), m_workoutTimer(workoutTimer), activeTimerHabit(nullptr)
@@ -44,8 +126,7 @@ void UIHabits::refreshHabits()
             statusItem->setForeground(Qt::green);
         ui->habitTableWidget->setItem(row, 4, statusItem);
     }
-    ui->habitTableWidget->resizeColumnsToContents();
-    ui->habitTableWidget->horizontalHeader()->setStretchLastSection(true);
+    ui->habitTableWidget->adjustColumnWidths();
 }
 
 void UIHabits::onAddHabitClicked()
@@ -213,4 +294,38 @@ void UIHabits::onMaghribToggled(bool checked)
 void UIHabits::onIshaToggled(bool checked)
 {
     myManager->updateDailyPrayer(userId, QDate::currentDate().toString(Qt::ISODate), "isha", checked);
+}
+
+void UIHabits::onPrayerHistoryClicked()
+{
+    QMap<QDate, int> stats;
+    try
+    {
+        QVector<QStringList> rows = CsvHandler::readCsv("prayers.csv");
+        for (const auto &row : rows)
+        {
+            if (row.size() >= 7 && row[0].toInt() == userId)
+            {
+                QDate d = QDate::fromString(row[1], "yyyy-MM-dd");
+                int count = row[2].toInt() + row[3].toInt() + row[4].toInt() + row[5].toInt() + row[6].toInt();
+                stats[d] = count;
+            }
+        }
+    }
+    catch (const Acadence::Exception &e)
+    {
+        Notifications::error(nullptr, QString("Failed to load prayer history: %1").arg(e.what()));
+        return;
+    }
+
+    QDialog dlg;
+    dlg.setWindowTitle("Prayer History & Statistics");
+    dlg.resize(1280, 720);
+    QVBoxLayout *l = new QVBoxLayout(&dlg);
+    l->addWidget(new QLabel("<h3>Last 7 Days Prayer Performance</h3>"));
+    l->addWidget(new PrayerChartWidget(stats));
+    QDialogButtonBox *bb = new QDialogButtonBox(QDialogButtonBox::Close);
+    connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::accept);
+    l->addWidget(bb);
+    dlg.exec();
 }

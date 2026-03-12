@@ -250,6 +250,8 @@ public:
 
     double getGrade(int studentId, int assessmentId);
     void addGrade(int studentId, int assessmentId, double marks);
+    QMap<int, double> getGradesForAssessment(int assessmentId);
+    QSet<QString> getPresenceSet(int courseId);
 
     QVector<QString> getCourseDates(int courseId);
     bool isPresent(int courseId, int studentId, QString date);

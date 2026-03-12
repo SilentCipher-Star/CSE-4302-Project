@@ -46,8 +46,8 @@ The codebase is intentionally OOP-heavy and demonstrates multiple design pattern
 ### Project Layout
 - `src/`: Implementation (`.cpp`) files, including UI modules and managers.
 - `include/`: Public headers (`.hpp`) and core abstractions.
-- `data/`: CSV storage files.
-- `fonts/`: Runtime font assets loaded by utility helpers.
+- `assets/data/`: CSV storage files.
+- `assets/fonts/`: Runtime font assets loaded by utility helpers.
 - `.Project/`: Internal project docs and Mermaid diagrams (`*.mmd`, guides).
 - `CMakeLists.txt`: Build target definition.
 
@@ -95,7 +95,7 @@ On Windows, run `Acadence.exe`.
 ## 📖 Usage Notes
 
 ### First Run Behavior
-- On startup, the app initializes the CSV store under the executable-relative data path (`../data`).
+- On startup, the app initializes the CSV store under the executable-relative data path (`../assets/data`).
 - It seeds default admin credentials if missing:
   - Username: `admin`
   - Password: `admin`

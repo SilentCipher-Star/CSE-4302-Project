@@ -1,4 +1,5 @@
 #include "../include/ui_personal_inbox.hpp"
+#include "../include/theme.hpp"
 #include <QFont>
 #include <QFrame>
 #include <QMessageBox>
@@ -19,13 +20,13 @@ PersonalInboxDialog::PersonalInboxDialog(AcadenceManager *manager, int userId, c
     QHBoxLayout *titleBar = new QHBoxLayout();
 
     lblTitle = new QLabel("Personal Inbox");
-    lblTitle->setStyleSheet("font-size: 18px; font-weight: bold; padding: 2px 0;");
+    lblTitle->setStyleSheet(QString("font-size: %1; font-weight: bold; padding: 2px 0;").arg(AppFonts::Large));
     titleBar->addWidget(lblTitle);
 
     titleBar->addStretch();
 
     lblUnread = new QLabel();
-    lblUnread->setStyleSheet("font-size: 13px; font-weight: bold; padding: 4px 10px; border-radius: 10px;");
+    lblUnread->setStyleSheet(QString("font-size: %1; font-weight: bold; padding: 4px 10px; border-radius: 10px;").arg(AppFonts::Small));
     titleBar->addWidget(lblUnread);
 
     btnRefresh = new QPushButton("Refresh");
@@ -49,10 +50,11 @@ PersonalInboxDialog::PersonalInboxDialog(AcadenceManager *manager, int userId, c
     leftLayout->setContentsMargins(0, 0, 0, 0);
 
     messageList = new QListWidget();
-    messageList->setStyleSheet(
-        "QListWidget { font-size: 12px; }"
-        "QListWidget::item { padding: 8px 6px; border-bottom: 1px solid #333; }"
-        "QListWidget::item:selected { background-color: #1a73e8; color: white; }");
+    messageList->setStyleSheet(QString(
+                                   "QListWidget { font-size: %1; }"
+                                   "QListWidget::item { padding: 8px 6px; border-bottom: 1px solid #333; }"
+                                   "QListWidget::item:selected { background-color: #1a73e8; color: white; }")
+                                   .arg(AppFonts::Small));
     leftLayout->addWidget(messageList);
 
     splitter->addWidget(leftPanel);
@@ -64,7 +66,7 @@ PersonalInboxDialog::PersonalInboxDialog(AcadenceManager *manager, int userId, c
 
     messageView = new QTextEdit();
     messageView->setReadOnly(true);
-    messageView->setStyleSheet("font-size: 12px; padding: 8px;");
+    messageView->setStyleSheet(QString("font-size: %1; padding: 8px;").arg(AppFonts::Small));
     messageView->setPlaceholderText("Select a message to read...");
     rightLayout->addWidget(messageView);
 
@@ -139,7 +141,7 @@ void PersonalInboxDialog::loadMessages()
             item->setForeground(QColor(170, 170, 170));
         }
 
-        item->setData(Qt::UserRole, i);  // store index
+        item->setData(Qt::UserRole, i); // store index
         messageList->addItem(item);
     }
 
@@ -147,12 +149,12 @@ void PersonalInboxDialog::loadMessages()
     if (unreadCount > 0)
     {
         lblUnread->setText(QString(" %1 unread ").arg(unreadCount));
-        lblUnread->setStyleSheet("font-size: 13px; font-weight: bold; padding: 4px 10px; border-radius: 10px; background-color: #1a73e8; color: white;");
+        lblUnread->setStyleSheet(QString("font-size: %1; font-weight: bold; padding: 4px 10px; border-radius: 10px; background-color: #1a73e8; color: white;").arg(AppFonts::Small));
     }
     else
     {
         lblUnread->setText("All read");
-        lblUnread->setStyleSheet("font-size: 13px; font-weight: bold; padding: 4px 10px; border-radius: 10px; color: #22a85a;");
+        lblUnread->setStyleSheet(QString("font-size: %1; font-weight: bold; padding: 4px 10px; border-radius: 10px; color: #22a85a;").arg(AppFonts::Small));
     }
 
     lblTitle->setText(QString("Personal Inbox (%1 messages)").arg(messages.size()));
@@ -189,8 +191,8 @@ void PersonalInboxDialog::onMessageSelected()
     // Display the message
     QString html;
     html += "<div style='padding: 8px;'>";
-    html += "<h2 style='margin-bottom: 4px;'>" + msg.getSubject().toHtmlEscaped() + "</h2>";
-    html += "<p style='color: #888; font-size: 11px; margin-top: 0;'>";
+    html += QString("<h2 style='margin-bottom: 4px; font-size: %1;'>").arg(AppFonts::Normal) + msg.getSubject().toHtmlEscaped() + "</h2>";
+    html += QString("<p style='color: #888; font-size: %1; margin-top: 0;'>").arg(AppFonts::Small);
     html += "From: <b>" + msg.getSenderName().toHtmlEscaped() + "</b> (" + msg.getSenderRole() + ")";
     html += "  |  " + msg.getTimestamp();
     html += "</p>";
@@ -199,7 +201,7 @@ void PersonalInboxDialog::onMessageSelected()
     // Preserve line breaks in content
     QString body = msg.getContent().toHtmlEscaped();
     body.replace("\n", "<br>");
-    html += "<div style='font-size: 13px; line-height: 1.6;'>" + body + "</div>";
+    html += QString("<div style='font-size: %1; line-height: 1.6;'>").arg(AppFonts::Small) + body + "</div>";
     html += "</div>";
 
     messageView->setHtml(html);
@@ -209,11 +211,12 @@ void PersonalInboxDialog::onMessageSelected()
 void PersonalInboxDialog::onDeleteClicked()
 {
     int row = messageList->currentRow();
-    if (row < 0 || row >= messages.size()) return;
+    if (row < 0 || row >= messages.size())
+        return;
 
     auto reply = QMessageBox::question(this, "Delete Message",
-        "Are you sure you want to delete this message?",
-        QMessageBox::Yes | QMessageBox::No);
+                                       "Are you sure you want to delete this message?",
+                                       QMessageBox::Yes | QMessageBox::No);
 
     if (reply == QMessageBox::Yes)
     {

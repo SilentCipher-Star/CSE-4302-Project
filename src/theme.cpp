@@ -4,10 +4,10 @@
 #include <QPalette>
 
 const QString AppFonts::Normal = "20px";
-const QString AppFonts::Small = "18px";
+const QString AppFonts::Small = "16px";
 const QString AppFonts::Large = "36px";
-const QString AppFonts::Timer = "100px";
-const QString AppFonts::Title = "54pt";
+const QString AppFonts::Timer = "120px";
+const QString AppFonts::Title = "40px";
 
 void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
 {
@@ -142,7 +142,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       /* ─── Tab Widget ─────────────────────────────────────────────────── */
                       "QTabWidget::pane {"
                       "  border:1.5px solid %4; border-radius:18px;"
-                      "  background:%2; top:-1px; padding:14px; }"
+                      "  background:%2; top:-1px; padding:14px; margin-top: 10px; }"
                       "QTabWidget::tab-bar { alignment:left; }"
                       "QTabBar::tab {"
                       "  background:%1; color:%3; border:1.5px solid transparent;"
@@ -241,7 +241,7 @@ QVector<AppTheme> ThemeManager::getAvailableThemes()
     QVector<AppTheme> themes;
     try
     {
-        QVector<QStringList> data = CsvHandler::readCsv("../data/themes.csv");
+        QVector<QStringList> data = CsvHandler::readCsv("themes.csv");
         for (const auto &row : data)
         {
             if (row.size() >= 5)
@@ -253,7 +253,13 @@ QVector<AppTheme> ThemeManager::getAvailableThemes()
     }
 
     if (themes.isEmpty())
+    {
         themes.append({"Sakura Dream", "#fdf0f3", "#fff5f7", "#3d1a2e", "#e91e8c"});
+        themes.append({"Mint Fresh", "#f0fdf4", "#f0fdf4", "#14532d", "#16a34a"});
+        themes.append({"Ocean Breeze", "#f0f9ff", "#f0f9ff", "#0c4a6e", "#0ea5e9"});
+        themes.append({"Lavender", "#f5f3ff", "#f5f3ff", "#4c1d95", "#8b5cf6"});
+        themes.append({"Autumn Warmth", "#fff7ed", "#fff7ed", "#7c2d12", "#f97316"});
+    }
 
     return themes;
 }
@@ -261,10 +267,10 @@ QVector<AppTheme> ThemeManager::getAvailableThemes()
 QVector<AppTheme> ThemeManager::getDarkThemes()
 {
     return {
-        {"Midnight",      "#1a1b2e", "#252641", "#e2e8f0", "#818cf8"},
-        {"Obsidian",      "#1c1c1e", "#2c2c2e", "#f2f2f7", "#30d158"},
+        {"Midnight", "#1a1b2e", "#252641", "#e2e8f0", "#818cf8"},
+        {"Obsidian", "#1c1c1e", "#2c2c2e", "#f2f2f7", "#30d158"},
         {"Crimson Night", "#1a0808", "#2d1010", "#fde8e8", "#ef4444"},
-        {"Ocean Depth",   "#051020", "#0a1e38", "#dff0ff", "#38bdf8"},
-        {"Amber Dark",    "#1a1200", "#2a1f00", "#fff8e1", "#f59e0b"},
+        {"Ocean Depth", "#051020", "#0a1e38", "#dff0ff", "#38bdf8"},
+        {"Amber Dark", "#1a1200", "#2a1f00", "#fff8e1", "#f59e0b"},
     };
 }

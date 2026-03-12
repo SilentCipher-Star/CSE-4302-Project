@@ -35,6 +35,7 @@ public slots:
     void onAsrToggled(bool checked);
     void onMaghribToggled(bool checked);
     void onIshaToggled(bool checked);
+    void onPrayerHistoryClicked();
 
 private:
     Ui::MainWindow *ui;

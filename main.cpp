@@ -4,6 +4,7 @@
 #include "include/csvhandler.hpp"
 #include "include/databasemanager.hpp"
 #include "include/utils.hpp"
+#include "include/assetmanager.hpp"
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -12,8 +13,8 @@ int main(int argc, char *argv[])
     app.setApplicationName("Acadence");
     app.setOrganizationName("Tutu_Ali");
 
-    Utils::loadFonts();
-    DatabaseManager::instance().initialize();
+    // Load all assets (fonts, data, sounds) upfront to ensure smooth login transition
+    AssetManager::load();
 
     int exitCode = 0;
 
@@ -32,5 +33,6 @@ int main(int argc, char *argv[])
         exitCode = app.exec();
     } while (exitCode == 99); // the logout button is programmed to exit the application with code 99
 
+    AssetManager::unload();
     return exitCode;
 }
