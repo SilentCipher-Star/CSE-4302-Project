@@ -28,7 +28,7 @@ void UITimers::setupTimers()
         QColor acc = lbl->palette().color(QPalette::Highlight);
         QString accRgba = QString("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
 
-        QString style = QString("QLabel { font-size: %1; border: 3px solid palette(highlight); border-radius: 16px; color: palette(text); "
+        QString style = QString("QLabel { font-size: %1px; border: 3px solid palette(highlight); border-radius: 16px; color: palette(text); "
                                 "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
                                 "stop:0 %2, stop:%3 %2, "
                                 "stop:%3 transparent, stop:1 transparent); }")

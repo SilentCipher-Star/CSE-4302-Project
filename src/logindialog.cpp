@@ -84,7 +84,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     QLabel *decoTop = new QLabel(QString::fromUtf8("\xe2\x9c\xbf   \xe2\x9c\xa6   \xcb\x9a \xc2\xb7 \xcb\x9a   \xe2\x9c\xa6   \xe2\x9c\xbf"), this);
     decoTop->setAlignment(Qt::AlignCenter);
     decoTop->setObjectName("decoLabel");
-    decoTop->setProperty("baseStyle", QString("font-size:%1; letter-spacing:14px; background:transparent;").arg(AppFonts::Title));
+    decoTop->setProperty("baseStyle", QString("font-size:%1px; letter-spacing:14px; background:transparent;").arg(AppFonts::Title));
     mainLayout->addWidget(decoTop, 0, Qt::AlignCenter);
 
     mainLayout->addSpacing(10);
@@ -93,7 +93,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     m_welcomeLabel = new QLabel("ACADENCE", this);
     m_welcomeLabel->setAlignment(Qt::AlignCenter);
     m_welcomeLabel->setStyleSheet(
-        QString("font-size:%1; font-weight:bold; letter-spacing:4px; background:transparent;")
+        QString("font-size:%1px; font-weight:bold; letter-spacing:4px; background:transparent;")
             .arg(AppFonts::Title));
     mainLayout->addWidget(m_welcomeLabel, 0, Qt::AlignCenter);
 
@@ -102,7 +102,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
         QString::fromUtf8("\xe2\x9c\xa7  your campus  \xc2\xb7  your schedule  \xc2\xb7  your success  \xe2\x9c\xa7"), this);
     m_taglineLabel->setAlignment(Qt::AlignCenter);
     m_taglineLabel->setObjectName("decoLabel");
-    m_taglineLabel->setProperty("baseStyle", QString("font-size:%1; font-weight:400; letter-spacing:1.2px; background:transparent;").arg(AppFonts::Small));
+    m_taglineLabel->setProperty("baseStyle", QString("font-size:%1px; font-weight:400; letter-spacing:1.2px; background:transparent;").arg(AppFonts::Small));
     mainLayout->addWidget(m_taglineLabel, 0, Qt::AlignCenter);
 
     mainLayout->addSpacing(24);
@@ -127,7 +127,7 @@ LoginDialog::LoginDialog(QApplication &app, QWidget *parent)
     QLabel *cardTitle = new QLabel(QString::fromUtf8("\xe2\x9c\xa6  Sign In  \xe2\x9c\xa6"), centerFrame);
     cardTitle->setAlignment(Qt::AlignCenter);
     cardTitle->setObjectName("cardDecoLabel");
-    cardTitle->setProperty("baseStyle", QString("font-size:%1; font-weight:700; letter-spacing:2px; background:transparent;").arg(AppFonts::Large));
+    cardTitle->setProperty("baseStyle", QString("font-size:%1px; font-weight:700; letter-spacing:2px; background:transparent;").arg(AppFonts::Large));
     frameLayout->addWidget(cardTitle);
 
     frameLayout->addSpacing(8);
@@ -290,8 +290,8 @@ void LoginDialog::showEvent(QShowEvent *event)
             float yr = lbl->property("yRatio").toFloat();
             lbl->setStyleSheet(QString(
                 "font-size:%1px; color:%2; background:transparent; "
-                "font-family:'Segoe UI Emoji','Segoe UI Symbol',sans-serif;")
-                .arg(sz).arg(themes[currentThemeIdx].accent));
+                "font-family:'%3','Segoe UI Emoji','Segoe UI Symbol',sans-serif;")
+                .arg(sz).arg(themes[currentThemeIdx].accent).arg(AppFonts::Family));
             QPoint base(int(w * xr) - (sz + 24) / 2,
                         int(h * yr) - (sz + 24) / 2);
             lbl->move(base);
@@ -370,15 +370,18 @@ void LoginDialog::updateRoleButtons()
             m_roleButtons[i]->setStyleSheet(QString(
                                                 "QPushButton { background: %1;"
                                                 " color:%2; border:none; font-weight:700;"
-                                                " font-size:%4; padding:0 10px; %3 }"
+                                                " font-size:%4px; padding:0 10px; %3 }"
                                                 "QPushButton:hover { border: 1px solid %2; }")
-                                                .arg(t.accent, t.background, radius, AppFonts::Normal));
+                                                .arg(t.accent, t.background, radius)
+                                                .arg(AppFonts::Normal));
         else
             m_roleButtons[i]->setStyleSheet(QString(
                                                 "QPushButton { background:transparent; color:%1; border:1px solid %1; font-weight:500;"
-                                                " font-size:%3; padding:0 10px; %2 }"
+                                                " font-size:%3px; padding:0 10px; %2 }"
                                                 "QPushButton:hover { background:%4; color:%1; }")
-                                                .arg(t.accent, radius, AppFonts::Normal, t.surface));
+                                                .arg(t.accent, radius)
+                                                .arg(AppFonts::Normal)
+                                                .arg(t.surface));
     }
 }
 
@@ -387,9 +390,10 @@ void LoginDialog::updateThemeButton(const AppTheme &t)
     themeBtn->setStyleSheet(QString(
                                 "QPushButton {"
                                 "  background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 %1,stop:1 %2);"
-                                "  border:2px solid %2; border-radius:23px; font-size:%3; }"
+                                "  border:2px solid %2; border-radius:23px; font-size:%3px; }"
                                 "QPushButton:hover { border-color:white; }")
-                                .arg(t.accent, t.background, AppFonts::Large));
+                                .arg(t.accent, t.background)
+                                .arg(AppFonts::Large));
     themeBtn->setToolTip(QString("Theme: %1").arg(t.name));
 
     QFrame *frame = findChild<QFrame *>("loginFrame");

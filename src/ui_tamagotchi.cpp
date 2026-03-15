@@ -15,7 +15,7 @@
 TamagotchiCanvas::TamagotchiCanvas(QWidget *parent)
     : QWidget(parent), m_animTimer(new QTimer(this))
 {
-    setMinimumSize(420, 340);
+    setMinimumSize(240, 180);
     connect(m_animTimer, &QTimer::timeout, this, &TamagotchiCanvas::onAnimTick);
     m_animTimer->start(80);
 }
@@ -47,43 +47,49 @@ void TamagotchiCanvas::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
+    p.setRenderHint(QPainter::TextAntialiasing);
+
+    // Fixed logical resolution for perfect scaling
+    const qreal V_WIDTH = 1280.0;
+    const qreal V_HEIGHT = 720.0;
+
+    qreal scale = qMin(width() / V_WIDTH, height() / V_HEIGHT);
+    p.translate((width() - V_WIDTH * scale) / 2.0, (height() - V_HEIGHT * scale) / 2.0);
+    p.scale(scale, scale);
 
     drawRoom(p);
-
-    qreal cx = width() * 0.50;
-    qreal cy = height() * 0.72;
-    drawCharacter(p, cx, cy, 1.0);
+    drawCharacter(p, V_WIDTH * 0.50, V_HEIGHT * 0.85, 1.0);
 }
 
 // ─── Room ────────────────────────────────────────────────────────────────────
 void TamagotchiCanvas::drawRoom(QPainter &p)
 {
-    int W = width(), H = height();
-    int floorY = (int)(H * 0.70);
+    int W = 1280, H = 720;
+    int floorY = 560; // 720 * 0.77
 
     // Wall gradient
     QLinearGradient wallGrad(0, 0, 0, floorY);
-    wallGrad.setColorAt(0, QColor(232, 228, 248));
-    wallGrad.setColorAt(1, QColor(215, 210, 238));
+    wallGrad.setColorAt(0, QColor(240, 242, 250));
+    wallGrad.setColorAt(1, QColor(220, 225, 240));
     p.fillRect(0, 0, W, floorY, wallGrad);
 
     // Floor
-    p.fillRect(0, floorY, W, H - floorY, QColor(185, 145, 100));
-    p.setPen(QPen(QColor(160, 120, 75), 1));
-    for (int x = 0; x < W; x += 55)
+    p.fillRect(0, floorY, W, H - floorY, QColor(190, 160, 120));
+    p.setPen(QPen(QColor(170, 135, 95), 2));
+    for (int x = 0; x < W; x += 100)
         p.drawLine(x, floorY, x, H);
-    p.fillRect(0, floorY, W, 5, QColor(140, 100, 60));
+    p.fillRect(0, floorY, W, 12, QColor(140, 100, 60)); // Baseboard
 
     // ── Window (left) ──
     int hour = QTime::currentTime().hour();
     bool night = (hour < 6 || hour >= 20);
-    int wx = 28, wy = 30, ww = 105, wh = 135;
-    p.setBrush(QColor(200, 185, 150));
-    p.setPen(QPen(QColor(160, 135, 100), 3));
+    int wx = 100, wy = 100, ww = 200, wh = 240;
+    p.setBrush(QColor(210, 195, 160));
+    p.setPen(QPen(QColor(170, 145, 110), 4));
     p.drawRect(wx, wy, ww, wh);
-    QColor sky = night ? QColor(12, 18, 55) : QColor(130, 195, 240);
+    QColor sky = night ? QColor(15, 20, 60) : QColor(130, 200, 250);
     p.fillRect(wx + 4, wy + 4, ww - 8, wh - 8, sky);
-    p.setPen(QPen(QColor(200, 185, 150), 3));
+    p.setPen(QPen(QColor(210, 195, 160), 4));
     p.drawLine(wx + ww / 2, wy + 4, wx + ww / 2, wy + wh - 4);
     p.drawLine(wx + 4, wy + wh / 2, wx + ww - 4, wy + wh / 2);
 
@@ -91,130 +97,130 @@ void TamagotchiCanvas::drawRoom(QPainter &p)
     {
         p.setBrush(QColor(255, 252, 210));
         p.setPen(Qt::NoPen);
-        p.drawEllipse(wx + 18, wy + 18, 28, 28);
+        p.drawEllipse(wx + 35, wy + 35, 60, 60);
         p.setBrush(sky);
-        p.drawEllipse(wx + 26, wy + 14, 24, 24);
-        static const int sx[] = {70, 82, 60, 90, 68};
-        static const int sy[] = {14, 32, 46, 50, 60};
+        p.drawEllipse(wx + 50, wy + 25, 50, 50);
+        static const int sx[] = {130, 160, 100, 170, 120};
+        static const int sy[] = {40, 70, 100, 110, 130};
         p.setBrush(QColor(255, 252, 210));
         for (int i = 0; i < 5; i++)
-            p.drawEllipse(wx + sx[i] - 2, wy + sy[i] - 2, 4, 4);
+            p.drawEllipse(wx + sx[i] - 3, wy + sy[i] - 3, 7, 7);
     }
     else
     {
-        int sunX = wx + 72, sunY = wy + 35;
-        p.setBrush(QColor(255, 222, 50));
-        p.setPen(QPen(QColor(240, 190, 0), 2));
-        p.drawEllipse(sunX - 16, sunY - 16, 32, 32);
+        int sunX = wx + 140, sunY = wy + 70;
+        p.setBrush(QColor(255, 225, 60));
+        p.setPen(QPen(QColor(240, 200, 0), 2));
+        p.drawEllipse(sunX - 30, sunY - 30, 60, 60);
         for (int a = 0; a < 360; a += 45)
         {
             qreal rad = qDegreesToRadians((qreal)a);
-            p.setPen(QPen(QColor(255, 200, 0), 2));
-            p.drawLine(sunX + (int)(22 * qCos(rad)), sunY + (int)(22 * qSin(rad)),
-                       sunX + (int)(30 * qCos(rad)), sunY + (int)(30 * qSin(rad)));
+            p.setPen(QPen(QColor(255, 205, 0), 3));
+            p.drawLine(sunX + (int)(45 * qCos(rad)), sunY + (int)(45 * qSin(rad)),
+                       sunX + (int)(60 * qCos(rad)), sunY + (int)(60 * qSin(rad)));
         }
     }
 
     // ── Bookshelf (center) ──
-    int bsx = W / 2 - 65, bsy = 25, bsw = 130, bsh = 195;
+    int bsx = 420, bsy = 120, bsw = 220, bsh = 440;
     p.setBrush(QColor(160, 110, 60));
-    p.setPen(QPen(QColor(120, 80, 40), 2));
+    p.setPen(QPen(QColor(120, 80, 40), 3));
     p.drawRect(bsx, bsy, bsw, bsh);
     static const QColor bookCols[] = {
-        {210, 75, 75}, {75, 145, 215}, {75, 195, 115}, {215, 175, 55}, {175, 75, 215}, {215, 125, 55}, {75, 195, 195}};
+        {220, 80, 80}, {80, 150, 220}, {80, 200, 120}, {220, 180, 60}, {180, 80, 220}, {220, 130, 60}, {80, 200, 200}};
     int brain = m_stats.brain;
     for (int shelf = 0; shelf < 4; shelf++)
     {
-        int shelfY = bsy + 10 + shelf * 46;
-        p.fillRect(bsx + 4, shelfY + 38, bsw - 8, 6, QColor(140, 95, 50));
+        int shelfY = bsy + 20 + shelf * 100;
+        p.fillRect(bsx + 6, shelfY + 85, bsw - 12, 12, QColor(140, 95, 50));
         int books = qMin(10, (int)((qreal)brain / 100.0 * 10.0) - shelf * 2);
         if (books < 0)
             books = 0;
         for (int b = 0; b < books; b++)
         {
-            int bh2 = 20 + (b % 3) * 5;
+            int bh2 = 40 + (b % 3) * 8;
             p.setBrush(bookCols[(b + shelf * 3) % 7]);
             p.setPen(Qt::NoPen);
-            p.drawRect(bsx + 6 + b * 12, shelfY + 38 - bh2, 10, bh2);
+            p.drawRect(bsx + 12 + b * 18, shelfY + 85 - bh2, 16, bh2);
         }
     }
 
     // ── Desk (right) ──
-    int dx = W - 180, dy = floorY - 58, dw = 162, dh = 52;
-    p.setBrush(QColor(178, 130, 72));
-    p.setPen(QPen(QColor(138, 100, 52), 2));
-    p.drawRoundedRect(dx, dy, dw, dh, 4, 4);
-    p.setBrush(QColor(152, 108, 58));
-    p.drawRect(dx + 10, dy + dh - 2, 12, floorY - dy - dh + 2);
-    p.drawRect(dx + dw - 22, dy + dh - 2, 12, floorY - dy - dh + 2);
+    int dx = 880, dy = floorY - 100, dw = 280, dh = 90; // Relative to new floor
+    p.setBrush(QColor(185, 135, 80));
+    p.setPen(QPen(QColor(145, 105, 60), 3));
+    p.drawRoundedRect(dx, dy, dw, dh, 6, 6);
+    p.setBrush(QColor(160, 115, 65));
+    p.drawRect(dx + 20, dy + dh - 2, 20, floorY - dy - dh + 2);
+    p.drawRect(dx + dw - 40, dy + dh - 2, 20, floorY - dy - dh + 2);
 
     // Laptop
-    int lx = dx + 18, ly = dy - 38;
-    p.setBrush(QColor(38, 42, 56));
-    p.setPen(QPen(QColor(75, 80, 98), 2));
-    p.drawRoundedRect(lx, ly, 82, 52, 4, 4);
-    p.setFont(QFont("Monospace", 5));
-    p.setPen(QColor(100, 220, 100));
-    p.drawText(lx + 5, ly + 14, "int main(){");
-    p.setPen(QColor(100, 180, 255));
-    p.drawText(lx + 8, ly + 22, "  study();");
-    p.setPen(QColor(255, 200, 100));
-    p.drawText(lx + 8, ly + 30, "  pray();");
-    p.setPen(QColor(100, 220, 100));
-    p.drawText(lx + 5, ly + 38, "}");
-    p.setBrush(QColor(58, 62, 76));
-    p.setPen(QPen(QColor(38, 42, 56), 2));
-    p.drawRoundedRect(lx - 4, ly + 53, 90, 10, 3, 3);
+    int lx = dx + 60, ly = dy - 110;
+    p.setBrush(QColor(40, 45, 60));
+    p.setPen(QPen(QColor(80, 85, 105), 3));
+    p.drawRoundedRect(lx, ly, 160, 110, 8, 8);
+    p.setFont(QFont(AppFonts::Family, 12, QFont::Bold));
+    p.setPen(QColor(120, 230, 120));
+    p.drawText(lx + 15, ly + 30, "int main() {");
+    p.setPen(QColor(120, 190, 255));
+    p.drawText(lx + 25, ly + 55, "study();");
+    p.setPen(QColor(255, 210, 120));
+    p.drawText(lx + 25, ly + 80, "pray();");
+    p.setPen(QColor(120, 230, 120));
+    p.drawText(lx + 15, ly + 105, "}");
+    p.setBrush(QColor(60, 65, 80));
+    p.setPen(QPen(QColor(40, 45, 60), 2));
+    p.drawRoundedRect(lx - 10, ly + 112, 180, 16, 6, 6);
 
     // ── Whiteboard (left, above floor) ──
-    int wbx = 30, wby = floorY - 115, wbw = 125, wbh = 75;
+    int wbx = 80, wby = 380, wbw = 240, wbh = 150;
     p.setBrush(Qt::white);
-    p.setPen(QPen(QColor(180, 188, 218), 2));
-    p.drawRoundedRect(wbx, wby, wbw, wbh, 4, 4);
-    p.fillRect(wbx, wby, wbw, 14, QColor(100, 120, 200));
-    p.fillRect(wbx, wby + 7, wbw, 7, QColor(100, 120, 200));
+    p.setPen(QPen(QColor(180, 190, 220), 3));
+    p.drawRoundedRect(wbx, wby, wbw, wbh, 5, 5);
+    p.fillRect(wbx, wby, wbw, 35, QColor(100, 120, 200));
+    p.fillRect(wbx, wby + 17, wbw, 18, QColor(100, 120, 200));
     p.setPen(Qt::white);
-    p.setFont(QFont("Arial", 6, QFont::Bold));
-    p.drawText(QRect(wbx, wby, wbw, 14), Qt::AlignCenter, "Today");
+    p.setFont(QFont(AppFonts::Family, 14, QFont::Bold));
+    p.drawText(QRect(wbx, wby, wbw, 35), Qt::AlignCenter, "Focus Board");
 
     // Exam alert on whiteboard
     if (m_stats.examSoon && m_stats.daysToExam <= 3)
     {
         p.setPen(QColor(220, 50, 50));
-        p.setFont(QFont("Arial", 6, QFont::Bold));
-        p.drawText(wbx + 5, wby + 28, "⚠ " + m_stats.examName.left(15));
-        p.setFont(QFont("Arial", 6));
-        p.drawText(wbx + 5, wby + 40, QString("in %1 day(s)!").arg(m_stats.daysToExam));
+        p.setFont(QFont(AppFonts::Family, 16, QFont::Bold));
+        p.drawText(QRect(wbx + 12, wby + 50, wbw - 24, 35), Qt::AlignLeft | Qt::AlignVCenter, "⚠ " + m_stats.examName.left(12) + "..");
+        p.setFont(QFont(AppFonts::Family, 14, QFont::Medium));
+        p.drawText(QRect(wbx + 12, wby + 100, wbw - 24, 35), Qt::AlignLeft | Qt::AlignVCenter, QString("in %1 day(s)!").arg(m_stats.daysToExam));
     }
     else
     {
         p.setPen(QColor(80, 100, 160));
-        p.setFont(QFont("Arial", 6));
-        p.drawText(wbx + 5, wby + 30, "No urgent exams");
-        p.drawText(wbx + 5, wby + 44, "Keep studying!");
+        p.setFont(QFont(AppFonts::Family, 16, QFont::Bold));
+        p.drawText(QRect(wbx, wby + 55, wbw, 35), Qt::AlignCenter, "No urgent exams");
+        p.setFont(QFont(AppFonts::Family, 14, QFont::Medium));
+        p.drawText(QRect(wbx, wby + 100, wbw, 35), Qt::AlignCenter, "Keep studying!");
     }
 
     // ── Calendar (right of shelf) ──
-    int calx = bsx + bsw + 15, caly = 35, calw = 72, calh = 78;
+    int calx = bsx + bsw + 50, caly = 100, calw = 160, calh = 190;
     p.setBrush(Qt::white);
-    p.setPen(QPen(QColor(190, 55, 55), 2));
-    p.drawRect(calx, caly, calw, calh);
-    p.fillRect(calx, caly, calw, 15, QColor(190, 55, 55));
+    p.setPen(QPen(QColor(200, 60, 60), 3));
+    p.drawRoundedRect(calx, caly, calw, calh, 4, 4);
+    p.fillRect(calx, caly, calw, 35, QColor(200, 60, 60));
     p.setPen(Qt::white);
-    p.setFont(QFont("Arial", 6, QFont::Bold));
-    p.drawText(QRect(calx, caly, calw, 15), Qt::AlignCenter,
-               QDate::currentDate().toString("MMM yyyy"));
+    p.setFont(QFont(AppFonts::Family, 14, QFont::Bold));
+    p.drawText(QRect(calx, caly, calw, 35), Qt::AlignCenter, QDate::currentDate().toString("MMM yyyy"));
     int today = QDate::currentDate().day();
-    p.setFont(QFont("Arial", 5));
+    p.setFont(QFont(AppFonts::Family, 11, QFont::Medium));
     for (int d = 1; d <= 28; d++)
     {
         int col = (d - 1) % 7, row = (d - 1) / 7;
-        int gx = calx + 4 + col * 9, gy = caly + 20 + row * 12;
+        int gx = calx + 12 + col * 20, gy = caly + 65 + row * 28;
         if (d == today)
         {
             p.setBrush(QColor(80, 140, 220));
             p.setPen(Qt::NoPen);
-            p.drawEllipse(gx - 1, gy - 7, 9, 9);
+            p.drawEllipse(gx - 5, gy - 16, 24, 24);
             p.setPen(Qt::white);
         }
         else
@@ -232,13 +238,13 @@ void TamagotchiCanvas::drawCharacter(QPainter &p, qreal cx, qreal cy, qreal sc)
     switch (m_state)
     {
     case TamaState::Happy:
-        bounce = -qAbs(qSin(m_frame * 0.15)) * 10 * sc;
+        bounce = -qAbs(qSin(m_frame * 0.15)) * 15;
         break;
     case TamaState::Stressed:
-        sway = qSin(m_frame * 0.38) * 7 * sc;
+        sway = qSin(m_frame * 0.38) * 10;
         break;
     case TamaState::Neutral:
-        sway = qSin(m_frame * 0.05) * 2.5 * sc;
+        sway = qSin(m_frame * 0.05) * 4;
         break;
     default:
         break;
@@ -249,22 +255,22 @@ void TamagotchiCanvas::drawCharacter(QPainter &p, qreal cx, qreal cy, qreal sc)
     if (m_state == TamaState::Sick)
     {
         p.setBrush(QColor(195, 175, 158));
-        p.setPen(QPen(QColor(155, 135, 118), 2));
-        p.drawRoundedRect((int)(px - 58), (int)(py - 18), 116, 34, 8, 8);
+        p.setPen(QPen(QColor(155, 135, 118), 3));
+        p.drawRoundedRect((int)(px - 110), (int)(py - 33), 220, 66, 15, 15);
         p.setBrush(QColor(228, 200, 200));
-        p.drawRoundedRect((int)(px - 62), (int)(py - 26), 124, 24, 10, 10);
+        p.drawRoundedRect((int)(px - 120), (int)(py - 48), 240, 48, 18, 18);
         p.setBrush(QColor(195, 228, 195));
-        p.setPen(QPen(QColor(148, 178, 148), 2));
-        p.drawRoundedRect((int)(px - 32), (int)(py - 20), 62, 20, 8, 8);
+        p.setPen(QPen(QColor(148, 178, 148), 3));
+        p.drawRoundedRect((int)(px - 60), (int)(py - 38), 120, 39, 15, 15);
         p.setBrush(QColor(255, 222, 185));
-        p.setPen(QPen(QColor(198, 170, 132), 2));
-        p.drawEllipse((int)(px + 22), (int)(py - 30), 26, 26);
-        drawSickFace(p, px + 35, py - 17, 11);
+        p.setPen(QPen(QColor(198, 170, 132), 3));
+        p.drawEllipse((int)(px + 45), (int)(py - 60), 51, 51);
+        drawSickFace(p, px + 70, py - 35, 21);
         // Zzz
         int zOff = (m_frame * 2) % 60;
         p.setPen(QPen(QColor(148, 172, 225, 230 - zOff * 3), 2));
-        p.setFont(QFont("Arial", 9, QFont::Bold));
-        p.drawText((int)(px + 52), (int)(py - 18 - zOff / 2), "zzz");
+        p.setFont(QFont(AppFonts::Family, 20, QFont::Bold));
+        p.drawText((int)(px + 110), (int)(py - 38 - zOff / 2), "Zzz");
         return;
     }
 
@@ -288,43 +294,43 @@ void TamagotchiCanvas::drawCharacter(QPainter &p, qreal cx, qreal cy, qreal sc)
         body = QColor(128, 178, 198);
         break;
     }
-    qreal bw = 42 * sc, bh = 50 * sc;
+    qreal bw = 64, bh = 75;
     p.setBrush(body);
     p.setPen(QPen(body.darker(138), 2));
-    p.drawRoundedRect((int)(px - bw / 2), (int)(py - bh), (int)bw, (int)bh, 11, 11);
+    p.drawRoundedRect((int)(px - bw / 2), (int)(py - bh), (int)bw, (int)bh, 16, 16);
 
     // Arms
     p.setBrush(body);
     if (m_state == TamaState::Happy)
     {
-        qreal wave = qSin(m_frame * 0.2) * 14;
-        p.drawEllipse((int)(px - bw / 2 - 11), (int)(py - bh + 4 + wave), 11, 21);
-        p.drawEllipse((int)(px + bw / 2), (int)(py - bh + 4 - wave), 11, 21);
+        qreal wave = qSin(m_frame * 0.2) * 27;
+        p.drawEllipse((int)(px - bw / 2 - 21), (int)(py - bh + 6 + wave), 21, 39);
+        p.drawEllipse((int)(px + bw / 2), (int)(py - bh + 6 - wave), 21, 39);
     }
     else if (m_state == TamaState::Tired)
     {
-        p.drawEllipse((int)(px - bw / 2 - 10), (int)(py - bh / 2 + 8), 11, 21);
-        p.drawEllipse((int)(px + bw / 2), (int)(py - bh / 2 + 8), 11, 21);
+        p.drawEllipse((int)(px - bw / 2 - 20), (int)(py - bh / 2 + 12), 21, 39);
+        p.drawEllipse((int)(px + bw / 2 - 1), (int)(py - bh / 2 + 12), 21, 39);
     }
     else
     {
-        p.drawEllipse((int)(px - bw / 2 - 10), (int)(py - bh + 13), 11, 21);
-        p.drawEllipse((int)(px + bw / 2), (int)(py - bh + 13), 11, 21);
+        p.drawEllipse((int)(px - bw / 2 - 20), (int)(py - bh + 24), 21, 39);
+        p.drawEllipse((int)(px + bw / 2 - 1), (int)(py - bh + 24), 21, 39);
     }
 
     // Legs
-    p.drawRoundedRect((int)(px - 15), (int)(py - 13), 13, 17, 5, 5);
-    p.drawRoundedRect((int)(px + 2), (int)(py - 13), 13, 17, 5, 5);
+    p.drawRoundedRect((int)(px - 27), (int)(py - 22), 22, 30, 9, 9);
+    p.drawRoundedRect((int)(px + 5), (int)(py - 22), 22, 30, 9, 9);
 
     // Neutral: holds book
     if (m_state == TamaState::Neutral)
     {
         p.setBrush(QColor(178, 75, 75));
-        p.setPen(QPen(QColor(138, 48, 48), 2));
-        p.drawRoundedRect((int)(px + bw / 2 + 8), (int)(py - bh / 2 - 2), 20, 26, 3, 3);
-        p.setPen(QColor(198, 118, 118));
-        p.setFont(QFont("Arial", 4));
-        p.drawText((int)(px + bw / 2 + 10), (int)(py - bh / 2 + 10), "OOP");
+        p.setPen(QPen(QColor(138, 48, 48), 3));
+        p.drawRoundedRect((int)(px + bw / 2 + 15), (int)(py - bh / 2 - 6), 39, 51, 6, 6);
+        p.setPen(QColor(230, 180, 180));
+        p.setFont(QFont(AppFonts::Family, 10, QFont::Bold));
+        p.drawText((int)(px + bw / 2 + 20), (int)(py - bh / 2 + 21), "OOP");
     }
 
     // Stressed: flying papers
@@ -333,36 +339,36 @@ void TamagotchiCanvas::drawCharacter(QPainter &p, qreal cx, qreal cy, qreal sc)
         for (int i = 0; i < 3; i++)
         {
             qreal ang = m_frame * 0.08 + i * 2.09;
-            int papx = (int)(px + qCos(ang) * 52);
-            int papy = (int)(py - bh / 2 + qSin(ang * 0.7) * 28);
+            int papx = (int)(px + qCos(ang) * 95);
+            int papy = (int)(py - bh / 2 + qSin(ang * 0.7) * 50);
             p.save();
             p.translate(papx, papy);
             p.rotate(m_frame * 3.0 + i * 40);
             p.setBrush(Qt::white);
-            p.setPen(QPen(QColor(175, 175, 175), 1));
-            p.drawRect(-8, -6, 16, 12);
+            p.setPen(QPen(QColor(175, 175, 175), 2));
+            p.drawRect(-15, -12, 30, 24);
             p.setPen(QColor(100, 100, 180));
-            p.setFont(QFont("Arial", 3));
-            p.drawText(-6, -1, "====");
-            p.drawText(-6, 3, "====");
+            p.setFont(QFont(AppFonts::Family, 9));
+            p.drawText(-12, -3, "===");
+            p.drawText(-12, 8, "===");
             p.restore();
         }
     }
 
     // ── Head ──
-    qreal hr = 27 * sc;
-    qreal hcx = px, hcy = py - bh - hr + 8;
+    qreal hr = 40;
+    qreal hcx = px, hcy = py - bh - hr + 15;
     p.setBrush(QColor(255, 222, 182));
-    p.setPen(QPen(QColor(198, 170, 132), 2));
+    p.setPen(QPen(QColor(198, 170, 132), 3));
     p.drawEllipse((int)(hcx - hr), (int)(hcy - hr), (int)(hr * 2), (int)(hr * 2));
 
     // Blush
     if (m_state == TamaState::Happy || m_state == TamaState::Neutral)
     {
-        p.setBrush(QColor(255, 158, 158, 90));
+        p.setBrush(QColor(255, 158, 158, 100));
         p.setPen(Qt::NoPen);
-        p.drawEllipse((int)(hcx - hr + 3), (int)(hcy + 2), 13, 9);
-        p.drawEllipse((int)(hcx + hr - 16), (int)(hcy + 2), 13, 9);
+        p.drawEllipse((int)(hcx - hr + 6), (int)(hcy + 3), 24, 16);
+        p.drawEllipse((int)(hcx + hr - 30), (int)(hcy + 3), 24, 16);
     }
 
     // Face
@@ -393,35 +399,35 @@ void TamagotchiCanvas::drawHappyFace(QPainter &p, qreal cx, qreal cy, qreal r)
     // Star eyes
     p.setBrush(QColor(58, 58, 98));
     p.setPen(Qt::NoPen);
-    p.drawEllipse((int)(cx - r * 0.38 - 5), (int)(cy - r * 0.18 - 5), 10, 10);
-    p.drawEllipse((int)(cx + r * 0.38 - 5), (int)(cy - r * 0.18 - 5), 10, 10);
+    p.drawEllipse((int)(cx - r * 0.38 - 9), (int)(cy - r * 0.18 - 9), 18, 18);
+    p.drawEllipse((int)(cx + r * 0.38 - 9), (int)(cy - r * 0.18 - 9), 18, 18);
     p.setBrush(QColor(255, 218, 55));
-    p.drawEllipse((int)(cx - r * 0.38 - 3), (int)(cy - r * 0.18 - 3), 6, 6);
-    p.drawEllipse((int)(cx + r * 0.38 - 3), (int)(cy - r * 0.18 - 3), 6, 6);
+    p.drawEllipse((int)(cx - r * 0.38 - 6), (int)(cy - r * 0.18 - 6), 12, 12);
+    p.drawEllipse((int)(cx + r * 0.38 - 6), (int)(cy - r * 0.18 - 6), 12, 12);
     // Big smile
     p.setBrush(Qt::NoBrush);
-    p.setPen(QPen(QColor(175, 98, 98), 2));
-    p.drawArc((int)(cx - 10), (int)(cy + r * 0.22 - 4), 20, 14, 0, -180 * 16);
+    p.setPen(QPen(QColor(175, 98, 98), 3));
+    p.drawArc((int)(cx - 18), (int)(cy + r * 0.22 - 7), 36, 27, 0, -180 * 16);
 }
 
 void TamagotchiCanvas::drawNeutralFace(QPainter &p, qreal cx, qreal cy, qreal r)
 {
     p.setBrush(QColor(48, 48, 78));
     p.setPen(Qt::NoPen);
-    p.drawEllipse((int)(cx - r * 0.36 - 4), (int)(cy - r * 0.18 - 4), 9, 9);
-    p.drawEllipse((int)(cx + r * 0.36 - 4), (int)(cy - r * 0.18 - 4), 9, 9);
+    p.drawEllipse((int)(cx - r * 0.36 - 7), (int)(cy - r * 0.18 - 7), 15, 15);
+    p.drawEllipse((int)(cx + r * 0.36 - 7), (int)(cy - r * 0.18 - 7), 15, 15);
     p.setBrush(Qt::white);
-    p.drawEllipse((int)(cx - r * 0.36 - 2), (int)(cy - r * 0.22 - 2), 4, 4);
-    p.drawEllipse((int)(cx + r * 0.36 - 2), (int)(cy - r * 0.22 - 2), 4, 4);
-    p.setPen(QPen(QColor(175, 98, 98), 2));
+    p.drawEllipse((int)(cx - r * 0.36 - 4), (int)(cy - r * 0.22 - 4), 7, 7);
+    p.drawEllipse((int)(cx + r * 0.36 - 4), (int)(cy - r * 0.22 - 4), 7, 7);
+    p.setPen(QPen(QColor(175, 98, 98), 3));
     p.setBrush(Qt::NoBrush);
-    p.drawLine((int)(cx - 7), (int)(cy + r * 0.28), (int)(cx + 7), (int)(cy + r * 0.28));
+    p.drawLine((int)(cx - 12), (int)(cy + r * 0.28), (int)(cx + 12), (int)(cy + r * 0.28));
     // Yawn every 120 frames
     if (m_frame % 150 > 138)
     {
         p.setBrush(QColor(175, 98, 98));
         p.setPen(Qt::NoPen);
-        p.drawEllipse((int)(cx - 5), (int)(cy + r * 0.28 - 3), 10, 9);
+        p.drawEllipse((int)(cx - 9), (int)(cy + r * 0.28 - 6), 18, 16);
     }
 }
 
@@ -430,51 +436,51 @@ void TamagotchiCanvas::drawTiredFace(QPainter &p, qreal cx, qreal cy, qreal r)
     // Half-closed droopy eyes
     p.setBrush(QColor(48, 48, 78));
     p.setPen(Qt::NoPen);
-    p.drawEllipse((int)(cx - r * 0.36 - 5), (int)(cy - r * 0.18 - 4), 10, 10);
-    p.drawEllipse((int)(cx + r * 0.36 - 5), (int)(cy - r * 0.18 - 4), 10, 10);
+    p.drawEllipse((int)(cx - r * 0.36 - 9), (int)(cy - r * 0.18 - 7), 18, 18);
+    p.drawEllipse((int)(cx + r * 0.36 - 9), (int)(cy - r * 0.18 - 7), 18, 18);
     p.setBrush(QColor(255, 222, 182));
-    p.drawRect((int)(cx - r * 0.36 - 5), (int)(cy - r * 0.18 - 4), (int)10, (int)6);
-    p.drawRect((int)(cx + r * 0.36 - 5), (int)(cy - r * 0.18 - 4), (int)10, (int)6);
+    p.drawRect((int)(cx - r * 0.36 - 9), (int)(cy - r * 0.18 - 7), 18, 10);
+    p.drawRect((int)(cx + r * 0.36 - 9), (int)(cy - r * 0.18 - 7), 18, 10);
     // Frown
     p.setBrush(Qt::NoBrush);
-    p.setPen(QPen(QColor(175, 98, 98), 2));
-    p.drawArc((int)(cx - 8), (int)(cy + r * 0.28), 16, 10, 0, 180 * 16);
+    p.setPen(QPen(QColor(175, 98, 98), 3));
+    p.drawArc((int)(cx - 15), (int)(cy + r * 0.28), 30, 18, 0, 180 * 16);
 }
 
 void TamagotchiCanvas::drawStressedFace(QPainter &p, qreal cx, qreal cy, qreal r)
 {
     // Wide eyes
     p.setBrush(Qt::white);
-    p.setPen(QPen(QColor(80, 80, 80), 1));
-    p.drawEllipse((int)(cx - r * 0.38 - 6), (int)(cy - r * 0.2 - 6), 13, 13);
-    p.drawEllipse((int)(cx + r * 0.38 - 6), (int)(cy - r * 0.2 - 6), 13, 13);
+    p.setPen(QPen(QColor(80, 80, 80), 2));
+    p.drawEllipse((int)(cx - r * 0.38 - 12), (int)(cy - r * 0.2 - 12), 24, 24);
+    p.drawEllipse((int)(cx + r * 0.38 - 12), (int)(cy - r * 0.2 - 12), 24, 24);
     p.setBrush(QColor(38, 38, 78));
     p.setPen(Qt::NoPen);
-    p.drawEllipse((int)(cx - r * 0.38 - 3), (int)(cy - r * 0.2 - 3), 8, 8);
-    p.drawEllipse((int)(cx + r * 0.38 - 3), (int)(cy - r * 0.2 - 3), 8, 8);
+    p.drawEllipse((int)(cx - r * 0.38 - 6), (int)(cy - r * 0.2 - 6), 13, 13);
+    p.drawEllipse((int)(cx + r * 0.38 - 6), (int)(cy - r * 0.2 - 6), 13, 13);
     // Wavy mouth
     p.setBrush(Qt::NoBrush);
-    p.setPen(QPen(QColor(175, 98, 98), 2));
-    p.drawArc((int)(cx - 8), (int)(cy + r * 0.26), 16, 10, 0, 180 * 16);
+    p.setPen(QPen(QColor(175, 98, 98), 3));
+    p.drawArc((int)(cx - 15), (int)(cy + r * 0.26), 30, 18, 0, 180 * 16);
     // Sweat drop
     p.setBrush(QColor(98, 178, 255));
     p.setPen(Qt::NoPen);
-    p.drawEllipse((int)(cx + r - 6), (int)(cy - r * 0.4), 7, 9);
+    p.drawEllipse((int)(cx + r - 12), (int)(cy - r * 0.4), 13, 18);
 }
 
 void TamagotchiCanvas::drawSickFace(QPainter &p, qreal cx, qreal cy, qreal r)
 {
     // X eyes
-    p.setPen(QPen(QColor(80, 80, 80), 2));
-    p.drawLine((int)(cx - r * 0.4 - 3), (int)(cy - 4), (int)(cx - r * 0.4 + 3), (int)(cy + 2));
-    p.drawLine((int)(cx - r * 0.4 + 3), (int)(cy - 4), (int)(cx - r * 0.4 - 3), (int)(cy + 2));
-    p.drawLine((int)(cx + r * 0.4 - 3), (int)(cy - 4), (int)(cx + r * 0.4 + 3), (int)(cy + 2));
-    p.drawLine((int)(cx + r * 0.4 + 3), (int)(cy - 4), (int)(cx + r * 0.4 - 3), (int)(cy + 2));
+    p.setPen(QPen(QColor(80, 80, 80), 3));
+    p.drawLine((int)(cx - r * 0.4 - 6), (int)(cy - 7), (int)(cx - r * 0.4 + 6), (int)(cy + 4));
+    p.drawLine((int)(cx - r * 0.4 + 6), (int)(cy - 7), (int)(cx - r * 0.4 - 6), (int)(cy + 4));
+    p.drawLine((int)(cx + r * 0.4 - 6), (int)(cy - 7), (int)(cx + r * 0.4 + 6), (int)(cy + 4));
+    p.drawLine((int)(cx + r * 0.4 + 6), (int)(cy - 7), (int)(cx + r * 0.4 - 6), (int)(cy + 4));
     // Thermometer
     p.setBrush(QColor(255, 78, 78));
     p.setPen(Qt::NoPen);
-    p.drawEllipse((int)(cx - 2), (int)(cy + 5), 6, 6);
-    p.fillRect((int)(cx), (int)(cy - 6), (int)2, (int)10, QColor(255, 78, 78));
+    p.drawEllipse((int)(cx - 4), (int)(cy + 9), 12, 12);
+    p.fillRect((int)(cx), (int)(cy - 12), 4, 21, QColor(255, 78, 78));
 }
 
 void TamagotchiCanvas::drawAccessories(QPainter &p, qreal cx, qreal cy, qreal r)
@@ -483,16 +489,16 @@ void TamagotchiCanvas::drawAccessories(QPainter &p, qreal cx, qreal cy, qreal r)
     {
         // Graduation cap
         p.setBrush(QColor(38, 38, 58));
-        p.setPen(QPen(QColor(18, 18, 38), 1));
-        p.drawRect((int)(cx - r - 2), (int)(cy - r - 12), (int)(r * 2 + 4), 10);
-        p.drawRect((int)(cx - 7), (int)(cy - r - 24), (int)14, 14);
-        p.setPen(QPen(QColor(218, 178, 0), 2));
-        p.drawLine((int)(cx + r), (int)(cy - r - 7), (int)(cx + r + 6), (int)(cy - r + 4));
+        p.setPen(QPen(QColor(18, 18, 38), 2));
+        p.drawRect((int)(cx - r - 6), (int)(cy - r - 22), (int)(r * 2 + 12), 18);
+        p.drawRect((int)(cx - 13), (int)(cy - r - 45), 27, 27);
+        p.setPen(QPen(QColor(218, 178, 0), 3));
+        p.drawLine((int)(cx + r), (int)(cy - r - 13), (int)(cx + r + 12), (int)(cy - r + 7));
     }
     else if (m_stats.brain >= 40)
     {
         // Simple headband
-        p.setPen(QPen(QColor(m_accent), 4));
+        p.setPen(QPen(QColor(m_accent), 5));
         p.setBrush(Qt::NoBrush);
         p.drawArc((int)(cx - r), (int)(cy - r), (int)(r * 2), (int)(r * 2), 15 * 16, 150 * 16);
     }
@@ -505,9 +511,9 @@ void TamagotchiCanvas::drawEffects(QPainter &p, qreal cx, qreal cy, qreal sc)
         for (int i = 0; i < 6; i++)
         {
             qreal ang = m_frame * 0.04 + i * 1.047;
-            int sx = (int)(cx + qCos(ang) * 65);
-            int sy = (int)(cy + qSin(ang) * 38);
-            int sz = 4 + (int)(qSin(m_frame * 0.12 + i) * 2);
+            int sx = (int)(cx + qCos(ang) * 95);
+            int sy = (int)(cy + qSin(ang) * 57);
+            int sz = 6 + (int)(qSin(m_frame * 0.12 + i) * 3);
             p.setBrush(QColor(255, 228, 55, 195));
             p.setPen(Qt::NoPen);
             p.drawEllipse(sx - sz / 2, sy - sz / 2, sz, sz);
@@ -523,8 +529,8 @@ void TamagotchiCanvas::drawEffects(QPainter &p, qreal cx, qreal cy, qreal sc)
             int yOff = (m_frame * 2 + i * 40) % 80;
             int alpha = qMax(0, 240 - yOff * 3);
             p.setPen(QPen(QColor(148, 168, 228, alpha), 2));
-            p.setFont(QFont("Arial", 8 + i * 2, QFont::Bold));
-            p.drawText((int)(cx + 38 + i * 8), (int)(cy - yOff / 2), "z");
+            p.setFont(QFont(AppFonts::Family, 16 + i * 3, QFont::Bold));
+            p.drawText((int)(cx + 67 + i * 18), (int)(cy - yOff / 2), "z");
         }
     }
 }
@@ -550,59 +556,70 @@ void UITamagotchi::buildWidget()
     m_container = new QWidget();
     QHBoxLayout *root = new QHBoxLayout(m_container);
     root->setContentsMargins(10, 10, 10, 10);
-    root->setSpacing(14);
+    root->setSpacing(20);
 
     // Canvas
+    QFrame *canvasFrame = new QFrame();
+    canvasFrame->setStyleSheet("QFrame { background: palette(base); border-radius: 16px; border: 1px solid palette(mid); }");
+    QVBoxLayout *cfLayout = new QVBoxLayout(canvasFrame);
+    cfLayout->setContentsMargins(0, 0, 0, 0);
+
     m_canvas = new TamagotchiCanvas();
     m_canvas->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    root->addWidget(m_canvas, 3);
+    cfLayout->addWidget(m_canvas);
+    root->addWidget(canvasFrame, 3);
 
     // Right panel
-    QWidget *panel = new QWidget();
-    panel->setFixedWidth(200);
-    QVBoxLayout *pv = new QVBoxLayout(panel);
-    pv->setSpacing(8);
+    QFrame *panel = new QFrame();
+    panel->setObjectName("tamaPanel");
+    panel->setFixedWidth(280);
+    panel->setStyleSheet("QFrame#tamaPanel { background: palette(base); border-radius: 16px; border: 1px solid palette(mid); }");
 
-    QLabel *title = new QLabel("Campus Tamagotchi");
-    title->setStyleSheet(QString("font-size:%1; font-weight:bold;").arg(AppFonts::Normal));
+    QVBoxLayout *pv = new QVBoxLayout(panel);
+    pv->setContentsMargins(24, 24, 24, 24);
+    pv->setSpacing(14);
+
+    QLabel *title = new QLabel("Campus\nTamagotchi");
+    title->setStyleSheet(QString("font-size:%1px; font-weight:800; color:palette(text);").arg(AppFonts::Normal + 4));
     title->setAlignment(Qt::AlignCenter);
+    title->setWordWrap(true);
     pv->addWidget(title);
 
     m_lblState = new QLabel("State: Neutral");
     m_lblState->setAlignment(Qt::AlignCenter);
-    m_lblState->setStyleSheet(QString("font-size:%1; font-weight:bold; padding:4px;").arg(AppFonts::Small));
+    m_lblState->setStyleSheet(QString("font-size:%1px; font-weight:bold; padding:6px 12px; border-radius:8px;").arg(AppFonts::Small));
     pv->addWidget(m_lblState);
 
     // Stat bars
     auto makeBar = [&](const QString &label, const QString &color) -> QProgressBar *
     {
         QLabel *lbl = new QLabel(label);
-        lbl->setStyleSheet(QString("font-size:%1;").arg(AppFonts::Small));
+        lbl->setStyleSheet(QString("font-size:%1px; font-weight:600; color:palette(text);").arg(AppFonts::Small));
         pv->addWidget(lbl);
         QProgressBar *bar = new QProgressBar();
         bar->setRange(0, 100);
-        bar->setFixedHeight(12);
+        bar->setFixedHeight(16);
         bar->setTextVisible(false);
         bar->setStyleSheet(pbStyle(color));
         pv->addWidget(bar);
         return bar;
     };
 
-    m_pbHealth = makeBar("Health 💪", "#e05555");
+    m_pbHealth = makeBar("Health 💪", "#e74c3c");
     m_pbMood = makeBar("Mood 😊", "#9b59b6");
-    m_pbEnergy = makeBar("Energy ⚡", "#e8a020");
+    m_pbEnergy = makeBar("Energy ⚡", "#f1c40f");
     m_pbBrain = makeBar("Brain 🧠", "#3498db");
 
-    pv->addSpacing(6);
+    pv->addSpacing(8);
 
     m_lblMessage = new QLabel("");
     m_lblMessage->setWordWrap(true);
     m_lblMessage->setAlignment(Qt::AlignCenter);
     m_lblMessage->setStyleSheet(QString(
-                                    "font-size:%1; color:#555; background:#f5f5f8;"
-                                    "border-radius:6px; padding:6px;")
+                                    "font-size:%1px; font-style:italic; font-weight:500; color:palette(text); background:palette(alternate-base);"
+                                    "border: 1px solid palette(mid); border-radius:10px; padding:12px;")
                                     .arg(AppFonts::Small));
-    m_lblMessage->setMinimumHeight(55);
+    m_lblMessage->setMinimumHeight(80);
     pv->addWidget(m_lblMessage);
 
     pv->addStretch();
@@ -611,11 +628,13 @@ void UITamagotchi::buildWidget()
     auto makeBtn = [&](const QString &text, const QString &color) -> QPushButton *
     {
         QPushButton *btn = new QPushButton(text);
-        btn->setFixedHeight(34);
+        btn->setFixedHeight(44);
+        btn->setCursor(Qt::PointingHandCursor);
         btn->setStyleSheet(
-            QString("QPushButton { background:%1; color:white; border-radius:6px; font-size:%3; }"
-                    "QPushButton:hover { background:%2; }")
-                .arg(color, QColor(color).darker(115).name(), AppFonts::Small));
+            QString("QPushButton { background:%1; color:white; border-radius:10px; font-size:%3px; font-weight:bold; border:none; }"
+                    "QPushButton:hover { background:%2; margin-top:-2px; margin-bottom:2px; }")
+                .arg(color, QColor(color).darker(115).name())
+                .arg(AppFonts::Small));
         return btn;
     };
 
@@ -775,9 +794,10 @@ void UITamagotchi::applyStats()
     int idx = (int)state;
     m_lblState->setText(names[idx]);
     m_lblState->setStyleSheet(
-        QString("font-size:%1; font-weight:bold; color:white; background:%2;"
-                "border-radius:5px; padding:4px;")
-            .arg(AppFonts::Small, colors[idx]));
+        QString("font-size:%1px; font-weight:bold; color:white; background:%2;"
+                "border-radius:8px; padding:6px 12px;")
+            .arg(AppFonts::Small)
+            .arg(colors[idx]));
 
     m_lblMessage->setText(messageForState(state, m_stats));
 
@@ -827,7 +847,7 @@ void UITamagotchi::onStatDecayTick()
 QString UITamagotchi::pbStyle(const QString &color)
 {
     return QString(
-               "QProgressBar { background:#e0e0e8; border-radius:4px; }"
-               "QProgressBar::chunk { background:%1; border-radius:4px; }")
-        .arg(color);
+               "QProgressBar { background:palette(mid); border-radius:8px; border: none; }"
+               "QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 %1, stop:1 %2); border-radius:8px; }")
+        .arg(QColor(color).darker(110).name(), color);
 }

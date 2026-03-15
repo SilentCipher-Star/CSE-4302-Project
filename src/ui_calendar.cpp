@@ -54,7 +54,7 @@ void UICalendar::buildWidget()
     pv->setContentsMargins(0, 0, 0, 0);
 
     m_dayTitle = new QLabel("Select a date");
-    m_dayTitle->setStyleSheet(QString("font-size:%1; font-weight:bold; padding:6px;"
+    m_dayTitle->setStyleSheet(QString("font-size:%1px; font-weight:bold; padding:6px;"
                                       "border-bottom: 2px solid palette(mid);")
                                   .arg(AppFonts::Normal));
     m_dayTitle->setAlignment(Qt::AlignCenter);
@@ -65,10 +65,10 @@ void UICalendar::buildWidget()
     auto addLegend = [&](const QString &color, const QString &label)
     {
         QLabel *dot = new QLabel("●");
-        dot->setStyleSheet(QString("color:%1; font-size:%2;").arg(color, AppFonts::Normal));
+        dot->setStyleSheet(QString("color:%1; font-size:%2px;").arg(color).arg(AppFonts::Normal));
         dot->setFixedWidth(18);
         QLabel *lbl = new QLabel(label);
-        lbl->setStyleSheet(QString("font-size:%1;").arg(AppFonts::Small));
+        lbl->setStyleSheet(QString("font-size:%1px;").arg(AppFonts::Small));
         legend->addWidget(dot);
         legend->addWidget(lbl);
         legend->addSpacing(8);
@@ -108,7 +108,6 @@ void UICalendar::loadEvents()
 
     QTextCharFormat examFmt;
     examFmt.setBackground(QColor(231, 76, 60, 110));
-    examFmt.setForeground(QColor(160, 10, 10));
     examFmt.setFontWeight(QFont::Bold);
 
     QTextCharFormat classFmt;
@@ -198,7 +197,7 @@ void UICalendar::showDayEvents(QDate date)
     if (events.isEmpty())
     {
         QLabel *empty = new QLabel("No events on this day.");
-        empty->setStyleSheet(QString("color:#888; font-size:%1; padding:16px;").arg(AppFonts::Small));
+        empty->setStyleSheet(QString("color:palette(text); font-size:%1px; padding:16px;").arg(AppFonts::Small));
         empty->setAlignment(Qt::AlignCenter);
         m_eventLayout->addWidget(empty);
     }
@@ -219,18 +218,19 @@ void UICalendar::showDayEvents(QDate date)
 
             QLabel *badge = new QLabel(ev.type == "exam" ? "EXAM" : "CLASS");
             badge->setStyleSheet(
-                QString("font-size:9px; font-weight:bold; color:white; background:%1;" // kept 9px as 'Tiny' isn't available
+                QString("font-size:%2px; font-weight:bold; color:white; background:%1;"
                         "border-radius:3px; padding:1px 5px; border:none;")
-                    .arg(ev.color));
-            badge->setFixedHeight(16);
+                    .arg(ev.color)
+                    .arg(AppFonts::Tiny));
+            badge->setFixedHeight(18);
             badge->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
             QLabel *title = new QLabel(ev.title);
-            title->setStyleSheet(QString("font-weight:bold; font-size:%1; border:none; background:transparent;").arg(AppFonts::Small));
+            title->setStyleSheet(QString("font-weight:bold; font-size:%1px; color:palette(text); border:none; background:transparent;").arg(AppFonts::Small));
             title->setWordWrap(true);
 
             QLabel *detail = new QLabel(ev.detail);
-            detail->setStyleSheet(QString("font-size:%1; color:#666; border:none; background:transparent;").arg(AppFonts::Small));
+            detail->setStyleSheet(QString("font-size:%1px; color:palette(text); border:none; background:transparent;").arg(AppFonts::Small));
             detail->setWordWrap(true);
 
             cl->addWidget(badge);

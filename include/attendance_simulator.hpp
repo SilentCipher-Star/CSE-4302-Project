@@ -11,18 +11,19 @@
 #include <QVector>
 #include <QString>
 #include <QFont>
+#include "theme.hpp"
 #include <cmath>
 
 struct AttendanceSimRow
 {
-    QString  courseName;
-    int      attended;
-    int      total;
-    QLabel  *lblProjected;
-    QLabel  *lblSafe;
-    QLabel  *lblStatus;
+    QString courseName;
+    int attended;
+    int total;
+    QLabel *lblProjected;
+    QLabel *lblSafe;
+    QLabel *lblStatus;
     QProgressBar *bar;
-    QSpinBox     *spinSkip;
+    QSpinBox *spinSkip;
 };
 
 class AttendanceSimulatorDialog : public QDialog
@@ -31,7 +32,7 @@ class AttendanceSimulatorDialog : public QDialog
 
 public:
     explicit AttendanceSimulatorDialog(
-        const QVector<QPair<QString, QPair<int,int>>> &courseData,
+        const QVector<QPair<QString, QPair<int, int>>> &courseData,
         QWidget *parent = nullptr)
         : QDialog(parent)
     {
@@ -43,14 +44,14 @@ public:
         mainLayout->setSpacing(10);
 
         QLabel *title = new QLabel("Attendance Risk Simulator");
-        title->setStyleSheet("font-size:16px; font-weight:bold; padding:6px 0;");
+        title->setStyleSheet(QString("font-size:%1px; font-weight:bold; padding:6px 0;").arg(AppFonts::Large));
         title->setAlignment(Qt::AlignCenter);
         mainLayout->addWidget(title);
 
         QLabel *hint = new QLabel(
             "Use the spinner to simulate skipping future classes.\n"
             "The bar updates instantly to show your projected attendance.");
-        hint->setStyleSheet("color:#888; font-size:11px;");
+        hint->setStyleSheet(QString("color:palette(text); font-size:%1px; opacity:0.8;").arg(AppFonts::Small));
         hint->setAlignment(Qt::AlignCenter);
         mainLayout->addWidget(hint);
 
@@ -64,7 +65,7 @@ public:
         scroll->setFrameShape(QFrame::NoFrame);
 
         QWidget *container = new QWidget();
-        QVBoxLayout *rows  = new QVBoxLayout(container);
+        QVBoxLayout *rows = new QVBoxLayout(container);
         rows->setSpacing(12);
         rows->setContentsMargins(8, 8, 8, 8);
 
@@ -72,8 +73,8 @@ public:
         {
             AttendanceSimRow row;
             row.courseName = entry.first;
-            row.attended   = entry.second.first;
-            row.total      = entry.second.second;
+            row.attended = entry.second.first;
+            row.total = entry.second.second;
 
             QFrame *card = new QFrame();
             card->setFrameShape(QFrame::StyledPanel);
@@ -84,18 +85,19 @@ public:
 
             QHBoxLayout *topRow = new QHBoxLayout();
             QLabel *lblName = new QLabel(row.courseName);
-            lblName->setStyleSheet("font-weight:bold; font-size:13px;");
+            lblName->setStyleSheet(QString("font-weight:bold; font-size:%1px;").arg(AppFonts::Normal));
             topRow->addWidget(lblName);
             topRow->addStretch();
 
             double curPct = (row.total > 0)
-                ? (double)row.attended / row.total * 100.0 : 0.0;
+                                ? (double)row.attended / row.total * 100.0
+                                : 0.0;
             QLabel *lblCur = new QLabel(
                 QString("Current: %1% (%2/%3 classes)")
-                    .arg(QString::number(curPct,'f',1))
+                    .arg(QString::number(curPct, 'f', 1))
                     .arg(row.attended)
                     .arg(row.total));
-            lblCur->setStyleSheet("font-size:11px; color:#aaa;");
+            lblCur->setStyleSheet(QString("font-size:%1px; color:palette(text); opacity:0.7;").arg(AppFonts::Small));
             topRow->addWidget(lblCur);
             cardLayout->addLayout(topRow);
 
@@ -110,14 +112,14 @@ public:
             QHBoxLayout *midRow = new QHBoxLayout();
 
             row.lblProjected = new QLabel(
-                QString("Projected: %1%").arg(QString::number(curPct,'f',1)));
-            row.lblProjected->setStyleSheet("font-size:12px; font-weight:bold;");
+                QString("Projected: %1%").arg(QString::number(curPct, 'f', 1)));
+            row.lblProjected->setStyleSheet(QString("font-size:%1px; font-weight:bold;").arg(AppFonts::Normal));
             midRow->addWidget(row.lblProjected);
 
             midRow->addStretch();
 
             row.lblStatus = new QLabel();
-            row.lblStatus->setStyleSheet("font-size:12px; font-weight:bold;");
+            row.lblStatus->setStyleSheet(QString("font-size:%1px; font-weight:bold;").arg(AppFonts::Normal));
             midRow->addWidget(row.lblStatus);
 
             cardLayout->addLayout(midRow);
@@ -125,13 +127,13 @@ public:
             QHBoxLayout *botRow = new QHBoxLayout();
 
             row.lblSafe = new QLabel();
-            row.lblSafe->setStyleSheet("font-size:11px;");
+            row.lblSafe->setStyleSheet(QString("font-size:%1px;").arg(AppFonts::Small));
             botRow->addWidget(row.lblSafe);
 
             botRow->addStretch();
 
             QLabel *lblSkipLabel = new QLabel("Extra classes to skip:");
-            lblSkipLabel->setStyleSheet("font-size:11px;");
+            lblSkipLabel->setStyleSheet(QString("font-size:%1px;").arg(AppFonts::Small));
             botRow->addWidget(lblSkipLabel);
 
             row.spinSkip = new QSpinBox();
@@ -148,7 +150,8 @@ public:
 
             int idx = m_rows.size() - 1;
             connect(row.spinSkip, QOverload<int>::of(&QSpinBox::valueChanged),
-                    this, [this, idx](int val){ updateRow(idx, val); });
+                    this, [this, idx](int val)
+                    { updateRow(idx, val); });
         }
 
         rows->addStretch();
@@ -171,12 +174,13 @@ private:
     {
         auto &row = m_rows[idx];
 
-        int newTotal      = row.total + extraSkip;
-        double projected  = (newTotal > 0)
-            ? (double)row.attended / newTotal * 100.0 : 0.0;
+        int newTotal = row.total + extraSkip;
+        double projected = (newTotal > 0)
+                               ? (double)row.attended / newTotal * 100.0
+                               : 0.0;
 
         row.lblProjected->setText(
-            QString("Projected: %1%").arg(QString::number(projected,'f',1)));
+            QString("Projected: %1%").arg(QString::number(projected, 'f', 1)));
 
         row.bar->setValue(qMin(100, (int)projected));
         applyBarStyle(row.bar, projected);
@@ -185,29 +189,30 @@ private:
         QString statusColor;
         if (projected >= 75.0)
         {
-            statusText  = "Safe";
+            statusText = "Safe";
             statusColor = "#22a85a";
         }
         else if (projected >= 60.0)
         {
-            statusText  = "At Risk";
+            statusText = "At Risk";
             statusColor = "#e89020";
         }
         else
         {
-            statusText  = "Critical";
+            statusText = "Critical";
             statusColor = "#dc143c";
         }
         row.lblStatus->setText(statusText);
         row.lblStatus->setStyleSheet(
-            QString("font-size:12px; font-weight:bold; color:%1;").arg(statusColor));
+            QString("font-size:%1px; font-weight:bold; color:%2;").arg(AppFonts::Normal).arg(statusColor));
 
         int safeSkip = 0;
         if (row.total > 0)
         {
             double maxMissable = row.attended / 0.75 - row.total;
             safeSkip = (int)std::floor(maxMissable);
-            if (safeSkip < 0) safeSkip = 0;
+            if (safeSkip < 0)
+                safeSkip = 0;
         }
 
         if (extraSkip == 0)
@@ -242,7 +247,8 @@ private:
             color = "#dc143c";
 
         bar->setStyleSheet(QString(
-            "QProgressBar { background:#2a2d3e; border-radius:5px; }"
-            "QProgressBar::chunk { background:%1; border-radius:5px; }").arg(color));
+                               "QProgressBar { background:#2a2d3e; border-radius:5px; }"
+                               "QProgressBar::chunk { background:%1; border-radius:5px; }")
+                               .arg(color));
     }
 };

@@ -166,7 +166,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     overlayLayout->setAlignment(Qt::AlignCenter);
 
     QLabel *lblLoading = new QLabel("Loading Acadence...", m_loadingOverlay);
-    lblLoading->setStyleSheet(QString("font-size: 24px; font-weight: bold; background: transparent; color: %1;").arg(currentTheme.text));
+    lblLoading->setStyleSheet(QString("font-size: %1px; font-weight: bold; background: transparent; color: %2;").arg(AppFonts::Large).arg(currentTheme.text));
     overlayLayout->addWidget(lblLoading);
 
     QProgressBar *loadingBar = new QProgressBar(m_loadingOverlay);

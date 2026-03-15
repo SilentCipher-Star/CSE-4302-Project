@@ -38,7 +38,7 @@ namespace
             int maxVal = 5;
 
             // Axes
-            painter.setPen(QPen(Qt::black, 2));
+            painter.setPen(QPen(palette().color(QPalette::Text), 2));
             painter.drawLine(margin, h - margin, w - margin, h - margin);
             painter.drawLine(margin, h - margin, margin, margin);
 
@@ -58,7 +58,7 @@ namespace
 
                 points.append(QPoint(x, y));
 
-                painter.setPen(Qt::black);
+                painter.setPen(palette().color(QPalette::Text));
                 painter.drawText(QRect(x - xSpacing / 2, h - margin + 5, xSpacing, 20), Qt::AlignCenter, d.toString("dd/MM"));
             }
 
@@ -77,7 +77,7 @@ namespace
                 int count = m_data.value(today.addDays(-(6 - i)), 0);
                 if (count > 0)
                 {
-                    painter.setPen(Qt::black);
+                    painter.setPen(palette().color(QPalette::Text));
                     painter.drawText(QRect(points[i].x() - 20, points[i].y() - 30, 40, 20), Qt::AlignCenter, QString::number(count));
                 }
             }

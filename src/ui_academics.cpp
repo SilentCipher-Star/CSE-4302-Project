@@ -203,7 +203,7 @@ void UIAcademics::refreshAcademics()
         if (att[i].getTotalClasses() == 0)
         {
             status = "No Classes";
-            rowColor = QColor(100, 100, 100);
+            rowColor = QColor(150, 150, 150);
         }
         else if (pct >= 75.0)
         {
@@ -585,7 +585,7 @@ void UIAcademics::onGPACalculatorClicked()
     layout->addLayout(schemeRow);
 
     QLabel *lblCurrent = new QLabel();
-    lblCurrent->setStyleSheet(QString("font-size: %1; font-weight: bold; padding: 8px;").arg(AppFonts::Normal));
+    lblCurrent->setStyleSheet(QString("font-size: %1px; font-weight: bold; padding: 8px;").arg(AppFonts::Normal));
     layout->addWidget(lblCurrent);
 
     auto updateCurrentLabel = [&](double gpa)
@@ -621,7 +621,7 @@ void UIAcademics::onGPACalculatorClicked()
     layout->addLayout(remRow);
 
     QLabel *lblResult = new QLabel("");
-    lblResult->setStyleSheet(QString("font-size: %1; padding: 8px; color: #1a73e8;").arg(AppFonts::Normal));
+    lblResult->setStyleSheet(QString("font-size: %1px; padding: 8px; color: #1a73e8;").arg(AppFonts::Normal));
     lblResult->setWordWrap(true);
     layout->addWidget(lblResult);
 
@@ -653,12 +653,12 @@ void UIAcademics::onGPACalculatorClicked()
         if (requiredPerCourse > 4.0)
         {
             lblResult->setText("Target GPA is not achievable with the given number of remaining courses.");
-            lblResult->setStyleSheet(QString("font-size: %1; padding: 8px; color: #d32f2f;").arg(AppFonts::Normal));
+            lblResult->setStyleSheet(QString("font-size: %1px; padding: 8px; color: #d32f2f;").arg(AppFonts::Normal));
         }
         else if (requiredPerCourse < 0.0)
         {
             lblResult->setText("You have already exceeded your target GPA!");
-            lblResult->setStyleSheet(QString("font-size: %1; padding: 8px; color: #2e7d32;").arg(AppFonts::Normal));
+            lblResult->setStyleSheet(QString("font-size: %1px; padding: 8px; color: #2e7d32;").arg(AppFonts::Normal));
         }
         else
         {
@@ -667,7 +667,7 @@ void UIAcademics::onGPACalculatorClicked()
                     .arg(strategy->schemeName())
                     .arg(QString::number(requiredPerCourse, 'f', 2))
                     .arg(remaining));
-            lblResult->setStyleSheet(QString("font-size: %1; padding: 8px; color: #1a73e8;").arg(AppFonts::Normal));
+            lblResult->setStyleSheet(QString("font-size: %1px; padding: 8px; color: #1a73e8;").arg(AppFonts::Normal));
         } });
 
     QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Close);

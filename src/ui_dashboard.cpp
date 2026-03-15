@@ -87,11 +87,11 @@ QFrame *UIDashboard::buildStatsCard(const QString &value, const QString &label, 
 
     QLabel *valLbl = new QLabel(value, card);
     valLbl->setAlignment(Qt::AlignCenter);
-    valLbl->setStyleSheet(QString("font-size:%1; font-weight:bold; color:white; background:transparent;").arg(AppFonts::Title));
+    valLbl->setStyleSheet(QString("font-size:%1px; font-weight:bold; color:white; background:transparent;").arg(AppFonts::Title));
 
     QLabel *descLbl = new QLabel(label, card);
     descLbl->setAlignment(Qt::AlignCenter);
-    descLbl->setStyleSheet(QString("font-size:%1; color:rgba(255,255,255,0.85); background:transparent;").arg(AppFonts::Normal));
+    descLbl->setStyleSheet(QString("font-size:%1px; color:rgba(255,255,255,0.85); background:transparent;").arg(AppFonts::Normal));
 
     l->addWidget(valLbl);
     l->addWidget(descLbl);
@@ -234,7 +234,7 @@ QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &i
     QFrame *section = new QFrame();
     section->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     section->setStyleSheet(QString(
-                               "QFrame { border: 1.5px solid %1; border-radius: 12px; background: palette(base); }")
+                               "QFrame { border: 1.5px solid %1; border-radius: 12px; background: palette(base); color: palette(text); }")
                                .arg(accentColor));
 
     QVBoxLayout *vl = new QVBoxLayout(section);
@@ -243,9 +243,8 @@ QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &i
 
     // Section header
     QLabel *hdr = new QLabel(icon + "  " + title);
-    hdr->setStyleSheet(QString("font-size:%1; font-weight:bold; color:%2; background:transparent; border:none;")
-                           .arg(AppFonts::Normal)
-                           .arg(accentColor));
+    hdr->setStyleSheet(QString("font-size:%1px; font-weight:bold; color:palette(text); background:transparent; border:none;")
+                           .arg(AppFonts::Normal));
     vl->addWidget(hdr);
 
     // Divider
@@ -257,7 +256,7 @@ QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &i
     if (rows.isEmpty())
     {
         QLabel *empty = new QLabel("Nothing scheduled");
-        empty->setStyleSheet(QString("font-size:%1; color:palette(mid); background:transparent; border:none;").arg(AppFonts::Small));
+        empty->setStyleSheet(QString("font-size:%1px; color:palette(text); opacity:0.7; background:transparent; border:none;").arg(AppFonts::Small));
         vl->addWidget(empty);
     }
     else
@@ -265,14 +264,14 @@ QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &i
         for (const auto &row : rows)
         {
             QLabel *mainLbl = new QLabel(row.first);
-            mainLbl->setStyleSheet(QString("font-size:%1; font-weight:600; background:transparent; border:none;").arg(AppFonts::Small));
+            mainLbl->setStyleSheet(QString("font-size:%1px; font-weight:600; color:palette(text); background:transparent; border:none;").arg(AppFonts::Small));
             mainLbl->setWordWrap(true);
             vl->addWidget(mainLbl);
 
             if (!row.second.isEmpty())
             {
                 QLabel *subLbl = new QLabel(row.second);
-                subLbl->setStyleSheet(QString("font-size:%1; color:palette(mid); background:transparent; border:none;").arg(AppFonts::Small));
+                subLbl->setStyleSheet(QString("font-size:%1px; color:palette(text); background:transparent; border:none;").arg(AppFonts::Small));
                 subLbl->setWordWrap(true);
                 vl->addWidget(subLbl);
             }
@@ -436,7 +435,7 @@ void UIDashboard::onViewChartsClicked()
 
     QLabel *title = new QLabel("Attendance % per Course", &dlg);
     title->setAlignment(Qt::AlignCenter);
-    title->setStyleSheet(QString("font-size:%1; font-weight:bold;").arg(AppFonts::Normal));
+    title->setStyleSheet(QString("font-size:%1px; font-weight:bold;").arg(AppFonts::Normal));
     layout->addWidget(title);
 
     BarChartWidget *chart = new BarChartWidget(&dlg);
@@ -719,7 +718,7 @@ void UIDashboard::onAddNoticeClicked()
 
     QLabel *hintLabel = new QLabel(&editor);
     hintLabel->setWordWrap(true);
-    hintLabel->setStyleSheet("color: #666;");
+    hintLabel->setStyleSheet("color: palette(text);");
     hintLabel->setText("Tip: Students will see sender, subject, and a preview. Clicking opens full notice.");
 
     // ---- Decorator Pattern: notice options ----
@@ -826,7 +825,7 @@ void UIDashboard::onNoticeItemClicked(QListWidgetItem *item)
     if (!badges.isEmpty())
     {
         QLabel *badgesLabel = new QLabel(badges, &viewer);
-        badgesLabel->setStyleSheet(QString("font-weight: bold; color: #8B0000; font-size: %1;").arg(AppFonts::Small));
+        badgesLabel->setStyleSheet(QString("font-weight: bold; color: palette(highlight); font-size: %1px;").arg(AppFonts::Small));
         layout->addWidget(badgesLabel);
     }
 

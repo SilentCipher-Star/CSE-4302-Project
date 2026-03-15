@@ -3,12 +3,6 @@
 #include <QStyleFactory>
 #include <QPalette>
 
-const QString AppFonts::Normal = "20px";
-const QString AppFonts::Small = "16px";
-const QString AppFonts::Large = "36px";
-const QString AppFonts::Timer = "120px";
-const QString AppFonts::Title = "40px";
-
 void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
 {
     a.setStyle(QStyleFactory::create("Fusion"));
@@ -43,7 +37,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
     QString qss = QString(
 
                       /* ─── Base ──────────────────────────────────────────────────────── */
-                      "QWidget  { font-size:%5; font-family:'Product Sans','Segoe UI',sans-serif;"
+                      "QWidget  { font-size:%5px; font-family:'%9','Segoe UI',sans-serif;"
                       "           color:%3; background-color:%1;"
                       "           selection-background-color:%4; selection-color:%1; }"
                       "QMainWindow { background: qlineargradient(x1:0,y1:0,x2:1,y2:1,"
@@ -53,9 +47,9 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
 
                       /* ─── Special labels ─────────────────────────────────────────────── */
                       "QLabel#label_timerDisplay, QLabel#label_workoutTimerDisplay"
-                      "  { font-size:%6; font-weight:300; color:%4;"
-                      "    font-family:'Product Sans',sans-serif; }"
-                      "QLabel#label_welcome { font-size:%8; font-weight:bold; }"
+                      "  { font-size:%6px; font-weight:300; color:%4;"
+                      "    font-family:'%9',sans-serif; }"
+                      "QLabel#label_welcome { font-size:%8px; font-weight:bold; }"
 
                       /* ─── Buttons ────────────────────────────────────────────────────── */
                       "QPushButton {"
@@ -162,7 +156,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "  background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 %2,stop:1 %1);"
                       "  padding:7px 10px; border:none; border-bottom:2px solid %4;"
                       "  border-right:1px solid %4; font-weight:700; text-transform:uppercase;"
-                      "  color:%4; font-size:%7; }"
+                      "  color:%4; font-size:%7px; }"
                       "QHeaderView::section:first { border-top-left-radius:10px; }"
                       "QHeaderView::section:last  { border-right:none; border-top-right-radius:10px; }"
                       "QTableCornerButton::section { background-color:%2; border:none; }"
@@ -224,14 +218,15 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "  border-radius:10px; padding:8px 12px; }"
 
                       )
-                      .arg(theme.background, // %1
-                           theme.surface,    // %2
-                           theme.text,       // %3
-                           theme.accent,     // %4
-                           AppFonts::Normal, // %5
-                           AppFonts::Timer,  // %6
-                           AppFonts::Small,  // %7
-                           AppFonts::Large); // %8
+                      .arg(theme.background,  // %1
+                           theme.surface,     // %2
+                           theme.text,        // %3
+                           theme.accent)      // %4
+                      .arg(AppFonts::Normal)  // %5
+                      .arg(AppFonts::Timer)   // %6
+                      .arg(AppFonts::Small)   // %7
+                      .arg(AppFonts::Large)   // %8
+                      .arg(AppFonts::Family); // %9
 
     a.setStyleSheet(qss);
 }

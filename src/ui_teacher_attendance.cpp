@@ -26,7 +26,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     // ── Title ──
     QLabel *title = new QLabel("Daily Attendance Sheet");
-    title->setStyleSheet(QString("font-size: %1; font-weight: bold; padding: 4px 0;").arg(AppFonts::Large));
+    title->setStyleSheet(QString("font-size: %1px; font-weight: bold; padding: 4px 0;").arg(AppFonts::Large));
     title->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(title);
 
@@ -40,13 +40,13 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     topBar->addSpacing(20);
     lblClassesHeld = new QLabel("Number of Classes Held: 0");
-    lblClassesHeld->setStyleSheet(QString("font-size: %1; font-weight: bold; color: #1a73e8;").arg(AppFonts::Normal));
+    lblClassesHeld->setStyleSheet(QString("font-size: %1px; font-weight: bold; color: #1a73e8;").arg(AppFonts::Normal));
     topBar->addWidget(lblClassesHeld);
 
     topBar->addStretch();
 
     lblStats = new QLabel();
-    lblStats->setStyleSheet(QString("font-size: %1; font-weight: bold;").arg(AppFonts::Small));
+    lblStats->setStyleSheet(QString("font-size: %1px; font-weight: bold;").arg(AppFonts::Small));
     topBar->addWidget(lblStats);
 
     mainLayout->addLayout(topBar);
@@ -61,7 +61,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     lblWeekRange = new QLabel();
     lblWeekRange->setAlignment(Qt::AlignCenter);
-    lblWeekRange->setStyleSheet(QString("font-size: %1; font-weight: bold;").arg(AppFonts::Normal));
+    lblWeekRange->setStyleSheet(QString("font-size: %1px; font-weight: bold;").arg(AppFonts::Normal));
     navBar->addWidget(lblWeekRange, 1);
 
     btnNextWeek = new QPushButton("Next Week  >>");
@@ -116,7 +116,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
         box->setStyleSheet(QString("background-color: %1; border: 1px solid #555; border-radius: 2px;").arg(bgColor));
         legendRow->addWidget(box);
         QLabel *lbl = new QLabel(text);
-        lbl->setStyleSheet(QString("font-size: %1;").arg(AppFonts::Small));
+        lbl->setStyleSheet(QString("font-size: %1px;").arg(AppFonts::Small));
         legendRow->addWidget(lbl);
         legendRow->addSpacing(14);
     };
@@ -125,7 +125,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
     addLegend("#555", "No Class");
     legendRow->addStretch();
     QLabel *hint = new QLabel("Click cells to toggle | Click column headers for column operations");
-    hint->setStyleSheet(QString("font-size: %1; color: #888;").arg(AppFonts::Small));
+    hint->setStyleSheet(QString("font-size: %1px; color: palette(text);").arg(AppFonts::Small));
     legendRow->addWidget(hint);
     mainLayout->addLayout(legendRow);
 
@@ -137,7 +137,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
     table->setAlternatingRowColors(true);
     table->setContextMenuPolicy(Qt::CustomContextMenu);
     table->setStyleSheet(QString(
-                             "QTableWidget { gridline-color: #555; font-size: %1; }"
+                             "QTableWidget { gridline-color: palette(mid); font-size: %1px; }"
                              "QTableWidget::item { padding: 4px; }"
                              "QHeaderView::section { font-weight: bold; padding: 4px; }")
                              .arg(AppFonts::Small));
@@ -345,13 +345,11 @@ void TeacherAttendanceDialog::colorCell(int row, int col, bool present)
     {
         cell->setText("P");
         cell->setBackground(QColor(34, 168, 90, 80));
-        cell->setForeground(QColor(20, 120, 50));
     }
     else
     {
         cell->setText("A");
         cell->setBackground(QColor(220, 20, 60, 80));
-        cell->setForeground(QColor(180, 10, 40));
     }
 
     cell->setData(Qt::UserRole + 2, present);
@@ -462,9 +460,9 @@ void TeacherAttendanceDialog::updateStatsLabel()
             .arg(lowCount));
 
     if (lowCount > 0)
-        lblStats->setStyleSheet(QString("font-size: %1; font-weight: bold; color: #dc143c;").arg(AppFonts::Small));
+        lblStats->setStyleSheet(QString("font-size: %1px; font-weight: bold; color: #dc143c;").arg(AppFonts::Small));
     else
-        lblStats->setStyleSheet(QString("font-size: %1; font-weight: bold; color: #22a85a;").arg(AppFonts::Small));
+        lblStats->setStyleSheet(QString("font-size: %1px; font-weight: bold; color: #22a85a;").arg(AppFonts::Small));
 }
 
 // ─── Slots ────────────────────────────────────────────────────

@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QPropertyAnimation>
 #include <QMouseEvent>
+#include "theme.hpp"
 
 // Animated sun/moon toggle switch that replaces the plain "Dark Mode" button
 class ThemeToggle : public QWidget
@@ -27,7 +28,7 @@ public:
 
     void setDark(bool dark)
     {
-        m_dark   = dark;
+        m_dark = dark;
         m_offset = dark ? 40.0 : 3.0;
         update();
     }
@@ -35,7 +36,11 @@ public:
     bool isDark() const { return m_dark; }
 
     qreal offset() const { return m_offset; }
-    void  setOffset(qreal v) { m_offset = v; update(); }
+    void setOffset(qreal v)
+    {
+        m_offset = v;
+        update();
+    }
 
 protected:
     void mousePressEvent(QMouseEvent *) override
@@ -64,14 +69,15 @@ protected:
 
         // ── Icon inside circle ──
         p.setPen(m_dark ? QColor(67, 56, 202) : QColor(234, 88, 12));
-        QFont f("Segoe UI Emoji", 11);
+        QFont f(AppFonts::Family);
+        f.setPixelSize(AppFonts::Small);
         p.setFont(f);
         p.drawText(QRectF(m_offset, 3, 24, 24), Qt::AlignCenter,
                    m_dark ? QString("\u263D") : QString("\u2600"));
     }
 
 private:
-    bool                m_dark   = false;
-    qreal               m_offset = 3.0;
+    bool m_dark = false;
+    qreal m_offset = 3.0;
     QPropertyAnimation *m_anim;
 };
