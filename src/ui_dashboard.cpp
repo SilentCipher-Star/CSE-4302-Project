@@ -4,6 +4,7 @@
 #include "../include/utils.hpp"
 #include "../include/exceptions.hpp"
 #include "../include/notifications.hpp"
+#include "../include/commands.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
@@ -726,7 +727,8 @@ void UIDashboard::onAddNoticeClicked()
 
     try
     {
-        myManager->addNotice(payload, author);
+        auto cmd = std::make_shared<AddNoticeCommand>(payload, author);
+        myManager->executeCommand(cmd);
         Notifications::success(nullptr, "Notice posted successfully.");
         refreshDashboard();
     }
@@ -1007,12 +1009,8 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
         if (!Notifications::confirmDelete(nullptr, "notice \"" + subject + "\""))
             return;
 
-        const bool ok = myManager->deleteNotice(oldDate, oldAuthor, oldContent);
-        if (!ok)
-        {
-            Notifications::error(nullptr, "Failed to delete notice. It may have been removed already.");
-            return;
-        }
+        auto cmd = std::make_shared<DeleteNoticeCommand>(oldDate, oldAuthor, oldContent);
+        myManager->executeCommand(cmd);
 
         Notifications::success(nullptr, "Notice deleted successfully.");
         refreshDashboard();

@@ -10,6 +10,7 @@
 #include "../include/attendance_simulator.hpp"
 #include "../include/ui_teacher_attendance.hpp"
 #include "../include/ui_personal_inbox.hpp"
+#include "../include/commands.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QInputDialog>
@@ -357,6 +358,8 @@ void UIAcademics::onSaveGradesClicked()
     }
 
     int rows = ui->tableGrading->rowCount();
+    QVector<CommandPtr> gradeCommands;
+
     for (int i = 0; i < rows; ++i)
     {
         int sid = ui->tableGrading->item(i, 0)->text().toInt();
@@ -371,7 +374,13 @@ void UIAcademics::onSaveGradesClicked()
             return;
         }
 
-        myManager->addGrade(sid, assessmentId, marks);
+        gradeCommands.append(std::make_shared<AddGradeCommand>(sid, assessmentId, marks));
+    }
+
+    if (!gradeCommands.isEmpty())
+    {
+        auto batch = std::make_shared<BatchCommand>(gradeCommands, "Save grades", DataType::Academics);
+        myManager->executeCommand(batch);
     }
     QMessageBox::information(nullptr, "Success", "Grades Saved");
 }
@@ -472,11 +481,18 @@ void UIAcademics::onAddClassDateClicked()
         return;
 
     QVector<Student *> students = myManager->getStudentsBySemester(c->getSemester());
+    QVector<CommandPtr> attCommands;
     for (auto s : students)
     {
-        myManager->markAttendance(courseId, s->getId(), inputDate, false);
+        attCommands.append(std::make_shared<MarkAttendanceCommand>(courseId, s->getId(), inputDate, false));
     }
     qDeleteAll(students);
+
+    if (!attCommands.isEmpty())
+    {
+        auto batch = std::make_shared<BatchCommand>(attCommands, "Add class date " + inputDate, DataType::Academics);
+        myManager->executeCommand(batch);
+    }
 
     refreshTeacherAttendance();
     QMessageBox::information(nullptr, "Success", "Class date added: " + inputDate);
@@ -491,6 +507,7 @@ void UIAcademics::onSaveAttendanceClicked()
     int rows = ui->tableAttendance->rowCount();
     int cols = ui->tableAttendance->columnCount();
 
+    QVector<CommandPtr> attCommands;
     for (int j = 4; j < cols; ++j)
     {
         QString date = ui->tableAttendance->horizontalHeaderItem(j)->text();
@@ -498,8 +515,14 @@ void UIAcademics::onSaveAttendanceClicked()
         {
             int sid = ui->tableAttendance->item(i, 0)->text().toInt();
             bool present = (ui->tableAttendance->item(i, j)->checkState() == Qt::Checked);
-            myManager->markAttendance(courseId, sid, date, present);
+            attCommands.append(std::make_shared<MarkAttendanceCommand>(courseId, sid, date, present));
         }
+    }
+
+    if (!attCommands.isEmpty())
+    {
+        auto batch = std::make_shared<BatchCommand>(attCommands, "Save attendance", DataType::Academics);
+        myManager->executeCommand(batch);
     }
     QMessageBox::information(nullptr, "Success", "Attendance Saved");
 }

@@ -1,5 +1,6 @@
 #include "../include/ui_planner.hpp"
 #include "../include/notifications.hpp"
+#include "../include/commands.hpp"
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 
@@ -54,10 +55,10 @@ void UIPlanner::onAddTaskClicked()
         return;
     }
 
-    myManager->addTask(userId, desc);
+    auto cmd = std::make_shared<AddTaskCommand>(userId, desc);
+    myManager->executeCommand(cmd);
     ui->taskLineEdit->clear();
     Notifications::success(nullptr, "Task added successfully.");
-    refreshPlanner();
 }
 
 void UIPlanner::onDeleteTaskClicked()
@@ -72,18 +73,22 @@ void UIPlanner::onDeleteTaskClicked()
     if (Notifications::confirmDelete(nullptr, "this task"))
     {
         int id = item->data(Qt::UserRole).toInt();
-        myManager->deleteTask(id);
+        // Capture task state for undo
+        QString desc = item->text();
+        bool wasCompleted = (item->checkState() == Qt::Checked);
+        auto cmd = std::make_shared<DeleteTaskCommand>(id, userId, desc, wasCompleted);
+        myManager->executeCommand(cmd);
         Notifications::success(nullptr, "Task deleted successfully.");
     }
 }
 
 void UIPlanner::onClearCompletedTasksClicked()
 {
-    if (Notifications::confirm(nullptr, "Clear Completed Tasks", "Delete all completed tasks? This action cannot be undone."))
+    if (Notifications::confirm(nullptr, "Clear Completed Tasks", "Delete all completed tasks?"))
     {
-        myManager->deleteCompletedTasks(userId);
+        auto cmd = std::make_shared<DeleteCompletedTasksCommand>(userId);
+        myManager->executeCommand(cmd);
         Notifications::success(nullptr, "Completed tasks cleared.");
-        refreshPlanner();
     }
 }
 
@@ -91,5 +96,6 @@ void UIPlanner::onTaskItemChanged(QListWidgetItem *item)
 {
     int id = item->data(Qt::UserRole).toInt();
     bool isChecked = (item->checkState() == Qt::Checked);
-    myManager->completeTask(id, isChecked);
+    auto cmd = std::make_shared<CompleteTaskCommand>(id, !isChecked, isChecked);
+    myManager->executeCommand(cmd);
 }

@@ -9,9 +9,41 @@
 #include "../include/manager_tasks.hpp"
 #include "../include/manager_habits.hpp"
 #include "../include/manager_messages.hpp"
+#include "../include/manager_lostfound.hpp"
 #include <QMap>
 
 AcadenceManager::AcadenceManager() {}
+
+// ============ Command Pattern - Undo/Redo ============
+void AcadenceManager::executeCommand(CommandPtr cmd)
+{
+    cmd->execute();
+    m_commandHistory.push(cmd);
+    notifyObservers(cmd->affectedDataType());
+}
+
+void AcadenceManager::undo()
+{
+    if (!m_commandHistory.canUndo())
+        return;
+    CommandPtr cmd = m_commandHistory.undo();
+    if (cmd)
+        notifyObservers(cmd->affectedDataType());
+}
+
+void AcadenceManager::redo()
+{
+    if (!m_commandHistory.canRedo())
+        return;
+    CommandPtr cmd = m_commandHistory.redo();
+    if (cmd)
+        notifyObservers(cmd->affectedDataType());
+}
+
+bool AcadenceManager::canUndo() const { return m_commandHistory.canUndo(); }
+bool AcadenceManager::canRedo() const { return m_commandHistory.canRedo(); }
+QString AcadenceManager::undoDescription() const { return m_commandHistory.undoDescription(); }
+QString AcadenceManager::redoDescription() const { return m_commandHistory.redoDescription(); }
 
 void AcadenceManager::addObserver(IDataObserver *observer)
 {
@@ -289,4 +321,24 @@ void AcadenceManager::deleteMessage(int messageId)
 {
     ManagerMessages::deleteMessage(messageId);
     notifyObservers(DataType::Messages);
+}
+
+// ============ Lost & Found ============
+QVector<LostFoundPost> AcadenceManager::getLostFoundPosts() { return ManagerLostFound::getPosts(); }
+void AcadenceManager::addLostFoundPost(int posterId, const QString &posterName, const QString &posterRole,
+                                        const QString &type, const QString &itemName, const QString &description,
+                                        const QString &location)
+{
+    ManagerLostFound::addPost(posterId, posterName, posterRole, type, itemName, description, location);
+    notifyObservers(DataType::LostFound);
+}
+void AcadenceManager::claimLostFoundPost(int postId, const QString &claimerName)
+{
+    ManagerLostFound::claimPost(postId, claimerName);
+    notifyObservers(DataType::LostFound);
+}
+void AcadenceManager::deleteLostFoundPost(int postId)
+{
+    ManagerLostFound::deletePost(postId);
+    notifyObservers(DataType::LostFound);
 }

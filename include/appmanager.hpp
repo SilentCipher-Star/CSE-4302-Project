@@ -12,6 +12,7 @@
 #include "routine.hpp"
 #include "exceptions.hpp"
 #include "csvhandler.hpp"
+#include "command_history.hpp"
 
 class Notice
 {
@@ -170,6 +171,42 @@ public:
     bool getIsRead() const { return isRead; }
 };
 
+class LostFoundPost
+{
+private:
+    int id;
+    int posterId;
+    QString posterName;
+    QString posterRole;
+    QString type;        // "LOST" or "FOUND"
+    QString itemName;
+    QString description;
+    QString location;
+    QString date;
+    QString status;      // "OPEN" or "CLAIMED"
+    QString claimedBy;
+
+public:
+    LostFoundPost(int id, int posterId, QString posterName, QString posterRole,
+                  QString type, QString itemName, QString description,
+                  QString location, QString date, QString status, QString claimedBy)
+        : id(id), posterId(posterId), posterName(posterName), posterRole(posterRole),
+          type(type), itemName(itemName), description(description),
+          location(location), date(date), status(status), claimedBy(claimedBy) {}
+
+    int getId() const { return id; }
+    int getPosterId() const { return posterId; }
+    QString getPosterName() const { return posterName; }
+    QString getPosterRole() const { return posterRole; }
+    QString getType() const { return type; }
+    QString getItemName() const { return itemName; }
+    QString getDescription() const { return description; }
+    QString getLocation() const { return location; }
+    QString getDate() const { return date; }
+    QString getStatus() const { return status; }
+    QString getClaimedBy() const { return claimedBy; }
+};
+
 struct RescheduleOption
 {
     QString displayText;
@@ -187,7 +224,8 @@ enum class DataType
     Academics,
     Queries,
     Profile,
-    Messages
+    Messages,
+    LostFound
 };
 
 class IDataObserver
@@ -273,6 +311,23 @@ public:
     void deleteMessage(int messageId);
     int sendBulkGradeReports(int teacherId, int assessmentId, const QString &extraNote = "");
 
+    // Lost & Found
+    QVector<LostFoundPost> getLostFoundPosts();
+    void addLostFoundPost(int posterId, const QString &posterName, const QString &posterRole,
+                          const QString &type, const QString &itemName, const QString &description,
+                          const QString &location);
+    void claimLostFoundPost(int postId, const QString &claimerName);
+    void deleteLostFoundPost(int postId);
+
+    // Command Pattern - Undo/Redo support
+    void executeCommand(CommandPtr cmd);
+    void undo();
+    void redo();
+    bool canUndo() const;
+    bool canRedo() const;
+    QString undoDescription() const;
+    QString redoDescription() const;
+
     // Observer pattern
     void addObserver(IDataObserver *observer);
     void removeObserver(IDataObserver *observer);
@@ -280,6 +335,7 @@ public:
 private:
     QVector<IDataObserver *> observers;
     void notifyObservers(DataType type);
+    CommandHistory m_commandHistory;
 };
 
 template <typename T>

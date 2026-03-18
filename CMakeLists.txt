@@ -102,6 +102,14 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     include/ui_calendar.hpp
     src/ui_calendar.cpp
     include/theme_toggle.hpp
+    include/icommand.hpp
+    include/command_history.hpp
+    src/command_history.cpp
+    include/commands.hpp
+    include/manager_lostfound.hpp
+    src/manager_lostfound.cpp
+    include/ui_lostfound.hpp
+    src/ui_lostfound.cpp
 )
 
 target_link_libraries(Acadence PRIVATE Qt6::Widgets)

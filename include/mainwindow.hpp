@@ -29,6 +29,7 @@ class UIQueries;
 class UIAdmin;
 class UITamagotchi;
 class UICalendar;
+class UILostFound;
 
 // The main application window
 class MainWindow : public QMainWindow, public IDataObserver
@@ -65,12 +66,18 @@ private:
     UIAdmin      *uiAdmin;
     UITamagotchi *uiTamagotchi = nullptr;
     UICalendar   *uiCalendar   = nullptr;
+    UILostFound  *uiLostFound  = nullptr;
 
     // Initialization Helpers
     void setupTables();
     void setupConnections();
     void toggleDarkMode(bool isDark);
     void onThemeClicked();
+
+    // Undo/Redo buttons
+    QPushButton *m_undoBtn    = nullptr;
+    QPushButton *m_redoBtn    = nullptr;
+    void updateUndoRedoButtons();
 
     ThemeToggle *m_toggle     = nullptr;
     QPushButton *m_themeBtn   = nullptr;
