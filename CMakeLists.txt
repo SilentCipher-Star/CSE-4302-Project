@@ -103,6 +103,15 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/ui_academics.cpp
     src/ui_admin.cpp
     src/ui_calendar.cpp
+    include/theme_toggle.hpp
+    include/icommand.hpp
+    include/command_history.hpp
+    src/command_history.cpp
+    include/commands.hpp
+    include/manager_lostfound.hpp
+    src/manager_lostfound.cpp
+    include/ui_lostfound.hpp
+    src/ui_lostfound.cpp
     src/ui_dashboard.cpp
     src/ui_habits.cpp
     src/ui_personal_inbox.cpp

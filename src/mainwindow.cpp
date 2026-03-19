@@ -10,6 +10,7 @@
 #include "../include/ui_academics.hpp"
 #include "../include/ui_tamagotchi.hpp"
 #include "../include/ui_calendar.hpp"
+#include "../include/ui_lostfound.hpp"
 #include "../include/ui_queries.hpp"
 #include "../include/ui_admin.hpp"
 #include "../include/utils.hpp"
@@ -21,6 +22,7 @@
 #include <QTimer>
 #include <QDate>
 #include <QSettings>
+#include <QShortcut>
 #include <QProgressBar>
 
 MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
@@ -69,6 +71,32 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), m_userTheme);
     }
 
+    // ── Undo/Redo buttons ──
+    m_undoBtn = new QPushButton("Undo", cornerContainer);
+    m_undoBtn->setToolTip("Nothing to undo");
+    m_undoBtn->setEnabled(false);
+    m_undoBtn->setMaximumWidth(70);
+    connect(m_undoBtn, &QPushButton::clicked, this, [this]() {
+        myManager.undo();
+        updateUndoRedoButtons();
+    });
+
+    m_redoBtn = new QPushButton("Redo", cornerContainer);
+    m_redoBtn->setToolTip("Nothing to redo");
+    m_redoBtn->setEnabled(false);
+    m_redoBtn->setMaximumWidth(70);
+    connect(m_redoBtn, &QPushButton::clicked, this, [this]() {
+        myManager.redo();
+        updateUndoRedoButtons();
+    });
+
+    // Keyboard shortcuts: Ctrl+Z for Undo, Ctrl+Y for Redo
+    QShortcut *undoShortcut = new QShortcut(QKeySequence::Undo, this);
+    connect(undoShortcut, &QShortcut::activated, m_undoBtn, &QPushButton::click);
+
+    QShortcut *redoShortcut = new QShortcut(QKeySequence::Redo, this);
+    connect(redoShortcut, &QShortcut::activated, m_redoBtn, &QPushButton::click);
+
     // ── Corner widgets ──
     m_themeBtn = new QPushButton(m_darkMode ? "Dark Theme" : "Theme", cornerContainer);
     connect(m_themeBtn, &QPushButton::clicked, this, &MainWindow::onThemeClicked);
@@ -77,6 +105,8 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     m_toggle->setDark(m_darkMode);
     connect(m_toggle, &ThemeToggle::toggled, this, &MainWindow::toggleDarkMode);
 
+    cornerLayout->addWidget(m_undoBtn);
+    cornerLayout->addWidget(m_redoBtn);
     cornerLayout->addWidget(m_themeBtn);
     cornerLayout->addWidget(m_toggle);
     cornerLayout->addWidget(ui->logoutButton);
@@ -113,6 +143,10 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     setupTables();
     uiTimers->setupTimers();
     setupConnections();
+
+    // Lost & Found — available to all roles
+    uiLostFound = new UILostFound(&myManager, role, uid, name, this);
+    ui->tabWidget->addTab(uiLostFound->getWidget(), "Lost && Found");
 
     // Configure UI based on role
     if (role == Constants::Role::Student)
@@ -274,7 +308,26 @@ void MainWindow::onDataChanged(DataType type)
         break;
     case DataType::None:
         break;
+    case DataType::Messages:
+        break;
+    case DataType::LostFound:
+        if (uiLostFound)
+            uiLostFound->refresh();
+        break;
     }
+    updateUndoRedoButtons();
+}
+
+void MainWindow::updateUndoRedoButtons()
+{
+    m_undoBtn->setEnabled(myManager.canUndo());
+    m_redoBtn->setEnabled(myManager.canRedo());
+    m_undoBtn->setToolTip(myManager.canUndo()
+        ? "Undo: " + myManager.undoDescription()
+        : "Nothing to undo");
+    m_redoBtn->setToolTip(myManager.canRedo()
+        ? "Redo: " + myManager.redoDescription()
+        : "Nothing to redo");
 }
 
 void MainWindow::toggleDarkMode(bool isDark)

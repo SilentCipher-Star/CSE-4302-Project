@@ -161,7 +161,7 @@ void CsvHandler::initialize()
         "students.csv", "teachers.csv", "courses.csv", "themes.csv",
         "routine.csv", "attendance.csv", "grades.csv", "notices.csv",
         "tasks.csv", "habits.csv", "queries.csv", "assessments.csv", "prayers.csv",
-        "enrollments.csv", "messages.csv"};
+        "enrollments.csv", "messages.csv", "lostandfound.csv"};
 
     for (const QString &fileName : otherFiles)
     {
