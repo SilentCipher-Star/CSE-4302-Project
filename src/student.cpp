@@ -1,7 +1,6 @@
 #include "../include/student.hpp"
 #include <cmath>
 
-
 int Student::totalStudents = 0;
 double Student::totalCumulativeCGPA = 0.0;
 
@@ -23,10 +22,10 @@ Student &Student::operator=(const Student &other)
     if (this == &other)
         return *this;
     Person::operator=(other);
-    department    = other.department;
-    batch         = other.batch;
-    semester      = other.semester;
-    m_gpa         = other.m_gpa;
+    department = other.department;
+    batch = other.batch;
+    semester = other.semester;
+    m_gpa = other.m_gpa;
     dateAdmission = other.dateAdmission;
     return *this;
 }
@@ -37,7 +36,7 @@ Student::Student(Student &&other) noexcept
       m_gpa(other.m_gpa), dateAdmission(std::move(other.dateAdmission))
 {
     other.semester = 0;
-    other.m_gpa    = 0.0;
+    other.m_gpa = 0.0;
 }
 
 Student &Student::operator=(Student &&other) noexcept
@@ -45,19 +44,14 @@ Student &Student::operator=(Student &&other) noexcept
     if (this == &other)
         return *this;
     Person::operator=(std::move(other));
-    department    = std::move(other.department);
-    batch         = std::move(other.batch);
-    semester      = other.semester;
-    m_gpa         = other.m_gpa;
+    department = std::move(other.department);
+    batch = std::move(other.batch);
+    semester = other.semester;
+    m_gpa = other.m_gpa;
     dateAdmission = std::move(other.dateAdmission);
     other.semester = 0;
-    other.m_gpa    = 0.0;
+    other.m_gpa = 0.0;
     return *this;
-}
-
-Student Student::clone() const
-{
-    return Student(*this);
 }
 
 double Student::calculateGPA() const
@@ -66,26 +60,15 @@ double Student::calculateGPA() const
 }
 
 // Operator Overloading Implementations
-bool Student::operator<(const Student& other) const
+bool Student::operator<(const Student &other) const
 {
     return this->m_gpa < other.m_gpa;
 }
 
-bool Student::operator>(const Student& other) const
-{
-    return this->m_gpa > other.m_gpa;
-}
-
-bool Student::operator==(const Student& other) const
+bool Student::operator==(const Student &other) const
 {
     return this->getId() == other.getId();
 }
-
-bool Student::operator!=(const Student& other) const
-{
-    return !(*this == other);
-}
-
 
 int Student::getTotalStudents()
 {
@@ -94,7 +77,8 @@ int Student::getTotalStudents()
 
 double Student::getAverageInstituteCGPA()
 {
-    if (totalStudents == 0) return 0.0;
+    if (totalStudents == 0)
+        return 0.0;
     return totalCumulativeCGPA / totalStudents;
 }
 

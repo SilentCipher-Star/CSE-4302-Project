@@ -1,0 +1,206 @@
+Monday   , 1, 101      , Islamiat                                      , Hum 4145 , Dr. Md Moniruzzaman               , 1
+Monday   , 2, 101      , "Technology, Environment and Society"         , Hum 4147 , Njayou Youssef                    , 1
+Monday   , 3, 101      , Geometry and Differential Calculus            , Math 4141, Ishmam Tashdeed                   , 1
+Monday   , 4, 101      , Physics I                                     , Phy 4141 , Prof. Dr. Md. Kamrul Hasan        , 1
+Monday   , 5, 101      , Computing for Engineers                       , CSE 4105 , Prof. Dr. Md. Kamrul Hasan        , 1
+Tuesday  , 1, 101      , Structured Programming I                      , CSE 4107 , Dr. Md Moniruzzaman               , 1
+Tuesday  , 2, 101      , Arabic I                                      , Hum 4142 , Dr. Md Moniruzzaman               , 1
+Tuesday  , 3, 101      , English I                                     , Hum 4144 , Syed Rifat Raiyan                 , 1
+Tuesday  , 4, 101      , Physics I Lab                                 , Phy 4142 , Dr. Md. Azam Hossain              , 1
+Tuesday  , 5, 101      , Engineering Drawing Lab                       , CSE 4104 , Ajwad Abrar Mostofa               , 1
+Wednesday, 1, 101      , Structured Programming I Lab                  , CSE 4108 , Dr. Md Moniruzzaman               , 1
+Wednesday, 2, 101      , Islamiat                                      , Hum 4145 , Dr. Md Moniruzzaman               , 1
+Wednesday, 3, 101      , "Technology, Environment and Society"         , Hum 4147 , Njayou Youssef                    , 1
+Wednesday, 4, 101      , Geometry and Differential Calculus            , Math 4141, Ishmam Tashdeed                   , 1
+Wednesday, 5, 101      , Physics I                                     , Phy 4141 , Prof. Dr. Md. Kamrul Hasan        , 1
+Thursday , 1, 101      , Computing for Engineers                       , CSE 4105 , Prof. Dr. Md. Kamrul Hasan        , 1
+Thursday , 2, 101      , Structured Programming I                      , CSE 4107 , Dr. Md Moniruzzaman               , 1
+Thursday , 3, 101      , Arabic I                                      , Hum 4142 , Dr. Md Moniruzzaman               , 1
+Thursday , 4, 101      , English I                                     , Hum 4144 , Syed Rifat Raiyan                 , 1
+Thursday , 5, 101      , Physics I Lab                                 , Phy 4142 , Dr. Md. Azam Hossain              , 1
+Friday   , 1, 101      , Engineering Drawing Lab                       , CSE 4104 , Ajwad Abrar Mostofa               , 1
+Friday   , 2, 101      , Structured Programming I Lab                  , CSE 4108 , Dr. Md Moniruzzaman               , 1
+Friday   , 3, 101      , Islamiat                                      , Hum 4145 , Dr. Md Moniruzzaman               , 1
+Friday   , 4, 101      , "Technology, Environment and Society"         , Hum 4147 , Njayou Youssef                    , 1
+Friday   , 5, 101      , Geometry and Differential Calculus            , Math 4141, Ishmam Tashdeed                   , 1
+Monday   , 1, 102      , Islamic History Science and Culture           , Hum 4241 , Prof. Dr. Abu Raihan Mostofa Kamal, 2
+Monday   , 2, 102      , Integral Calculus and Differential Equations  , Math 4241, Ishmam Tashdeed                   , 2
+Monday   , 3, 102      , Physics II                                    , Phy 4241 , Prof. Dr. Md. Kamrul Hasan        , 2
+Monday   , 4, 102      , Chemistry                                     , Chem 4241, Dr. Md. Azam Hossain              , 2
+Monday   , 5, 102      , Discrete Mathematics                          , CSE 4203 , S. M. Sabit Bananee               , 2
+Tuesday  , 1, 102      , Digital Logic Design                          , CSE 4205 , Mohammad Ishrak Abedin            , 2
+Tuesday  , 2, 102      , Arabic II                                     , Hum 4242 , Dr. Md Moniruzzaman               , 2
+Tuesday  , 3, 102      , English II                                    , Hum 4244 , Syed Rifat Raiyan                 , 2
+Tuesday  , 4, 102      , Physics II Lab                                , Phy 4242 , Dr. Md. Azam Hossain              , 2
+Tuesday  , 5, 102      , Chemistry Lab                                 , Chem 4242, Dr. Md. Azam Hossain              , 2
+Wednesday, 1, 102      , Structured Programming II Lab                 , CSE 4202 , Reaz Hassan Joarder               , 2
+Wednesday, 2, 102      , Digital Logic Design Lab                      , CSE 4206 , Mohammad Ishrak Abedin            , 2
+Wednesday, 3, 102      , Islamic History Science and Culture           , Hum 4241 , Prof. Dr. Abu Raihan Mostofa Kamal, 2
+Wednesday, 4, 102      , Integral Calculus and Differential Equations  , Math 4241, Ishmam Tashdeed                   , 2
+Wednesday, 5, 102      , Physics II                                    , Phy 4241 , Prof. Dr. Md. Kamrul Hasan        , 2
+Thursday , 1, 102      , Chemistry                                     , Chem 4241, Dr. Md. Azam Hossain              , 2
+Thursday , 2, 102      , Discrete Mathematics                          , CSE 4203 , S. M. Sabit Bananee               , 2
+Thursday , 3, 102      , Digital Logic Design                          , CSE 4205 , Mohammad Ishrak Abedin            , 2
+Thursday , 4, 102      , Arabic II                                     , Hum 4242 , Dr. Md Moniruzzaman               , 2
+Thursday , 5, 102      , English II                                    , Hum 4244 , Syed Rifat Raiyan                 , 2
+Friday   , 1, 102      , Physics II Lab                                , Phy 4242 , Dr. Md. Azam Hossain              , 2
+Friday   , 2, 102      , Chemistry Lab                                 , Chem 4242, Dr. Md. Azam Hossain              , 2
+Friday   , 3, 102      , Structured Programming II Lab                 , CSE 4202 , Reaz Hassan Joarder               , 2
+Friday   , 4, 102      , Digital Logic Design Lab                      , CSE 4206 , Mohammad Ishrak Abedin            , 2
+Friday   , 5, 102      , Islamic History Science and Culture           , Hum 4241 , Prof. Dr. Abu Raihan Mostofa Kamal, 2
+Monday   , 1, 201      , Linear Algebra                                , Math 4341, Ishmam Tashdeed                   , 3
+Monday   , 2, 201      , Electronic Devices and Circuits               , EEE 4383 , Tareque Mohmud Chowdhury          , 3
+Monday   , 3, 201      , Object Oriented Programming                   , CSE 4301 , Faisal Hussain                    , 3
+Monday   , 4, 201      , Data Structures                               , CSE 4303 , Sabbir Ahmed                      , 3
+Monday   , 5, 201      , Computer Organization and Architecture        , CSE 4305 , Mohammad Ishrak Abedin            , 3
+Tuesday  , 1, 201      , Database Management Systems                   , CSE 4307 , Prof. Dr. Abu Raihan Mostofa Kamal, 3
+Tuesday  , 2, 201      , Electronic Devices and Circuits Lab           , EEE 4384 , Tareque Mohmud Chowdhury          , 3
+Tuesday  , 3, 201      , Object Oriented Programming Lab               , CSE 4302 , Faisal Hussain                    , 3
+Tuesday  , 4, 201      , Data Structures Lab                           , CSE 4304 , Aashnan Rahman                    , 3
+Tuesday  , 5, 201      , Database Management Systems Lab               , CSE 4308 , Md. Tariquzzaman                  , 3
+Wednesday, 1, 201      , Linear Algebra                                , Math 4341, Ishmam Tashdeed                   , 3
+Wednesday, 2, 201      , Electronic Devices and Circuits               , EEE 4383 , Tareque Mohmud Chowdhury          , 3
+Wednesday, 3, 201      , Object Oriented Programming                   , CSE 4301 , Faisal Hussain                    , 3
+Wednesday, 4, 201      , Data Structures                               , CSE 4303 , Sabbir Ahmed                      , 3
+Wednesday, 5, 201      , Computer Organization and Architecture        , CSE 4305 , Mohammad Ishrak Abedin            , 3
+Thursday , 1, 201      , Database Management Systems                   , CSE 4307 , Prof. Dr. Abu Raihan Mostofa Kamal, 3
+Thursday , 2, 201      , Electronic Devices and Circuits Lab           , EEE 4384 , Tareque Mohmud Chowdhury          , 3
+Thursday , 3, 201      , Object Oriented Programming Lab               , CSE 4302 , Faisal Hussain                    , 3
+Thursday , 4, 201      , Data Structures Lab                           , CSE 4304 , Aashnan Rahman                    , 3
+Thursday , 5, 201      , Database Management Systems Lab               , CSE 4308 , Md. Tariquzzaman                  , 3
+Friday   , 1, 201      , Linear Algebra                                , Math 4341, Ishmam Tashdeed                   , 3
+Friday   , 2, 201      , Electronic Devices and Circuits               , EEE 4383 , Tareque Mohmud Chowdhury          , 3
+Friday   , 3, 201      , Object Oriented Programming                   , CSE 4301 , Faisal Hussain                    , 3
+Friday   , 4, 201      , Data Structures                               , CSE 4303 , Sabbir Ahmed                      , 3
+Friday   , 5, 201      , Computer Organization and Architecture        , CSE 4305 , Mohammad Ishrak Abedin            , 3
+Monday   , 1, 202      , Engineering Ethics                            , Hum 4441 , Lutfun Nahar Lota                 , 4
+Monday   , 2, 202      , Probability and Statistics                    , Math 4441, Ishmam Tashdeed                   , 4
+Monday   , 3, 202      , Digital Electronics and Pulse Techniques      , EEE 4483 , Tareque Mohmud Chowdhury          , 4
+Monday   , 4, 202      , Algorithms                                    , CSE 4403 , Sabbir Ahmed                      , 4
+Monday   , 5, 202      , Data and Telecommunications                   , CSE 4405 , Md. Tanvir Hossain Saikat         , 4
+Tuesday  , 1, 202      , System Analysis and Design                    , CSE 4407 , Sabrina Islam                     , 4
+Tuesday  , 2, 202      , Digital Electronics and Pulse Techniques Lab  , EEE 4484 , Tareque Mohmud Chowdhury          , 4
+Tuesday  , 3, 202      , Visual Programming Lab                        , CSE 4402 , Farzana Tabassum                  , 4
+Tuesday  , 4, 202      , Algorithms Lab                                , CSE 4404 , Sabbir Ahmed                      , 4
+Tuesday  , 5, 202      , System Analysis and Design Lab                , CSE 4408 , Sabrina Islam                     , 4
+Wednesday, 1, 202      , Engineering Ethics                            , Hum 4441 , Lutfun Nahar Lota                 , 4
+Wednesday, 2, 202      , Probability and Statistics                    , Math 4441, Ishmam Tashdeed                   , 4
+Wednesday, 3, 202      , Digital Electronics and Pulse Techniques      , EEE 4483 , Tareque Mohmud Chowdhury          , 4
+Wednesday, 4, 202      , Algorithms                                    , CSE 4403 , Sabbir Ahmed                      , 4
+Wednesday, 5, 202      , Data and Telecommunications                   , CSE 4405 , Md. Tanvir Hossain Saikat         , 4
+Thursday , 1, 202      , System Analysis and Design                    , CSE 4407 , Sabrina Islam                     , 4
+Thursday , 2, 202      , Digital Electronics and Pulse Techniques Lab  , EEE 4484 , Tareque Mohmud Chowdhury          , 4
+Thursday , 3, 202      , Visual Programming Lab                        , CSE 4402 , Farzana Tabassum                  , 4
+Thursday , 4, 202      , Algorithms Lab                                , CSE 4404 , Sabbir Ahmed                      , 4
+Thursday , 5, 202      , System Analysis and Design Lab                , CSE 4408 , Sabrina Islam                     , 4
+Friday   , 1, 202      , Engineering Ethics                            , Hum 4441 , Lutfun Nahar Lota                 , 4
+Friday   , 2, 202      , Probability and Statistics                    , Math 4441, Ishmam Tashdeed                   , 4
+Friday   , 3, 202      , Digital Electronics and Pulse Techniques      , EEE 4483 , Tareque Mohmud Chowdhury          , 4
+Friday   , 4, 202      , Algorithms                                    , CSE 4403 , Sabbir Ahmed                      , 4
+Friday   , 5, 202      , Data and Telecommunications                   , CSE 4405 , Md. Tanvir Hossain Saikat         , 4
+Monday   , 1, 301      , Operating Systems                             , CSE 4501 , Jibon Naher                       , 5
+Monday   , 2, 301      , Microprocessor and Assembly Language          , CSE 4503 , Md. Tanvir Hossain Saikat         , 5
+Monday   , 3, 301      , Computer Networks                             , CSE 4511 , Md. Tanvir Hossain Saikat         , 5
+Monday   , 4, 301      , Software Engineering and ObjectOriented Design, CSE 4513 , Ajwad Abrar Mostofa               , 5
+Monday   , 5, 301      , Operating Systems Lab                         , CSE 4502 , Jibon Naher                       , 5
+Tuesday  , 1, 301      , Microprocessor and Assembly Language Lab      , CSE 4504 , Aashnan Rahman                    , 5
+Tuesday  , 2, 301      , RDBMS Programming Lab                         , CSE 4508 , Sabrina Islam                     , 5
+Tuesday  , 3, 301      , Software Development                          , CSE 4510 , Dr. Md. Azam Hossain              , 5
+Tuesday  , 4, 301      , Computer Networks Lab                         , CSE 4512 , Md. Tanvir Hossain Saikat         , 5
+Tuesday  , 5, 301      , Multivariable Calculus and Complex Variables  , Math 4541, Aashnan Rahman                    , 5
+Wednesday, 1, 301      , E-Commerce and Web Security                   , CSE 4531 , Ashraful Alam Khan                , 5
+Wednesday, 2, 301      , Decision Support Systems                      , CSE 4537 , Ashraful Alam Khan                , 5
+Wednesday, 3, 301      , Parallel and Distributed Systems              , CSE 4547 , MD Atiqur Rahman                  , 5
+Wednesday, 4, 301      , Web Programming                               , CSE 4539 , Farzana Tabassum                  , 5
+Wednesday, 5, 301      , Geographical Information Systems              , CSE 4543 , MD Atiqur Rahman                  , 5
+Thursday , 1, 301      , Simulation and Modeling                       , CSE 4549 , MD Atiqur Rahman                  , 5
+Thursday , 2, 301      , Computer Graphics and Multimedia Systems      , CSE 4551 , Prof. Dr. Hasan Mahmud            , 5
+Thursday , 3, 301      , Web Programming Lab                           , CSE 4540 , Farzana Tabassum                  , 5
+Thursday , 4, 301      , Geographical Information Systems Lab          , CSE 4544 , MD Atiqur Rahman                  , 5
+Thursday , 5, 301      , Simulation and Modeling Lab                   , CSE 4550 , MD Atiqur Rahman                  , 5
+Friday   , 1, 301      , Computer Graphics and Multimedia Systems Lab  , CSE 4552 , Prof. Dr. Hasan Mahmud            , 5
+Friday   , 2, 301      , Operating Systems                             , CSE 4501 , Jibon Naher                       , 5
+Friday   , 3, 301      , Microprocessor and Assembly Language          , CSE 4503 , Md. Tanvir Hossain Saikat         , 5
+Friday   , 4, 301      , Computer Networks                             , CSE 4511 , Md. Tanvir Hossain Saikat         , 5
+Friday   , 5, 301      , Software Engineering and ObjectOriented Design, CSE 4513 , Ajwad Abrar Mostofa               , 5
+Monday   , 1, 302      , Accounting                                    , Hum 4641 , Prof. Dr. Abu Raihan Mostofa Kamal, 6
+Monday   , 2, 302      , Wireless Networks                             , CSE 4615 , Md. Tanvir Hossain Saikat         , 6
+Monday   , 3, 302      , Peripherals and Interfacing                   , CSE 4619 , Mohammad Ishrak Abedin            , 6
+Monday   , 4, 302      , Machine Learning                              , CSE 4621 , Prof. Dr. Hasan Mahmud            , 6
+Monday   , 5, 302      , Design Project                                , CSE 4610 , Ajwad Abrar Mostofa               , 6
+Tuesday  , 1, 302      , Technical Report Writing                      , CSE 4614 , Lutfun Nahar Lota                 , 6
+Tuesday  , 2, 302      , Wireless Networks Lab                         , CSE 4616 , Md. Tanvir Hossain Saikat         , 6
+Tuesday  , 3, 302      , Peripherals and Interfacing Lab               , CSE 4620 , Mohammad Ishrak Abedin            , 6
+Tuesday  , 4, 302      , Machine Learning Lab                          , CSE 4622 , Prof. Dr. Hasan Mahmud            , 6
+Tuesday  , 5, 302      , Numerical Methods                             , Math 4641, Ishmam Tashdeed                   , 6
+Wednesday, 1, 302      , Distributed Operating Systems                 , CSE 4641 , S. M. Sabit Bananee               , 6
+Wednesday, 2, 302      , Mobile Application Development                , CSE 4643 , Mohammad Ishrak Abedin            , 6
+Wednesday, 3, 302      , Distributed Database Systems                  , CSE 4647 , Md. Tariquzzaman                  , 6
+Wednesday, 4, 302      , Numerical Methods Lab                         , Math 4642, Ishmam Tashdeed                   , 6
+Wednesday, 5, 302      , Distributed Operating Systems Lab             , CSE 4642 , S. M. Sabit Bananee               , 6
+Thursday , 1, 302      , Mobile Application Development Lab            , CSE 4644 , Mohammad Ishrak Abedin            , 6
+Thursday , 2, 302      , Distributed Database Systems Lab              , CSE 4648 , Md. Tariquzzaman                  , 6
+Thursday , 3, 302      , Digital Signal Processing                     , CSE 4631 , MD Atiqur Rahman                  , 6
+Thursday , 4, 302      , Web Architecture                              , CSE 4635 , Farzana Tabassum                  , 6
+Thursday , 5, 302      , Systems Programming                           , CSE 4649 , Asaduzzaman Herok                 , 6
+Friday   , 1, 302      , Unix Programming                              , CSE 4651 , Njayou Youssef                    , 6
+Friday   , 2, 302      , Digital Signal Processing Lab                 , CSE 4632 , MD Atiqur Rahman                  , 6
+Friday   , 3, 302      , Web Architecture Lab                          , CSE 4636 , Farzana Tabassum                  , 6
+Friday   , 4, 302      , Systems Programming Lab                       , CSE 4650 , Asaduzzaman Herok                 , 6
+Friday   , 5, 302      , Unix Programming Lab                          , CSE 4652 , Njayou Youssef                    , 6
+Monday   , 1, 401      , Business Communication and Law                , Hum 4741 , Lutfun Nahar Lota                 , 7
+Monday   , 2, 401      , Engineering Economics                         , Hum 4743 , Prof. Dr. Abu Raihan Mostofa Kamal, 7
+Monday   , 3, 401      , International Relationship                    , Hum 4745 , Prof. Dr. Abu Raihan Mostofa Kamal, 7
+Monday   , 4, 401      , Mathematical Analysis                         , Math 4741, Prof. Dr. Muhammad Mahbub Alam    , 7
+Monday   , 5, 401      , Theory of Computing                           , CSE 4703 , Dr. Md. Azam Hossain              , 7
+Tuesday  , 1, 401      , Artificial Intelligence                       , CSE 4711 , Prof. Dr. Hasan Mahmud            , 7
+Tuesday  , 2, 401      , Artificial Intelligence Lab                   , CSE 4712 , Farzana Tabassum                  , 7
+Tuesday  , 3, 401      , Project/Thesis                                , CSE 4700 , Prof. Dr. Md. Hasanul Kabir       , 7
+Tuesday  , 4, 401      , Industrial Training                           , CSE 4790 , Prof. Dr. Md. Hasanul Kabir       , 7
+Tuesday  , 5, 401      , Data Mining                                   , CSE 4739 , Mueeze Al Mushabbir               , 7
+Wednesday, 1, 401      , Cryptography and Network Security             , CSE 4743 , Njayou Youssef                    , 7
+Wednesday, 2, 401      , Embedded Systems Design                       , CSE 4745 , Mohammad Ishrak Abedin            , 7
+Wednesday, 3, 401      , Computational Biology                         , CSE 4747 , Tareque Mohmud Chowdhury          , 7
+Wednesday, 4, 401      , Digital Image Processing                      , CSE 4733 , Prof. Dr. Md. Hasanul Kabir       , 7
+Wednesday, 5, 401      , Digital Systems Design                        , CSE 4735 , Mueeze Al Mushabbir               , 7
+Thursday , 1, 401      , Introduction to Cloud Computing               , CSE 4749 , Njayou Youssef                    , 7
+Thursday , 2, 401      , Network Programming                           , CSE 4751 , Tareque Mohmud Chowdhury          , 7
+Thursday , 3, 401      , Bioinformatics                                , CSE 4753 , Tareque Mohmud Chowdhury          , 7
+Thursday , 4, 401      , Digital Image Processing Lab                  , CSE 4734 , Prof. Dr. Md. Hasanul Kabir       , 7
+Thursday , 5, 401      , Digital Systems Design Lab                    , CSE 4736 , Mueeze Al Mushabbir               , 7
+Friday   , 1, 401      , Introduction to Cloud Computing Lab           , CSE 4750 , Njayou Youssef                    , 7
+Friday   , 2, 401      , Network Programming Lab                       , CSE 4752 , Tareque Mohmud Chowdhury          , 7
+Friday   , 3, 401      , Bioinformatics Lab                            , CSE 4754 , Tareque Mohmud Chowdhury          , 7
+Friday   , 4, 401      , Business Communication and Law                , Hum 4741 , Lutfun Nahar Lota                 , 7
+Friday   , 5, 401      , Engineering Economics                         , Hum 4743 , Prof. Dr. Abu Raihan Mostofa Kamal, 7
+Monday   , 1, 402      , Compiler Design                               , CSE 4801 , Prof. Dr. Md. Sakhawat Hossen     , 8
+Monday   , 2, 402      , Graph Theory                                  , CSE 4803 , Dr. Md. Azam Hossain              , 8
+Monday   , 3, 402      , IT Organization and Management                , CSE 4807 , Ashraful Alam Khan                , 8
+Monday   , 4, 402      , Algorithm Engineering                         , CSE 4809 , Sabbir Ahmed                      , 8
+Monday   , 5, 402      , Compiler Design Lab                           , CSE 4802 , Prof. Dr. Md. Sakhawat Hossen     , 8
+Tuesday  , 1, 402      , Algorithm Engineering Lab                     , CSE 4810 , Sabbir Ahmed                      , 8
+Tuesday  , 2, 402      , Project/Thesis                                , CSE 4800 , Prof. Dr. Md. Hasanul Kabir       , 8
+Tuesday  , 3, 402      , Introduction to Optimization                  , CSE 4841 , Ishmam Tashdeed                   , 8
+Tuesday  , 4, 402      , Introduction to Information Retrieval         , CSE 4845 , Mueeze Al Mushabbir               , 8
+Tuesday  , 5, 402      , Information and OS Security                   , CSE 4847 , Sabrina Islam                     , 8
+Wednesday, 1, 402      , Human Computer Interaction                    , CSE 4849 , Md. Bakhtiar Hasan                , 8
+Wednesday, 2, 402      , Design Pattern                                , CSE 4851 , Faisal Hussain                    , 8
+Wednesday, 3, 402      , VLSI Design and Testing                       , CSE 4833 , Mohammad Ishrak Abedin            , 8
+Wednesday, 4, 402      , Pattern Recognition                           , CSE 4835 , Prof. Dr. Md. Hasanul Kabir       , 8
+Wednesday, 5, 402      , Internetworking Protocols                     , CSE 4839 , Md. Tanvir Hossain Saikat         , 8
+Thursday , 1, 402      , VLSI Design and Testing Lab                   , CSE 4834 , Mohammad Ishrak Abedin            , 8
+Thursday , 2, 402      , Pattern Recognition Lab                       , CSE 4836 , Prof. Dr. Md. Hasanul Kabir       , 8
+Thursday , 3, 402      , Internetworking Protocols Lab                 , CSE 4840 , Md. Tanvir Hossain Saikat         , 8
+Thursday , 4, 402      , Compiler Design                               , CSE 4801 , Prof. Dr. Md. Sakhawat Hossen     , 8
+Thursday , 5, 402      , Graph Theory                                  , CSE 4803 , Dr. Md. Azam Hossain              , 8
+Friday   , 1, 402      , IT Organization and Management                , CSE 4807 , Ashraful Alam Khan                , 8
+Friday   , 2, 402      , Algorithm Engineering                         , CSE 4809 , Sabbir Ahmed                      , 8
+Friday   , 3, 402      , Compiler Design Lab                           , CSE 4802 , Prof. Dr. Md. Sakhawat Hossen     , 8
+Friday   , 4, 402      , Algorithm Engineering Lab                     , CSE 4810 , Sabbir Ahmed                      , 8
+Friday   , 5, 402      , Project/Thesis                                , CSE 4800 , Prof. Dr. Md. Hasanul Kabir       , 8
+Saturday , 1, CSE 4301 , Object Oriented Programming                   , 201      , Dr. Smith                         , 1
+Saturday , 2, CSE 4302 , OOP Lab                                       , Lab-1    , Dr. Johnson                       , 1
+Saturday , 3, Math 4201, Linear Algebra                                , 102      , Prof. Lee                         , 1
+Saturday , 1, CSE 4301 , Object Oriented Programming                   , 201      , Dr. Smith                         , 1
+Saturday , 2, CSE 4302 , OOP Lab                                       , Lab-1    , Dr. Johnson                       , 1
+Saturday , 3, Math 4201, Linear Algebra                                , 102      , Prof. Lee                         , 1

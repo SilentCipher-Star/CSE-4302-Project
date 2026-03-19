@@ -320,6 +320,36 @@ void ManagerAcademics::addGrade(int studentId, int assessmentId, double marks)
     CsvHandler::writeCsv("grades.csv", data);
 }
 
+QMap<int, double> ManagerAcademics::getGradesForAssessment(int assessmentId)
+{
+    QMap<int, double> grades;
+    QVector<QStringList> data = CsvHandler::readCsv("grades.csv");
+    for (const auto &row : data)
+    {
+        if (row.size() >= 3 && row[1].toInt() == assessmentId)
+        {
+            grades.insert(row[0].toInt(), row[2].toDouble());
+        }
+    }
+    return grades;
+}
+
+QSet<QString> ManagerAcademics::getPresenceSet(int courseId)
+{
+    QSet<QString> presence;
+    QVector<QStringList> data = CsvHandler::readCsv("attendance.csv");
+    for (const auto &row : data)
+    {
+        // Format: StudentID,CourseID,Date,Status
+        if (row.size() >= 4 && row[1].toInt() == courseId && row[3] == "1")
+        {
+            // Key: "studentId_date"
+            presence.insert(row[0] + "_" + row[2]);
+        }
+    }
+    return presence;
+}
+
 QVector<AttendanceAnalytics> ManagerAcademics::getLowAttendanceStudents(int courseId, double threshold)
 {
     QVector<AttendanceAnalytics> result;

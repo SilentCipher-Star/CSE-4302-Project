@@ -3,6 +3,8 @@
 
 #include <QString>
 #include <QVector>
+#include <QMap>
+#include <QSet>
 #include "course.hpp"
 #include "appmanager.hpp"
 
@@ -27,6 +29,9 @@ public:
 
     static double getGrade(int studentId, int assessmentId);
     static void addGrade(int studentId, int assessmentId, double marks);
+
+    static QMap<int, double> getGradesForAssessment(int assessmentId);
+    static QSet<QString> getPresenceSet(int courseId);
 
     static QVector<AttendanceAnalytics> getLowAttendanceStudents(int courseId, double threshold = 75.0);
     static double getOverallAttendancePercentage(int studentId);

@@ -9,7 +9,7 @@ private:
     double salary;
 
 public:
-    Teacher(int id, QString name, QString email, QString dept = "", QString desig = "");
+    Teacher(int id, QString name, QString email, QString dept = "", QString desig = "", double sal = 0.0);
 
     QString getRole() const override { return "Teacher"; }
 
@@ -22,8 +22,6 @@ public:
     void setDepartment(QString d) { department = d; }
 
     // Operator Overloading
-    bool operator<(const Teacher& other) const;
-    bool operator>(const Teacher& other) const;
-    bool operator==(const Teacher& other) const;
-    bool operator!=(const Teacher& other) const;
+    bool operator<(const Teacher &other) const;
+    bool operator==(const Teacher &other) const;
 };

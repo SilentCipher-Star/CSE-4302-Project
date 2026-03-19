@@ -1,152 +1,228 @@
 # Acadence
 
+![C++17](https://img.shields.io/badge/C++-17-blue.svg)
+![Qt6](https://img.shields.io/badge/Qt-6.0%2B-green.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+## 📖 Table of Contents
+1. [Introduction](#-introduction)
+2. [Project Structure](#-project-structure)
+3. [System Architecture (How it Works)](#-system-architecture-how-it-works)
+4. [Object-Oriented Programming (OOP) in Acadence](#-object-oriented-programming-oop-in-acadence)
+    - [Inheritance & Polymorphism](#1-inheritance--polymorphism)
+    - [Design Patterns Explanation](#2-design-patterns-explanation)
+5. [Key Modules & Functionality](#-key-modules--functionality)
+6. [Data Persistence (CSV)](#-data-persistence-csv)
+7. [Installation & Build](#-installation-and-build)
+
+---
+
 ## 🎓 Introduction
 
-**Acadence** is a role-based desktop Academic Management System built with **C++17** and **Qt 6 Widgets**. It provides a unified interface for students, teachers, and administrators, while persisting data in CSV files.
+**Acadence** is a comprehensive Academic Management System built using **C++17** and the **Qt 6** framework. It is designed to demonstrate advanced Object-Oriented Programming (OOP) concepts in a real-world application.
 
-The codebase is intentionally OOP-heavy and demonstrates multiple design patterns across real feature modules (authentication, routine planning, notices, academics, reports, and admin operations).
+Think of Acadence as a digital campus. It serves three types of users, each with a specific dashboard:
+1.  **Students**: Manage tasks, view grades, track attendance, and build habits.
+2.  **Teachers**: Manage courses, mark attendance, and grade assessments.
+3.  **Admins**: Manage the database (users, courses, notices).
 
-## 🚀 Key Features
+Unlike simple apps that put all code in one file, Acadence uses a **Modular Architecture** where the user interface (UI) is strictly separated from the logic (Backend).
 
-### 👤 Student Features
-- Dashboard with GPA, attendance, task stats, notices, and upcoming class context.
-- Study planner with task tracking and completion state.
-- Focus/workout timers integrated with habit workflows.
-- Habit tracking with streak logic for `DurationHabit`, `CountHabit`, and `WorkoutHabit`.
-- Daily prayer checklist persistence.
-- Effective routine view that respects cancellations and reschedules.
-- Academics panel with per-course attendance/grade status and risk coloring.
-- GPA calculator with strategy selection and what-if simulation for remaining courses.
-- Report export in both CSV and plain-text formats.
-- Q&A flow to ask teachers directly.
+---
 
-### 👨‍🏫 Teacher Features
-- Routine management, including class cancellation/rescheduling and exchange options.
-- Assessment creation and grade entry with validation.
-- Attendance date creation and per-student attendance marking.
-- Automated attendance-warning notice generation for low-attendance students.
-- Query response workflow for student questions.
+## 📂 Project Structure
 
-### 🛡️ Admin Features
-- CSV-backed table management via editable grid (CRUD-style operations).
-- Built-in table filtering/search through proxy model.
-- Specialized editors via delegate for safer data entry.
-- Control over core institutional data tables from one panel.
+Here is how the files are organized on your computer:
 
-### 🎨 Cross-Cutting Features
-- Role-based authentication (`Admin`, `Student`, `Teacher`).
-- Password change flow.
-- Theme support plus light/dark toggle behavior in the main window.
-- Notice rendering with badges/highlight rules (urgent, pinned, expiring).
-- Attendance chart visualization for student dashboard.
-- CSV backup support through `DatabaseManager::backupCsvData`.
+*   **`src/` (Source Files)**: Contains the `.cpp` files where the actual logic and function implementations live.
+    *   `main.cpp`: The entry point. It starts the application.
+    *   `mainwindow.cpp`: The central hub that holds all other UI pages.
+    *   `acadencemanager.cpp`: The "Brain" of the operation (see Facade pattern below).
+    *   `ui_*.cpp`: Files starting with `ui_` handle specific screens (e.g., `ui_academics.cpp` handles the Grades/Attendance screen).
+    *   `manager_*.cpp`: Files handling logic (e.g., `manager_auth.cpp` handles Login).
 
-## 🛠️ Technical Architecture
+*   **`include/` (Header Files)**: Contains `.hpp` files. These are the "Blueprints". They declare *what* classes and functions exist, while `src` defines *how* they work.
+    *   `person.hpp`, `student.hpp`: Blueprints for User classes.
+    *   `notice_decorators.hpp`: Definitions for the Notice system.
 
-### Project Layout
-- `src/`: Implementation (`.cpp`) files, including UI modules and managers.
-- `include/`: Public headers (`.hpp`) and core abstractions.
-- `data/`: CSV storage files.
-- `fonts/`: Runtime font assets loaded by utility helpers.
-- `.Project/`: Internal project docs and Mermaid diagrams (`*.mmd`, guides).
-- `CMakeLists.txt`: Build target definition.
+*   **`forms/` (UI Design)**: Contains `.ui` files. These are XML files generated by Qt Designer that determine where buttons and text boxes are placed.
 
-### Core Orchestration
-- `AcadenceManager` in `include/appmanager.hpp` is the facade between UI modules and domain managers.
-- Manager modules (`manager_auth`, `manager_academics`, `manager_routine`, etc.) isolate domain-specific operations.
-- `MainWindow` wires role-dependent tabs and module lifecycles.
+*   **`assets/data/`**: The database. We use simple **CSV files** (like Excel sheets) to store data.
+    *   `students.csv`: Stores ID, Name, Password, GPA.
+    *   `attendance.csv`: Stores who attended which class.
 
-### OOP and Pattern Usage
-- Inheritance: `Person` -> `Student`, `Teacher`, `Admin`.
-- Polymorphism: `Habit` hierarchy with specialized progress serialization.
-- Observer Pattern: `IDataObserver` and `DataType` notifications from `AcadenceManager`.
-- Strategy Pattern: `IGPAStrategy` (`PercentageGPAStrategy`, `LetterGradeGPAStrategy`).
-- Decorator Pattern: Notice decorators (`UrgentNotice`, `PinnedNotice`, `ExpiringNotice`).
-- Template Method Pattern: `IReport` with `CSVReport` and `TextReport` implementations.
-- Iterator Pattern: `StudentIterator`/`StudentCollection` used in grading flow.
-- Factory-style creation helpers: `PersonFactory` and decorated notice builder helpers.
+---
+
+## 🏗️ System Architecture (How it works)
+
+The system follows a **3-Layer Architecture** to keep code clean.
+
+### 1. The View Layer (UI)
+This is what you see.
+- **Files**: `mainwindow.cpp`, `ui_dashboard.cpp`, `ui_academics.cpp`.
+- **Job**: It detects clicks (e.g., "Login Button Clicked") and asks the Manager to do the work. It does **not** calculate grades or read files directly.
+
+### 2. The Controller Layer (Facade)
+This is the middleman.
+- **File**: `AcadenceManager` (The Facade).
+- **Job**: The UI talks *only* to `AcadenceManager`. The UI says `myManager->login(...)`. The Manager then figures out which specific logic file handles login. This makes the UI simple.
+
+### 3. The Logic/Data Layer
+This is where the heavy lifting happens.
+- **Files**: `manager_auth.cpp`, `manager_academics.cpp`, `csvhandler.cpp`.
+- **Job**: These files actually calculate GPA, check passwords against the CSV files, and write data back to disk.
+
+---
+
+## 🧩 Object-Oriented Programming (OOP) in Acadence
+
+### 1. Class Inheritance Hierarchy
+
+#### A. User System (`Person` Hierarchy)
+The system uses a base class `Person` to handle common authentication and profile attributes.
+
+- **`Person` (Abstract Base)**
+  - **Inherited by**: Student, Teacher, Admin
+  - **Attributes**: `id`, `name`, `email`, `username`, `password`
+  - **Methods**: `login()`, `changePassword()`, `getName()`
+  - **`Student`** (Derived)
+    - **New Attributes**: `cgpa`, `semester`, `department`, `admissionDate`
+    - **New Methods**: `calculateGPA()`, `getAttendanceStatus()`
+  - **`Teacher`** (Derived)
+    - **New Attributes**: `designation`, `salary`, `department`
+    - **New Methods**: `uploadMarks()`, `markAttendance()`
+
+#### B. Habit System (Polymorphism)
+Habits share a common interface but behave differently based on their type.
+
+- **`Habit` (Abstract Base)**
+  - **Attributes**: `name`, `streak`, `frequency`, `isCompleted`
+  - **Virtual Methods**: `markComplete()`, `serializeValue()`
+  - **`CountHabit`**: Overrides `markComplete` to increment a counter (e.g., 1/8 glasses).
+  - **`DurationHabit`**: Overrides `markComplete` to add time (e.g., 15/30 mins).
+
+### 2. Design Patterns Explanation
+
+We use standard "recipes" for solving code problems, called Design Patterns.
+
+#### 🏢 Facade Pattern (`AcadenceManager`)
+*   **Problem**: There are too many manager classes (`ManagerAuth`, `ManagerAcademics`, `ManagerHabits`, etc.). If the UI had to include all of them, the code would be a mess.
+*   **Solution**: We create one "Facade" class called `AcadenceManager`. The UI only speaks to this one class.
+
+#### 🎀 Decorator Pattern (Notices)
+*   **Problem**: Notices can be "Urgent", "Pinned", "Expiring", or a mix of all three. Creating classes like `UrgentPinnedExpiringNotice` is bad.
+*   **Solution**: We wrap notices in layers.
+    *   Start with a `ConcreteNotice` (Basic text).
+    *   Wrap it in `UrgentNotice` (Adds red color).
+    *   Wrap that in `PinnedNotice` (Moves it to the top).
+    *   *Code Example*: `notice_decorators.hpp`
+
+#### 📊 Strategy Pattern (GPA Calculation)
+*   **Problem**: Some universities use a 4.0 scale, others use Percentage. We might want to switch easily.
+*   **Solution**: We define an interface `IGPAStrategy`.
+    *   `PercentageGPAStrategy`: Calculates based on raw %.
+    *   `LetterGradeGPAStrategy`: Converts marks to A/B/C then to points.
+    *   The UI can swap the strategy at runtime without changing the calculation code.
+
+#### 🏭 Factory Pattern (`PersonFactory`)
+*   **Problem**: When reading the "login" CSV, we get a string "Student" or "Teacher". We need to create the correct C++ object.
+*   **Solution**: A factory function takes the string "Student" and returns a `new Student()` object.
+
+---
+
+## 🔑 Key Modules & Functionality
+
+### 1. Authentication (`ManagerAuth`)
+*   **How it works**:
+    1.  User enters username/password.
+    2.  `ManagerAuth::login` opens `students.csv`, `teachers.csv`, and `admins.csv` one by one.
+    3.  It loops through every row.
+    4.  If it finds a match, it returns the `UserId` and `Role`.
+
+### 2. Academics & Attendance (`UIAcademics`)
+*   **Student View**:
+    *   Calculates attendance percentage: `(Classes Attended / Total Classes) * 100`.
+    *   **Colors**: Green (>85%), Orange (60-85%), Red (<60%).
+    *   **Prediction**: The "Attendance Simulator" allows students to see "What if I miss the next 3 classes?".
+*   **Teacher View**:
+    *   Teachers select a course.
+    *   A table loads with all students in that course.
+    *   Checkboxes allow marking Present/Absent.
+    *   Clicking "Save" writes a new column to `attendance.csv`.
+
+### 3. Admin Panel (`UIAdmin` & `CsvDelegate`)
+*   **Raw Data Editor**: Admins can see the raw CSV data in a table.
+*   **Validation**: We use a `CsvDelegate` (in `src/csvdelegate.cpp`).
+    *   When an Admin edits a cell, the Delegate checks the input.
+    *   *Example*: If editing a GPA column, it ensures the number is between 0.00 and 4.00.
+
+### 4. Notices System
+*   Notices are stored in `notices.csv` with a "Content" column that looks like JSON.
+*   Example content: `{ "body": "Class cancelled", "urgent": true }`.
+*   When loading, the system reads these flags and applies the **Decorators** (Red background for urgent) dynamically.
+
+---
+
+## 💾 Data Persistence (CSV)
+
+All data is saved in `assets/data/`. You can open these files with Excel to see the data.
+
+| File | Purpose |
+| :--- | :--- |
+| **students.csv** | Contains `ID,Name,Email,Username,Password,Dept,Batch,Semester,DateJoined,CGPA`. |
+| **teachers.csv** | Contains `ID,Name,Email,Username,Password,Dept,Designation,Salary`. |
+| **courses.csv** | Links a Course Name to a Teacher ID. |
+| **enrollments.csv** | Links a Student ID to a Course ID. |
+| **attendance.csv** | A massive table where rows are students and columns are dates. |
+| **habits.csv** | Stores the state of user habits. |
+
+**The `CsvHandler` Class**:
+This is a helper utility that reads a file into a list of strings (`QVector<QStringList>`). It handles the commas and newlines so the rest of the app doesn't have to worry about parsing text.
+
+---
 
 ## 💻 Installation and Build
 
 ### Prerequisites
-- C++17 compiler (GCC/Clang/MSVC).
-- CMake `>= 3.16`.
-- Qt 6 with **Widgets** module.
+1.  **C++ Compiler**: You need a compiler that supports C++17 (e.g., GCC, MSVC, Clang).
+2.  **CMake**: The build system (version 3.16 or higher).
+3.  **Qt 6**: You must have the Qt 6 libraries installed (Core, Widgets, Multimedia).
 
-### Build Steps
+### Steps to Run
 
-```bash
-mkdir -p build
-cd build
-cmake ..
-cmake --build .
+1.  **Create a build folder**:
+    ```bash
+    mkdir build
+    cd build
+    ```
+
+2.  **Configure with CMake**:
+    ```bash
+    cmake ..
+    ```
+
+3.  **Compile**:
+    ```bash
+    cmake --build .
+    ```
+
+4.  **Run**:
+    *   **Windows**: `.\Acadence.exe`
+    *   **Linux/Mac**: `./Acadence`
+
+*Note: On the first run, the app will generate default CSV files in `assets/data` if they are missing. The default Admin login is `admin` / `admin`.*
 ```
 
-### Run
+### Running the App
 
-From the build directory (target name from `CMakeLists.txt`):
-
+On Linux/macOS:
 ```bash
 ./Acadence
 ```
 
-On Windows, run `Acadence.exe`.
+On Windows:
+```powershell
+.\Acadence.exe
+```
 
-## 📖 Usage Notes
-
-### First Run Behavior
-- On startup, the app initializes the CSV store under the executable-relative data path (`../data`).
-- It seeds default admin credentials if missing:
-  - Username: `admin`
-  - Password: `admin`
-
-### Role-Based Navigation
-- Student: dashboard, planner, habits/timers/prayers, routine view, academics, queries.
-- Teacher: dashboard, routine management, assessment/grading/attendance tools, queries.
-- Admin: dashboard notice tools plus admin data-management panel.
-
-## 📂 Data Files
-
-The project persists data in CSV format. Current files present in the repository include:
-
-| File | Purpose |
-| :--- | :--- |
-| `admins.csv` | Admin credentials and profile basics. |
-| `students.csv` | Student identity, login, department, semester, CGPA. |
-| `teachers.csv` | Teacher identity, login, department, designation, salary. |
-| `courses.csv` | Course metadata, teacher mapping, semester, credits. |
-| `enrollments.csv` | Student-course enrollment mappings. |
-| `routine.csv` | Baseline weekly class routine. |
-| `routine_adjustments.csv` | Routine overrides (`CANCEL`/`RESCHEDULE`). |
-| `attendance.csv` | Attendance entries by student/course/date. |
-| `assessments.csv` | Assessment definitions (course/title/type/date/max marks). |
-| `grades.csv` | Marks per student-assessment pair. |
-| `tasks.csv` | Student planner tasks. |
-| `habits.csv` | Habit definitions and serialized progress. |
-| `prayers.csv` | Daily prayer completion records. |
-| `queries.csv` | Student-teacher Q&A records. |
-| `notices.csv` | Posted notice records consumed by dashboard feed. |
-| `themes.csv` | Theme-related persisted data. |
-
-Additional generated/report artifact in project root:
-
-| File | Purpose |
-| :--- | :--- |
-| `academic_report.csv` | Example exported academic report output. |
-
-## 🧩 Developer Notes
-
-- Some legacy/backup source files are present in `src/` (for example `.bak`, `.old`, `.backup` variants).
-- Working implementation in CMake currently points to `src/logindialog_new.cpp` for login dialog logic.
-
-## 🤝 Contributing
-
-1. Fork the repository.
-2. Create a branch: `git checkout -b feature/your-change`.
-3. Commit: `git commit -m "Describe your change"`.
-4. Push your branch.
-5. Open a pull request.
-
-## 📜 License
-
-Open-source project intended for academic and educational use.
+> **Note:** On first run, the application will automatically create the `assets/data` directory and populate it with default seed data (Admin credentials: `admin` / `admin`).

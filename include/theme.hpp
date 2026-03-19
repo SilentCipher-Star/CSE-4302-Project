@@ -14,14 +14,20 @@ struct AppTheme
     QString accent;
 };
 
-struct AppFonts
+namespace AppFonts
 {
-    static const QString Normal;
-    static const QString Small;
-    static const QString Large;
-    static const QString Timer;
-    static const QString Title;
-};
+    inline const QString Family = "Product Sans";
+
+    enum
+    {
+        Tiny = 12,
+        Small = 16,
+        Normal = 20,
+        Large = 36,
+        Title = 40,
+        Timer = 120
+    };
+}
 
 class ThemeManager
 {

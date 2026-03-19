@@ -288,6 +288,8 @@ void AcadenceManager::addGrade(int studentId, int assessmentId, double marks)
     ManagerAcademics::addGrade(studentId, assessmentId, marks);
     notifyObservers(DataType::Academics);
 }
+QMap<int, double> AcadenceManager::getGradesForAssessment(int assessmentId) { return ManagerAcademics::getGradesForAssessment(assessmentId); }
+QSet<QString> AcadenceManager::getPresenceSet(int courseId) { return ManagerAcademics::getPresenceSet(courseId); }
 
 // ============ Queries ============
 QVector<Query> AcadenceManager::getQueries(int userId, QString role) { return ManagerQueries::getQueries(userId, role); }

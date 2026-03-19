@@ -11,7 +11,6 @@ public:
     static QString validatePassword(const QString &password);
     static QString validateUsername(const QString &username);
     static void loadFonts();
-    static void adjustColumnWidths(QTableView *table);
     static QDate getDateForDay(QString dayName);
     static void saveTableData(QStandardItemModel *model, const QString &tableName);
 };

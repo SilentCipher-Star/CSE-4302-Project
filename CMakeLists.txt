@@ -9,97 +9,99 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
 
 add_executable(Acadence WIN32 MACOSX_BUNDLE
+    # Main
     main.cpp
-    src/mainwindow.cpp
-    include/mainwindow.hpp
+
+    # UI Forms
     src/mainwindow.ui
-    src/csvdelegate.cpp
-    include/csvdelegate.hpp
-    include/person.hpp
-    src/person.cpp
+
+    # Headers
     include/admin.hpp
-    src/admin.cpp
-    include/student.hpp
-    src/student.cpp
-    include/teacher.hpp
-    src/teacher.cpp
-    include/course.hpp
-    src/course.cpp
     include/appmanager.hpp
+    include/assetmanager.hpp
+    include/attendance_simulator.hpp
+    include/chart_widget.hpp
+    include/course.hpp
+    include/csvdelegate.hpp
+    include/csvhandler.hpp
+    include/custom_tables.hpp
+    include/databasemanager.hpp
+    include/exceptions.hpp
+    include/gpa_strategy.hpp
+    include/habit.hpp
+    include/logindialog.hpp
+    include/mainwindow.hpp
+    include/manager_academics.hpp
+    include/manager_auth.hpp
+    include/manager_habits.hpp
+    include/manager_messages.hpp
+    include/manager_notices.hpp
+    include/manager_persons.hpp
+    include/manager_prayers.hpp
+    include/manager_queries.hpp
+    include/manager_routine.hpp
+    include/manager_tasks.hpp
+    include/notice_decorators.hpp
+    include/notifications.hpp
+    include/person.hpp
+    include/personfactory.hpp
+    include/report.hpp
+    include/routine.hpp
+    include/student.hpp
+    include/student_iterator.hpp
+    include/teacher.hpp
+    include/theme.hpp
+    include/theme_toggle.hpp
+    include/timer.hpp
+    include/ui_academics.hpp
+    include/ui_admin.hpp
+    include/ui_calendar.hpp
+    include/ui_dashboard.hpp
+    include/ui_habits.hpp
+    include/ui_personal_inbox.hpp
+    include/ui_planner.hpp
+    include/ui_queries.hpp
+    include/ui_routine.hpp
+    include/ui_tamagotchi.hpp
+    include/ui_teacher_attendance.hpp
+    include/ui_timers.hpp
+    include/utils.hpp
+
+    # Sources
+    src/admin.cpp
     src/appmanager.cpp
     src/appmanager_analytics.cpp
-    include/timer.hpp
-    src/timer.cpp
-    include/habit.hpp
-    src/habit.cpp
-    include/routine.hpp
-    src/routine.cpp
-    include/exceptions.hpp
-    include/utils.hpp
-    src/utils.cpp
-    include/csvhandler.hpp
+    src/assetmanager.cpp
+    src/course.cpp
+    src/csvdelegate.cpp
     src/csvhandler.cpp
-    include/databasemanager.hpp
+    src/custom_tables.cpp
     src/databasemanager.cpp
-    include/logindialog.hpp
+    src/habit.cpp
     src/logindialog.cpp
-    include/theme.hpp
-    src/theme.cpp
-    include/manager_auth.hpp
-    src/manager_auth.cpp
-    include/manager_notices.hpp
-    src/manager_notices.cpp
-    include/manager_persons.hpp
-    src/manager_persons.cpp
-    include/personfactory.hpp
-    src/personfactory.cpp
-    include/manager_prayers.hpp
-    src/manager_prayers.cpp
-    include/manager_routine.hpp
-    src/manager_routine.cpp
-    include/manager_academics.hpp
+    src/mainwindow.cpp
     src/manager_academics.cpp
-    include/manager_queries.hpp
-    src/manager_queries.cpp
-    include/manager_tasks.hpp
-    src/manager_tasks.cpp
-    include/manager_habits.hpp
+    src/manager_auth.cpp
     src/manager_habits.cpp
-    include/notifications.hpp
-    include/notice_decorators.hpp
-    include/chart_widget.hpp
-    include/ui_dashboard.hpp
-    src/ui_dashboard.cpp
-    include/ui_planner.hpp
-    src/ui_planner.cpp
-    include/ui_habits.hpp
-    src/ui_habits.cpp
-    include/ui_timers.hpp
-    src/ui_timers.cpp
-    include/ui_routine.hpp
-    src/ui_routine.cpp
-    include/ui_academics.hpp
-    src/ui_academics.cpp
-    include/gpa_strategy.hpp
-    include/report.hpp
-    include/student_iterator.hpp
-    include/attendance_simulator.hpp
-    include/ui_tamagotchi.hpp
-    src/ui_tamagotchi.cpp
-    include/ui_queries.hpp
-    src/ui_queries.cpp
-    include/ui_admin.hpp
-    src/ui_admin.cpp
-    include/ui_teacher_attendance.hpp
-    src/ui_teacher_attendance.cpp
-    include/manager_messages.hpp
     src/manager_messages.cpp
-    include/ui_personal_inbox.hpp
-    src/ui_personal_inbox.cpp
-    include/ui_calendar.hpp
+    src/manager_notices.cpp
+    src/manager_persons.cpp
+    src/manager_prayers.cpp
+    src/manager_queries.cpp
+    src/manager_routine.cpp
+    src/manager_tasks.cpp
+    src/person.cpp
+    src/personfactory.cpp
+    src/routine.cpp
+    src/student.cpp
+    src/teacher.cpp
+    src/theme.cpp
+    src/timer.cpp
+    src/ui_academics.cpp
+    src/ui_admin.cpp
     src/ui_calendar.cpp
     include/theme_toggle.hpp
     include/icommand.hpp
@@ -110,7 +112,17 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/manager_lostfound.cpp
     include/ui_lostfound.hpp
     src/ui_lostfound.cpp
+    src/ui_dashboard.cpp
+    src/ui_habits.cpp
+    src/ui_personal_inbox.cpp
+    src/ui_planner.cpp
+    src/ui_queries.cpp
+    src/ui_routine.cpp
+    src/ui_tamagotchi.cpp
+    src/ui_teacher_attendance.cpp
+    src/ui_timers.cpp
+    src/utils.cpp
 )
 
-target_link_libraries(Acadence PRIVATE Qt6::Widgets)
+target_link_libraries(Acadence PRIVATE Qt6::Widgets Qt6::Multimedia)
 target_include_directories(Acadence PRIVATE include)

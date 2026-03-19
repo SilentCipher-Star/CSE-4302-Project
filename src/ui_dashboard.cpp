@@ -1,5 +1,6 @@
 #include "../include/ui_dashboard.hpp"
 #include "../include/student.hpp"
+#include "../include/theme.hpp"
 #include "../include/chart_widget.hpp"
 #include "../include/utils.hpp"
 #include "../include/exceptions.hpp"
@@ -79,7 +80,7 @@ QFrame *UIDashboard::buildStatsCard(const QString &value, const QString &label, 
     QFrame *card = new QFrame();
     card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     card->setObjectName("statsCard");
-    card->setStyleSheet(QString("QFrame { background: %1; border-radius: 16px; }").arg(bgColor));
+    card->setStyleSheet(QString("QFrame { background: %1; border-radius: 24px; }").arg(bgColor));
 
     QVBoxLayout *l = new QVBoxLayout(card);
     l->setContentsMargins(14, 8, 14, 8);
@@ -87,11 +88,11 @@ QFrame *UIDashboard::buildStatsCard(const QString &value, const QString &label, 
 
     QLabel *valLbl = new QLabel(value, card);
     valLbl->setAlignment(Qt::AlignCenter);
-    valLbl->setStyleSheet("font-size:24px; font-weight:bold; color:white; background:transparent;");
+    valLbl->setStyleSheet(QString("font-size:%1px; font-weight:bold; color:white; background:transparent;").arg(AppFonts::Title));
 
     QLabel *descLbl = new QLabel(label, card);
     descLbl->setAlignment(Qt::AlignCenter);
-    descLbl->setStyleSheet("font-size:12px; color:rgba(255,255,255,0.85); background:transparent;");
+    descLbl->setStyleSheet(QString("font-size:%1px; color:rgba(255,255,255,0.85); background:transparent;").arg(AppFonts::Normal));
 
     l->addWidget(valLbl);
     l->addWidget(descLbl);
@@ -100,25 +101,21 @@ QFrame *UIDashboard::buildStatsCard(const QString &value, const QString &label, 
 
 void UIDashboard::refreshStatsCards()
 {
-    QVBoxLayout *dashLayout = qobject_cast<QVBoxLayout *>(ui->tab_dashboard->layout());
-    if (!dashLayout)
+    QVBoxLayout *statsLayout = ui->verticalLayout_stats_container;
+    if (!statsLayout)
         return;
 
-    if (m_statsFrame)
+    // Enforce homogeneous distance from container border and between elements
+    statsLayout->setContentsMargins(16, 16, 16, 16);
+    statsLayout->setSpacing(16);
+
+    QLayoutItem *child;
+    while ((child = statsLayout->takeAt(0)) != nullptr)
     {
-        dashLayout->removeWidget(m_statsFrame);
-        delete m_statsFrame;
-        m_statsFrame = nullptr;
+        if (child->widget())
+            delete child->widget();
+        delete child;
     }
-
-    m_statsFrame = new QFrame();
-    m_statsFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    QVBoxLayout *outerL = new QVBoxLayout(m_statsFrame);
-    outerL->setContentsMargins(0, 4, 0, 4);
-    outerL->setSpacing(6);
-
-    QHBoxLayout *cardsL = new QHBoxLayout();
-    cardsL->setSpacing(10);
 
     if (userRole == Constants::Role::Student)
     {
@@ -129,23 +126,8 @@ void UIDashboard::refreshStatsCards()
             gpa = statsStr.split("GPA:").last().trimmed();
 
         // Attendance average
-        double avgAtt = 0;
-        int attCnt = 0;
-        try
-        {
-            for (const auto &rec : myManager->getStudentAttendance(userId))
-            {
-                if (rec.getTotalClasses() > 0)
-                {
-                    avgAtt += 100.0 * rec.getAttendedClasses() / rec.getTotalClasses();
-                    ++attCnt;
-                }
-            }
-        }
-        catch (...)
-        {
-        }
-        const QString attStr = attCnt > 0 ? QString::number(avgAtt / attCnt, 'f', 1) + "%" : "N/A";
+        double avgAtt = myManager->getOverallAttendancePercentage(userId);
+        const QString attStr = (avgAtt > 0) ? QString::number(avgAtt, 'f', 1) + "%" : "N/A";
 
         // Pending tasks
         int pending = 0;
@@ -159,51 +141,102 @@ void UIDashboard::refreshStatsCards()
         {
         }
 
-        cardsL->addWidget(buildStatsCard(gpa, "Current GPA", "#7c3aed"));
-        cardsL->addWidget(buildStatsCard(attStr, "Avg Attendance", "#0891b2"));
-        cardsL->addWidget(buildStatsCard(QString::number(pending), "Pending Tasks", "#d97706"));
-
         // View Charts button
         QPushButton *chartBtn = new QPushButton("View Attendance Chart");
+        chartBtn->setFixedHeight(46);
+        chartBtn->setCursor(Qt::PointingHandCursor);
+        chartBtn->setStyleSheet("QPushButton { border-radius: 12px; font-weight: bold; }");
         connect(chartBtn, &QPushButton::clicked, this, &UIDashboard::onViewChartsClicked);
-        outerL->addLayout(cardsL);
-        outerL->addWidget(chartBtn, 0, Qt::AlignRight);
+        statsLayout->addWidget(chartBtn);
+
+        QHBoxLayout *cardsLayout = new QHBoxLayout();
+        cardsLayout->setSpacing(16);
+        cardsLayout->setContentsMargins(0, 0, 0, 0);
+        cardsLayout->addWidget(buildStatsCard(gpa, "Current GPA", "#7c3aed"));
+        cardsLayout->addWidget(buildStatsCard(attStr, "Avg Attendance", "#0891b2"));
+        cardsLayout->addWidget(buildStatsCard(QString::number(pending), "Pending Tasks", "#d97706"));
+
+        statsLayout->addLayout(cardsLayout);
     }
     else if (userRole == Constants::Role::Teacher)
     {
-        int courseCount = 0;
+        // 1. Classes Today
+        int classesToday = 0;
         try
         {
             QVector<Course *> courses = myManager->getTeacherCourses(userId);
-            courseCount = courses.size();
+            QSet<QString> myCodes;
+            for (auto c : courses)
+                myCodes.insert(c->getCode());
+            qDeleteAll(courses);
+
+            QVector<RoutineSession> sessions = myManager->getEffectiveRoutine(QDate::currentDate());
+            for (const auto &s : sessions)
+            {
+                if (myCodes.contains(s.getCourseCode()))
+                    classesToday++;
+            }
+        }
+        catch (...)
+        {
+        }
+
+        // 2. Students At Risk & Active Courses
+        int atRiskCount = 0;
+        int activeCourses = 0;
+        try
+        {
+            QVector<Course *> courses = myManager->getTeacherCourses(userId);
+            activeCourses = courses.size();
+            for (auto c : courses)
+                atRiskCount += myManager->getLowAttendanceStudents(c->getId(), 75.0).size();
             qDeleteAll(courses);
         }
         catch (...)
         {
         }
 
-        cardsL->addWidget(buildStatsCard(QString::number(courseCount), "Active Courses", "#7c3aed"));
-        outerL->addLayout(cardsL);
+        QHBoxLayout *cardsLayout = new QHBoxLayout();
+        cardsLayout->setSpacing(16);
+        cardsLayout->setContentsMargins(0, 0, 0, 0);
+        cardsLayout->addWidget(buildStatsCard(QString::number(classesToday), "Classes Today", "#3b82f6"));
+        cardsLayout->addWidget(buildStatsCard(QString::number(atRiskCount), "Students At Risk", "#ef4444"));
+        cardsLayout->addWidget(buildStatsCard(QString::number(activeCourses), "Active Courses", "#7c3aed"));
+        statsLayout->addLayout(cardsLayout);
     }
     else
     {
-        cardsL->addWidget(buildStatsCard("Active", "System Status", "#059669"));
-        outerL->addLayout(cardsL);
-    }
+        int studentCount = 0, teacherCount = 0, courseCount = 0;
+        try
+        {
+            studentCount = CsvHandler::readCsv("students.csv").size();
+            teacherCount = CsvHandler::readCsv("teachers.csv").size();
+            courseCount = CsvHandler::readCsv("courses.csv").size();
+        }
+        catch (...)
+        {
+        }
 
-    dashLayout->insertWidget(1, m_statsFrame);
+        QHBoxLayout *cardsLayout = new QHBoxLayout();
+        cardsLayout->setSpacing(16);
+        cardsLayout->setContentsMargins(0, 0, 0, 0);
+        cardsLayout->addWidget(buildStatsCard(QString::number(studentCount), "Students", "#10b981"));
+        cardsLayout->addWidget(buildStatsCard(QString::number(teacherCount), "Teachers", "#8b5cf6"));
+        cardsLayout->addWidget(buildStatsCard(QString::number(courseCount), "Courses", "#f59e0b"));
+        statsLayout->addLayout(cardsLayout);
+    }
 }
 
 // ── Upcoming Events Widget ────────────────────────────────────────────────────
 QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &icon,
-                                           const QVector<QPair<QString,QString>> &rows,
-                                           const QString &accentColor) const
+                                          const QVector<QPair<QString, QString>> &rows,
+                                          const QString &accentColor) const
 {
     QFrame *section = new QFrame();
     section->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     section->setStyleSheet(QString(
-        "QFrame { border: 1.5px solid %1; border-radius: 12px; background: palette(base); }"
-    ).arg(accentColor));
+                               "QFrame { border: 1.5px solid %1; border-radius: 12px; background: palette(base); color: palette(text); }")
+                               .arg(accentColor));
 
     QVBoxLayout *vl = new QVBoxLayout(section);
     vl->setContentsMargins(12, 10, 12, 10);
@@ -211,9 +244,8 @@ QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &i
 
     // Section header
     QLabel *hdr = new QLabel(icon + "  " + title);
-    hdr->setStyleSheet(QString(
-        "font-size:13px; font-weight:bold; color:%1; background:transparent; border:none;"
-    ).arg(accentColor));
+    hdr->setStyleSheet(QString("font-size:%1px; font-weight:bold; color:palette(text); background:transparent; border:none;")
+                           .arg(AppFonts::Normal));
     vl->addWidget(hdr);
 
     // Divider
@@ -225,7 +257,7 @@ QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &i
     if (rows.isEmpty())
     {
         QLabel *empty = new QLabel("Nothing scheduled");
-        empty->setStyleSheet("font-size:11px; color:palette(mid); background:transparent; border:none;");
+        empty->setStyleSheet(QString("font-size:%1px; color:palette(text); opacity:0.7; background:transparent; border:none;").arg(AppFonts::Small));
         vl->addWidget(empty);
     }
     else
@@ -233,14 +265,14 @@ QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &i
         for (const auto &row : rows)
         {
             QLabel *mainLbl = new QLabel(row.first);
-            mainLbl->setStyleSheet("font-size:12px; font-weight:600; background:transparent; border:none;");
+            mainLbl->setStyleSheet(QString("font-size:%1px; font-weight:600; color:palette(text); background:transparent; border:none;").arg(AppFonts::Small));
             mainLbl->setWordWrap(true);
             vl->addWidget(mainLbl);
 
             if (!row.second.isEmpty())
             {
                 QLabel *subLbl = new QLabel(row.second);
-                subLbl->setStyleSheet("font-size:11px; color:palette(mid); background:transparent; border:none;");
+                subLbl->setStyleSheet(QString("font-size:%1px; color:palette(text); background:transparent; border:none;").arg(AppFonts::Small));
                 subLbl->setWordWrap(true);
                 vl->addWidget(subLbl);
             }
@@ -257,7 +289,8 @@ void UIDashboard::refreshUpcomingEvents()
         return;
 
     QVBoxLayout *dashLayout = qobject_cast<QVBoxLayout *>(ui->tab_dashboard->layout());
-    if (!dashLayout) return;
+    if (!dashLayout)
+        return;
 
     if (m_upcomingFrame)
     {
@@ -276,7 +309,7 @@ void UIDashboard::refreshUpcomingEvents()
     QString todayDow = today.toString("dddd"); // e.g. "Monday"
 
     // ── Section 1: Next Exam ──────────────────────────────────────────────
-    QVector<QPair<QString,QString>> examRows;
+    QVector<QPair<QString, QString>> examRows;
     QString examAccent = "#6d28d9";
     try
     {
@@ -286,7 +319,8 @@ void UIDashboard::refreshUpcomingEvents()
         for (auto &a : all)
         {
             QDate d = QDate::fromString(a.getDate(), "yyyy-MM-dd");
-            if (!d.isValid()) continue;
+            if (!d.isValid())
+                continue;
             int days = today.daysTo(d);
             if (days >= 0 && days < bestDays)
             {
@@ -297,33 +331,61 @@ void UIDashboard::refreshUpcomingEvents()
         if (best)
         {
             QString countdown;
-            if (bestDays == 0)       { countdown = "TODAY!";           examAccent = "#dc2626"; }
-            else if (bestDays == 1)  { countdown = "Tomorrow";         examAccent = "#dc2626"; }
-            else if (bestDays <= 3)  { countdown = QString("in %1 days").arg(bestDays); examAccent = "#ea580c"; }
-            else if (bestDays <= 7)  { countdown = QString("in %1 days").arg(bestDays); examAccent = "#d97706"; }
-            else                     { countdown = QString("in %1 days").arg(bestDays); examAccent = "#059669"; }
+            if (bestDays == 0)
+            {
+                countdown = "TODAY!";
+                examAccent = "#dc2626";
+            }
+            else if (bestDays == 1)
+            {
+                countdown = "Tomorrow";
+                examAccent = "#dc2626";
+            }
+            else if (bestDays <= 3)
+            {
+                countdown = QString("in %1 days").arg(bestDays);
+                examAccent = "#ea580c";
+            }
+            else if (bestDays <= 7)
+            {
+                countdown = QString("in %1 days").arg(bestDays);
+                examAccent = "#d97706";
+            }
+            else
+            {
+                countdown = QString("in %1 days").arg(bestDays);
+                examAccent = "#059669";
+            }
 
-            examRows.append({ best->getTitle(), best->getCourseName() + "  •  " + countdown });
+            examRows.append({best->getTitle(), best->getCourseName() + "  •  " + countdown});
         }
     }
-    catch (...) {}
+    catch (...)
+    {
+    }
 
     // ── Section 2: Today's Classes ────────────────────────────────────────
-    QVector<QPair<QString,QString>> classRows;
+    QVector<QPair<QString, QString>> classRows;
     int semester = -1;
     try
     {
         Student *stu = myManager->getStudent(userId);
-        if (stu) { semester = stu->getSemester(); delete stu; }
+        if (stu)
+        {
+            semester = stu->getSemester();
+            delete stu;
+        }
         QVector<RoutineSession> sessions = myManager->getRoutineForDay(todayDow, semester);
         for (const auto &s : sessions)
-            classRows.append({ s.getCourseCode() + "  " + s.getCourseName(),
-                               s.getStartTime() + " – " + s.getEndTime() + "  •  " + s.getRoom() });
+            classRows.append({s.getCourseCode() + "  " + s.getCourseName(),
+                              s.getStartTime() + " – " + s.getEndTime() + "  •  " + s.getRoom()});
     }
-    catch (...) {}
+    catch (...)
+    {
+    }
 
     // ── Section 3: Pending Tasks ──────────────────────────────────────────
-    QVector<QPair<QString,QString>> taskRows;
+    QVector<QPair<QString, QString>> taskRows;
     int extraTasks = 0;
     try
     {
@@ -331,23 +393,26 @@ void UIDashboard::refreshUpcomingEvents()
         int shown = 0;
         for (const auto &t : tasks)
         {
-            if (t.getIsCompleted()) continue;
+            if (t.getIsCompleted())
+                continue;
             if (shown < 3)
             {
-                taskRows.append({ t.getDescription(), "" });
+                taskRows.append({t.getDescription(), ""});
                 ++shown;
             }
             else
                 ++extraTasks;
         }
         if (extraTasks > 0)
-            taskRows.append({ QString("+ %1 more...").arg(extraTasks), "" });
+            taskRows.append({QString("+ %1 more...").arg(extraTasks), ""});
     }
-    catch (...) {}
+    catch (...)
+    {
+    }
 
-    hl->addWidget(buildUpcomingSection("Next Exam",        "\xf0\x9f\x93\x9d", examRows,  examAccent));
-    hl->addWidget(buildUpcomingSection("Today's Classes",  "\xf0\x9f\x93\x9a", classRows, "#0891b2"));
-    hl->addWidget(buildUpcomingSection("Pending Tasks",    "\xe2\x9c\x85",     taskRows,  "#d97706"));
+    hl->addWidget(buildUpcomingSection("Next Exam", "\xf0\x9f\x93\x9d", examRows, examAccent));
+    hl->addWidget(buildUpcomingSection("Today's Classes", "\xf0\x9f\x93\x9a", classRows, "#0891b2"));
+    hl->addWidget(buildUpcomingSection("Pending Tasks", "\xe2\x9c\x85", taskRows, "#d97706"));
 
     dashLayout->insertWidget(2, m_upcomingFrame);
 }
@@ -365,12 +430,13 @@ void UIDashboard::onViewChartsClicked()
 
     QDialog dlg;
     dlg.setWindowTitle("Attendance Chart");
+    dlg.resize(1280, 720);
 
     QVBoxLayout *layout = new QVBoxLayout(&dlg);
 
     QLabel *title = new QLabel("Attendance % per Course", &dlg);
     title->setAlignment(Qt::AlignCenter);
-    title->setStyleSheet("font-size:15px; font-weight:bold;");
+    title->setStyleSheet(QString("font-size:%1px; font-weight:bold;").arg(AppFonts::Normal));
     layout->addWidget(title);
 
     BarChartWidget *chart = new BarChartWidget(&dlg);
@@ -653,7 +719,7 @@ void UIDashboard::onAddNoticeClicked()
 
     QLabel *hintLabel = new QLabel(&editor);
     hintLabel->setWordWrap(true);
-    hintLabel->setStyleSheet("color: #666;");
+    hintLabel->setStyleSheet("color: palette(text);");
     hintLabel->setText("Tip: Students will see sender, subject, and a preview. Clicking opens full notice.");
 
     // ---- Decorator Pattern: notice options ----
@@ -761,7 +827,7 @@ void UIDashboard::onNoticeItemClicked(QListWidgetItem *item)
     if (!badges.isEmpty())
     {
         QLabel *badgesLabel = new QLabel(badges, &viewer);
-        badgesLabel->setStyleSheet("font-weight: bold; color: #8B0000; font-size: 11px;");
+        badgesLabel->setStyleSheet(QString("font-weight: bold; color: palette(highlight); font-size: %1px;").arg(AppFonts::Small));
         layout->addWidget(badgesLabel);
     }
 

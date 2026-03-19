@@ -1,4 +1,5 @@
 #include "../include/ui_academics.hpp"
+#include "../include/theme.hpp"
 #include "../include/utils.hpp"
 #include "../include/course.hpp"
 #include "../include/student.hpp"
@@ -27,6 +28,7 @@
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFile>
+#include <QTimer>
 #include <QTextStream>
 #include <QLineEdit>
 #include <QTextEdit>
@@ -117,6 +119,9 @@ UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString r
 
 void UIAcademics::refreshAcademics()
 {
+    if (userRole != "Student")
+        return;
+
     ui->listAssessments->clear();
     QVector<Assessment> assessments = myManager->getStudentAssessments(userId);
     QDate today = QDate::currentDate();
@@ -196,7 +201,12 @@ void UIAcademics::refreshAcademics()
         QString status;
         QColor rowColor;
 
-        if (pct >= 75.0)
+        if (att[i].getTotalClasses() == 0)
+        {
+            status = "No Classes";
+            rowColor = QColor(150, 150, 150);
+        }
+        else if (pct >= 75.0)
         {
             status = "Good";
             rowColor = QColor(34, 139, 34);
@@ -232,6 +242,8 @@ void UIAcademics::refreshAcademics()
     }
     ui->tableAcademics->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
+    QWidget *parentWidget = qobject_cast<QWidget *>(parent());
+
     if (hasCritical)
     {
         try
@@ -242,14 +254,14 @@ void UIAcademics::refreshAcademics()
         }
         catch (const Acadence::InsufficientAttendanceException &e)
         {
-            Notifications::warning(nullptr, QString::fromStdString(e.what()));
+            Notifications::warning(parentWidget, QString::fromStdString(e.what()));
         }
     }
     else if (hasWarning)
     {
-        Notifications::warning(nullptr,
-            "Attendance below 75% in: " + warningCourses +
-            ". You are at risk of being barred from exams.");
+        Notifications::warning(parentWidget,
+                               "Attendance below 75% in: " + warningCourses +
+                                   ". You are at risk of being barred from exams.");
     }
 }
 
@@ -318,6 +330,9 @@ void UIAcademics::refreshTeacherGrades()
     for (auto *s : students)
         collection.add(s);
 
+    // Optimization: Bulk fetch grades for this assessment
+    QMap<int, double> gradeMap = myManager->getGradesForAssessment(assessmentId);
+
     StudentIterator iter = collection.createIterator();
     int i = 0;
     while (iter.hasNext())
@@ -327,7 +342,7 @@ void UIAcademics::refreshTeacherGrades()
         ui->tableGrading->setItem(i, 0, new QTableWidgetItem(QString::number(stu->getId())));
         ui->tableGrading->setItem(i, 1, new QTableWidgetItem(stu->getName()));
 
-        double currentGrade = myManager->getGrade(stu->getId(), assessmentId);
+        double currentGrade = gradeMap.value(stu->getId(), -1.0);
         QString gradeStr = (currentGrade >= 0) ? QString::number(currentGrade) : "";
         ui->tableGrading->setItem(i, 2, new QTableWidgetItem(gradeStr));
         ++i;
@@ -413,6 +428,9 @@ void UIAcademics::refreshTeacherAttendance()
     ui->tableAttendance->setHorizontalHeaderLabels(headers);
     ui->tableAttendance->setRowCount(students.size());
 
+    // Optimization: Bulk fetch attendance presence
+    QSet<QString> presenceSet = myManager->getPresenceSet(courseId);
+
     for (int i = 0; i < students.size(); ++i)
     {
         int sid = students[i]->getId();
@@ -422,7 +440,7 @@ void UIAcademics::refreshTeacherAttendance()
         int presentCount = 0;
         for (int j = 0; j < dates.size(); ++j)
         {
-            bool present = myManager->isPresent(courseId, sid, dates[j]);
+            bool present = presenceSet.contains(QString::number(sid) + "_" + dates[j]);
             if (present)
                 presentCount++;
 
@@ -442,7 +460,8 @@ void UIAcademics::refreshTeacherAttendance()
     }
 
     qDeleteAll(students);
-    Utils::adjustColumnWidths(ui->tableAttendance);
+    QTimer::singleShot(0, [this]()
+                       { ui->tableAttendance->adjustColumnWidths(); });
 }
 
 void UIAcademics::onAttendanceCourseChanged(int index)
@@ -562,7 +581,7 @@ void UIAcademics::onGPACalculatorClicked()
         if (rec.getTotalMaxMarks() > 0)
         {
             totalMarks += rec.getTotalMarksObtained();
-            totalMax   += rec.getTotalMaxMarks();
+            totalMax += rec.getTotalMaxMarks();
             ++courseCount;
         }
     }
@@ -589,10 +608,11 @@ void UIAcademics::onGPACalculatorClicked()
     layout->addLayout(schemeRow);
 
     QLabel *lblCurrent = new QLabel();
-    lblCurrent->setStyleSheet("font-size: 13px; font-weight: bold; padding: 8px;");
+    lblCurrent->setStyleSheet(QString("font-size: %1px; font-weight: bold; padding: 8px;").arg(AppFonts::Normal));
     layout->addWidget(lblCurrent);
 
-    auto updateCurrentLabel = [&](double gpa) {
+    auto updateCurrentLabel = [&](double gpa)
+    {
         lblCurrent->setText(
             QString("Current Average: %1%\nEstimated GPA: %2 / 4.0\nCourses Completed: %3")
                 .arg(QString::number(currentPct, 'f', 1))
@@ -624,20 +644,21 @@ void UIAcademics::onGPACalculatorClicked()
     layout->addLayout(remRow);
 
     QLabel *lblResult = new QLabel("");
-    lblResult->setStyleSheet("font-size: 13px; padding: 8px; color: #1a73e8;");
+    lblResult->setStyleSheet(QString("font-size: %1px; padding: 8px; color: #1a73e8;").arg(AppFonts::Normal));
     lblResult->setWordWrap(true);
     layout->addWidget(lblResult);
 
     QPushButton *btnCalc = new QPushButton("Calculate");
     layout->addWidget(btnCalc);
 
-    QObject::connect(comboScheme, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int idx) {
+    QObject::connect(comboScheme, QOverload<int>::of(&QComboBox::currentIndexChanged), [&](int idx)
+                     {
         double gpa = (idx == 0) ? pctStrategy.calculate(currentPct) : letterStrategy.calculate(currentPct);
         updateCurrentLabel(gpa);
-        lblResult->setText("");
-    });
+        lblResult->setText(""); });
 
-    QObject::connect(btnCalc, &QPushButton::clicked, [&]() {
+    QObject::connect(btnCalc, &QPushButton::clicked, [&]()
+                     {
         int schemeIdx = comboScheme->currentIndex();
         Acadence::IGPAStrategy *strategy = (schemeIdx == 0)
             ? static_cast<Acadence::IGPAStrategy*>(&pctStrategy)
@@ -655,12 +676,12 @@ void UIAcademics::onGPACalculatorClicked()
         if (requiredPerCourse > 4.0)
         {
             lblResult->setText("Target GPA is not achievable with the given number of remaining courses.");
-            lblResult->setStyleSheet("font-size: 13px; padding: 8px; color: #d32f2f;");
+            lblResult->setStyleSheet(QString("font-size: %1px; padding: 8px; color: #d32f2f;").arg(AppFonts::Normal));
         }
         else if (requiredPerCourse < 0.0)
         {
             lblResult->setText("You have already exceeded your target GPA!");
-            lblResult->setStyleSheet("font-size: 13px; padding: 8px; color: #2e7d32;");
+            lblResult->setStyleSheet(QString("font-size: %1px; padding: 8px; color: #2e7d32;").arg(AppFonts::Normal));
         }
         else
         {
@@ -669,9 +690,8 @@ void UIAcademics::onGPACalculatorClicked()
                     .arg(strategy->schemeName())
                     .arg(QString::number(requiredPerCourse, 'f', 2))
                     .arg(remaining));
-            lblResult->setStyleSheet("font-size: 13px; padding: 8px; color: #1a73e8;");
-        }
-    });
+            lblResult->setStyleSheet(QString("font-size: %1px; padding: 8px; color: #1a73e8;").arg(AppFonts::Normal));
+        } });
 
     QDialogButtonBox *bbox = new QDialogButtonBox(QDialogButtonBox::Close);
     layout->addWidget(bbox);
@@ -713,7 +733,7 @@ void UIAcademics::onExportReportClicked()
     report->generate(path);
 
     QMessageBox::information(nullptr, "Export Successful",
-        QString("%1 report exported to:\n%2").arg(report->formatName()).arg(path));
+                             QString("%1 report exported to:\n%2").arg(report->formatName()).arg(path));
 }
 
 void UIAcademics::onAttendanceSimulatorClicked()
@@ -726,7 +746,7 @@ void UIAcademics::onAttendanceSimulatorClicked()
         return;
     }
 
-    QVector<QPair<QString, QPair<int,int>>> courseData;
+    QVector<QPair<QString, QPair<int, int>>> courseData;
     for (const auto &rec : att)
     {
         courseData.append({rec.getCourseName(), {rec.getAttendedClasses(), rec.getTotalClasses()}});
@@ -757,15 +777,16 @@ void UIAcademics::onSendGradeReportsClicked()
     // Ask for optional note
     bool ok;
     QString note = QInputDialog::getMultiLineText(nullptr, "Send Grade Reports",
-        QString("Sending personal grade reports for:\n%1\n\nAdd an optional note to all students (leave empty for none):").arg(assessName),
-        "", &ok);
-    if (!ok) return;
+                                                  QString("Sending personal grade reports for:\n%1\n\nAdd an optional note to all students (leave empty for none):").arg(assessName),
+                                                  "", &ok);
+    if (!ok)
+        return;
 
     int count = myManager->sendBulkGradeReports(userId, assessmentId, note);
 
     if (count > 0)
         QMessageBox::information(nullptr, "Sent",
-            QString("Successfully sent %1 personal grade report(s).\n\nEach student will see their own marks privately in their Inbox.").arg(count));
+                                 QString("Successfully sent %1 personal grade report(s).\n\nEach student will see their own marks privately in their Inbox.").arg(count));
     else
         QMessageBox::warning(nullptr, "Failed", "No grade reports could be sent. Make sure students are enrolled.");
 }
@@ -799,12 +820,15 @@ void UIAcademics::onSendPersonalMessageClicked()
     layout->addWidget(comboStudent);
 
     // Populate students when course changes
-    auto populateStudents = [&](int index) {
+    auto populateStudents = [&](int index)
+    {
         comboStudent->clear();
-        if (index < 0) return;
+        if (index < 0)
+            return;
         int cid = comboCourse->currentData().toInt();
         std::unique_ptr<Course> c(myManager->getCourse(cid));
-        if (!c) return;
+        if (!c)
+            return;
 
         QVector<Student *> students = myManager->getStudentsByEnrollment(cid);
         if (students.isEmpty())
@@ -839,7 +863,8 @@ void UIAcademics::onSendPersonalMessageClicked()
 
     qDeleteAll(courses);
 
-    if (dlg.exec() != QDialog::Accepted) return;
+    if (dlg.exec() != QDialog::Accepted)
+        return;
 
     QString subject = editSubject->text().trimmed();
     QString body = editBody->toPlainText().trimmed();
@@ -856,7 +881,8 @@ void UIAcademics::onSendPersonalMessageClicked()
         // Send to all students in course
         int cid = comboCourse->currentData().toInt();
         std::unique_ptr<Course> c(myManager->getCourse(cid));
-        if (!c) return;
+        if (!c)
+            return;
 
         QVector<Student *> students = myManager->getStudentsByEnrollment(cid);
         if (students.isEmpty())

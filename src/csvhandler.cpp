@@ -5,9 +5,11 @@
 #include <QDir>
 #include <QCoreApplication>
 
+QMap<QString, QVector<QStringList>> CsvHandler::m_cache;
+
 QString CsvHandler::getDataDirectory()
 {
-    QString path = QCoreApplication::applicationDirPath() + "/../data";
+    QString path = QCoreApplication::applicationDirPath() + "/../assets/data";
     QDir dir(path);
     if (!dir.exists())
     {
@@ -19,6 +21,12 @@ QString CsvHandler::getDataDirectory()
 QVector<QStringList> CsvHandler::readCsv(const QString &filename)
 {
     QVector<QStringList> data;
+
+    if (m_cache.contains(filename))
+    {
+        return m_cache[filename];
+    }
+
     QString fullPath = getDataDirectory() + filename;
     QFile file(fullPath);
 
@@ -73,6 +81,7 @@ QVector<QStringList> CsvHandler::readCsv(const QString &filename)
         }
         file.close();
     }
+    m_cache.insert(filename, data);
     return data;
 }
 
@@ -106,6 +115,8 @@ void CsvHandler::writeCsv(const QString &filename, const QVector<QStringList> &d
         }
         file.close();
     }
+    // Update cache
+    m_cache.insert(filename, data);
 }
 
 void CsvHandler::appendCsv(const QString &filename, const QStringList &fields)
@@ -123,6 +134,12 @@ void CsvHandler::appendCsv(const QString &filename, const QStringList &fields)
             escaped << escapeCsv(f);
         out << escaped.join(",") << "\n";
         file.close();
+    }
+
+    // Update cache if it exists
+    if (m_cache.contains(filename))
+    {
+        m_cache[filename].append(fields);
     }
 }
 
@@ -157,4 +174,23 @@ void CsvHandler::initialize()
             file.close();
         }
     }
+}
+
+void CsvHandler::loadAllData()
+{
+    QVector<QString> files = {
+        "students.csv", "teachers.csv", "courses.csv", "themes.csv",
+        "routine.csv", "attendance.csv", "grades.csv", "notices.csv",
+        "tasks.csv", "habits.csv", "queries.csv", "assessments.csv", "prayers.csv",
+        "enrollments.csv", "messages.csv", "admins.csv", "routine_adjustments.csv"};
+
+    for (const QString &file : files)
+    {
+        readCsv(file); // This will trigger caching
+    }
+}
+
+void CsvHandler::unloadAllData()
+{
+    m_cache.clear();
 }

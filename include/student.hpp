@@ -10,7 +10,7 @@ class Student : public Person
 private:
     static int totalStudents;
     static double totalCumulativeCGPA;
-    
+
     QString department;
     QString batch;
     int semester;
@@ -25,8 +25,6 @@ public:
 
     Student(Student &&other) noexcept;
     Student &operator=(Student &&other) noexcept;
-
-    Student clone() const;
 
     friend std::ostream &operator<<(std::ostream &os, const Student &s)
     {
@@ -52,16 +50,13 @@ public:
     void setDepartment(const QString &dept) { department = dept; }
     void setBatch(const QString &batch) { this->batch = batch; }
 
-   
     static int getTotalStudents();
     static double getAverageInstituteCGPA();
     static void incrementStudentCount();
-    
+
     double calculateGPA() const;
 
     // Operator Overloading
-    bool operator<(const Student& other) const;
-    bool operator>(const Student& other) const;
-    bool operator==(const Student& other) const;
-    bool operator!=(const Student& other) const;
+    bool operator<(const Student &other) const;
+    bool operator==(const Student &other) const;
 };

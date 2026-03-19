@@ -50,7 +50,7 @@ QString Utils::validateUsername(const QString &username)
 
 void Utils::loadFonts()
 {
-    QString fontDir = QCoreApplication::applicationDirPath() + "/../fonts";
+    QString fontDir = QCoreApplication::applicationDirPath() + "/../assets/fonts";
     QDir dir(fontDir);
     if (dir.exists())
     {
@@ -61,43 +61,6 @@ void Utils::loadFonts()
         {
             QFontDatabase::addApplicationFont(info.absoluteFilePath());
         }
-    }
-}
-
-void Utils::adjustColumnWidths(QTableView *table)
-{
-    if (!table || !table->model())
-        return;
-
-    table->resizeColumnsToContents();
-
-    int colCount = table->model()->columnCount();
-    int totalWidth = 0;
-
-    QVector<int> columnWidths(colCount);
-    for (int i = 0; i < colCount; ++i)
-    {
-        columnWidths[i] = table->columnWidth(i);
-        totalWidth += columnWidths[i];
-    }
-
-    if (totalWidth > 0)
-    {
-        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-        int targetWidth = table->width() * 0.95;
-        int usedWidth = 0;
-        for (int i = 0; i < colCount; ++i)
-        {
-            int newWidth;
-            if (i == colCount - 1)
-                newWidth = targetWidth - usedWidth;
-            else
-                newWidth = int((double)columnWidths[i] / totalWidth * targetWidth);
-
-            table->setColumnWidth(i, newWidth);
-            usedWidth += newWidth;
-        }
-        table->horizontalHeader()->setStretchLastSection(true);
     }
 }
 

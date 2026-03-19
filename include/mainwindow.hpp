@@ -61,12 +61,12 @@ private:
     UIHabits *uiHabits;
     UITimers *uiTimers;
     UIRoutine *uiRoutine;
-    UIAcademics  *uiAcademics;
-    UIQueries    *uiQueries;
-    UIAdmin      *uiAdmin;
+    UIAcademics *uiAcademics;
+    UIQueries *uiQueries;
+    UIAdmin *uiAdmin;
     UITamagotchi *uiTamagotchi = nullptr;
-    UICalendar   *uiCalendar   = nullptr;
-    UILostFound  *uiLostFound  = nullptr;
+    UICalendar *uiCalendar = nullptr;
+    UILostFound *uiLostFound = nullptr;
 
     // Initialization Helpers
     void setupTables();
@@ -75,13 +75,14 @@ private:
     void onThemeClicked();
 
     // Undo/Redo buttons
-    QPushButton *m_undoBtn    = nullptr;
-    QPushButton *m_redoBtn    = nullptr;
+    QPushButton *m_undoBtn = nullptr;
+    QPushButton *m_redoBtn = nullptr;
     void updateUndoRedoButtons();
 
-    ThemeToggle *m_toggle     = nullptr;
-    QPushButton *m_themeBtn   = nullptr;
-    bool         m_darkMode   = false;
-    int          m_darkThemeIndex = 0;
-    AppTheme     m_userTheme;
+    ThemeToggle *m_toggle = nullptr;
+    QPushButton *m_themeBtn = nullptr;
+    bool m_darkMode = false;
+    int m_darkThemeIndex = 0;
+    AppTheme m_userTheme;
+    QWidget *m_loadingOverlay = nullptr;
 };

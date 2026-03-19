@@ -2,7 +2,6 @@
 #include "../include/notifications.hpp"
 #include "../include/commands.hpp"
 #include "ui_mainwindow.h"
-#include <QMessageBox>
 
 UIPlanner::UIPlanner(Ui::MainWindow *ui, AcadenceManager *manager, int uid, QObject *parent)
     : QObject(parent), ui(ui), myManager(manager), userId(uid)
