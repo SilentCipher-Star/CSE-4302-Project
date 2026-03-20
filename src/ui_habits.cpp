@@ -11,6 +11,7 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
+#include <exception>
 
 namespace
 {
@@ -95,7 +96,6 @@ UIHabits::UIHabits(Ui::MainWindow *ui, AcadenceManager *manager, int uid, Timer 
 
 UIHabits::~UIHabits()
 {
-    qDeleteAll(currentHabitList);
 }
 
 void UIHabits::refreshHabits()
@@ -107,22 +107,21 @@ void UIHabits::refreshHabits()
     ui->chkMaghrib->setChecked(prayers.getMaghrib());
     ui->chkIsha->setChecked(prayers.getIsha());
 
-    qDeleteAll(currentHabitList);
     activeTimerHabit = nullptr;
     currentHabitList = myManager->getHabits(userId);
     ui->habitTableWidget->setRowCount(0);
 
-    for (auto h : currentHabitList)
+    for (const auto &h : currentHabitList)
     {
         int row = ui->habitTableWidget->rowCount();
         ui->habitTableWidget->insertRow(row);
 
         ui->habitTableWidget->setItem(row, 0, new QTableWidgetItem(h->getTypeString()));
-        ui->habitTableWidget->setItem(row, 1, new QTableWidgetItem(h->name));
+        ui->habitTableWidget->setItem(row, 1, new QTableWidgetItem(h->getName()));
         ui->habitTableWidget->setItem(row, 2, new QTableWidgetItem(h->getProgressString()));
-        ui->habitTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(h->streak)));
-        QTableWidgetItem *statusItem = new QTableWidgetItem(h->isCompleted ? "Completed" : "Pending");
-        if (h->isCompleted)
+        ui->habitTableWidget->setItem(row, 3, new QTableWidgetItem(QString::number(h->getStreak())));
+        QTableWidgetItem *statusItem = new QTableWidgetItem(h->getIsCompleted() ? "Completed" : "Pending");
+        if (h->getIsCompleted())
             statusItem->setForeground(Qt::green);
         ui->habitTableWidget->setItem(row, 4, statusItem);
     }
@@ -193,36 +192,36 @@ void UIHabits::onAddHabitClicked()
 void UIHabits::onPerformHabitClicked()
 {
     int row = ui->habitTableWidget->currentRow();
-    if (row < 0 || row >= currentHabitList.size())
+    if (row < 0 || row >= (int)currentHabitList.size())
     {
         Notifications::warning(nullptr, "Please select a habit to perform.");
         return;
     }
 
-    Habit *h = currentHabitList[row];
+    Habit *h = currentHabitList[row].get();
     bool changed = false;
 
     if (auto wh = dynamic_cast<WorkoutHabit *>(h))
     {
         activeTimerHabit = wh;
-        ui->groupBox_workoutTimer->setTitle("Workout: " + wh->name);
+        ui->groupBox_workoutTimer->setTitle("Workout: " + wh->getName());
 
-        double remaining = wh->targetMinutes - wh->currentMinutes;
+        double remaining = wh->getTargetMinutes() - wh->getCurrentMinutes();
         if (remaining <= 0.001)
-            remaining = wh->targetMinutes;
+            remaining = wh->getTargetMinutes();
 
         int totalSeconds = static_cast<int>(remaining * 60);
         ui->label_workoutTimerDisplay->setText(QString("%1:%2").arg(totalSeconds / 60, 2, 10, QChar('0')).arg(totalSeconds % 60, 2, 10, QChar('0')));
 
-        Notifications::info(nullptr, "Timer set for '" + wh->name + "'.\nDon't forget to log your reps manually if needed!");
+        Notifications::info(nullptr, "Timer set for '" + wh->getName() + "'.\nDon't forget to log your reps manually if needed!");
     }
     else if (auto dh = dynamic_cast<DurationHabit *>(h))
     {
         activeTimerHabit = dh;
-        ui->groupBox_workoutTimer->setTitle("Stopwatch: " + dh->name);
+        ui->groupBox_workoutTimer->setTitle("Stopwatch: " + dh->getName());
         ui->label_workoutTimerDisplay->setText("00:00.00");
 
-        Notifications::info(nullptr, "Stopwatch ready for '" + dh->name + "'.\nClick Start to begin tracking.");
+        Notifications::info(nullptr, "Stopwatch ready for '" + dh->getName() + "'.\nClick Start to begin tracking.");
     }
     else if (auto ch = dynamic_cast<CountHabit *>(h))
     {
@@ -230,16 +229,16 @@ void UIHabits::onPerformHabitClicked()
         int count = QInputDialog::getInt(nullptr, "Perform Habit", "Add Count:", 1, 1, 100, 1, &ok);
         if (ok)
         {
-            ch->currentCount += count;
-            if (ch->currentCount >= ch->targetCount)
+            ch->addCount(count);
+            if (ch->getCurrentCount() >= ch->getTargetCount())
             {
                 ch->markComplete();
                 Notifications::success(nullptr, "Habit completed! Great job on reaching your goal!");
             }
             else
             {
-                int remaining = ch->targetCount - ch->currentCount;
-                Notifications::info(nullptr, QString::number(remaining) + " " + ch->unit + " remaining.");
+                int remaining = ch->getTargetCount() - ch->getCurrentCount();
+                Notifications::info(nullptr, QString::number(remaining) + " " + ch->getUnit() + " remaining.");
             }
             changed = true;
         }
@@ -255,16 +254,16 @@ void UIHabits::onPerformHabitClicked()
 void UIHabits::onDeleteHabitClicked()
 {
     int row = ui->habitTableWidget->currentRow();
-    if (row < 0 || row >= currentHabitList.size())
+    if (row < 0 || row >= (int)currentHabitList.size())
     {
         Notifications::warning(nullptr, "Please select a habit to delete.");
         return;
     }
 
-    Habit *habit = currentHabitList[row];
-    if (Notifications::confirmDelete(nullptr, "habit \"" + habit->name + "\""))
+    Habit *habit = currentHabitList[row].get();
+    if (Notifications::confirmDelete(nullptr, "habit \"" + habit->getName() + "\""))
     {
-        int id = habit->id;
+        int id = habit->getId();
         myManager->deleteHabit(id);
         Notifications::success(nullptr, "Habit deleted successfully.");
         refreshHabits();
@@ -315,6 +314,16 @@ void UIHabits::onPrayerHistoryClicked()
     catch (const Acadence::Exception &e)
     {
         Notifications::error(nullptr, QString("Failed to load prayer history: %1").arg(e.what()));
+        return;
+    }
+    catch (const std::exception &e)
+    {
+        Notifications::error(nullptr, QString("Standard exception:\n%1").arg(e.what()));
+        return;
+    }
+    catch (...)
+    {
+        Notifications::error(nullptr, "Unknown error loading prayer history.");
         return;
     }
 

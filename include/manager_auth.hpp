@@ -1,5 +1,4 @@
-#ifndef MANAGER_AUTH_HPP
-#define MANAGER_AUTH_HPP
+#pragma once
 
 #include <QString>
 #include "csvhandler.hpp"
@@ -12,5 +11,3 @@ public:
     static bool changePassword(int userId, const QString &role, const QString &oldPass, const QString &newPass);
     static QString getDashboardStats(int userId, QString role);
 };
-
-#endif // MANAGER_AUTH_HPP

@@ -1,15 +1,9 @@
 #include "../include/appmanager.hpp"
 #include "../include/manager_auth.hpp"
-#include "../include/manager_notices.hpp"
 #include "../include/manager_persons.hpp"
-#include "../include/manager_prayers.hpp"
-#include "../include/manager_routine.hpp"
 #include "../include/manager_academics.hpp"
-#include "../include/manager_queries.hpp"
-#include "../include/manager_tasks.hpp"
-#include "../include/manager_habits.hpp"
-#include "../include/manager_messages.hpp"
-#include "../include/manager_lostfound.hpp"
+#include "../include/manager_productivity.hpp"
+#include "../include/manager_community.hpp"
 #include <QMap>
 
 AcadenceManager::AcadenceManager() {}
@@ -80,11 +74,10 @@ QString AcadenceManager::getDashboardStats(int userId, QString role)
 {
     if (role == "Student")
     {
-        Student *s = getStudent(userId);
+        auto s = getStudent(userId);
         if (!s)
             return "GPA: N/A";
         int semester = s->getSemester();
-        delete s;
 
         QMap<int, int> courseCredits;
         QVector<QStringList> courseData = CsvHandler::readCsv("courses.csv");
@@ -99,6 +92,15 @@ QString AcadenceManager::getDashboardStats(int userId, QString role)
         QVector<QStringList> assData = CsvHandler::readCsv("assessments.csv");
         QVector<QStringList> gradeData = CsvHandler::readCsv("grades.csv");
 
+        QMap<int, double> studentGrades;
+        for (const auto &grow : gradeData)
+        {
+            if (grow.size() >= 3 && grow[0].toInt() == userId)
+            {
+                studentGrades[grow[1].toInt()] = grow[2].toDouble();
+            }
+        }
+
         for (const auto &arow : assData)
         {
             if (arow.size() < 6)
@@ -109,14 +111,10 @@ QString AcadenceManager::getDashboardStats(int userId, QString role)
 
             if (courseCredits.contains(cId))
             {
-                for (const auto &grow : gradeData)
+                if (studentGrades.contains(aId))
                 {
-                    if (grow.size() >= 3 && grow[0].toInt() == userId && grow[1].toInt() == aId)
-                    {
-                        courseMax[cId] += maxMarks;
-                        courseObtained[cId] += grow[2].toDouble();
-                        break;
-                    }
+                    courseMax[cId] += maxMarks;
+                    courseObtained[cId] += studentGrades[aId];
                 }
             }
         }
@@ -158,112 +156,111 @@ QString AcadenceManager::getDashboardStats(int userId, QString role)
     }
     else if (role == "Teacher")
     {
-        QVector<Course *> courses = getTeacherCourses(userId);
+        auto courses = getTeacherCourses(userId);
         int count = courses.size();
-        qDeleteAll(courses);
         return "Active Courses: " + QString::number(count);
     }
     return "System Active";
 }
 
 // ============ Notices ============
-QVector<Notice> AcadenceManager::getNotices() { return ManagerNotices::getNotices(); }
+QVector<Notice> AcadenceManager::getNotices() { return ManagerCommunity::getNotices(); }
 void AcadenceManager::addNotice(const QString &c, const QString &a)
 {
-    ManagerNotices::addNotice(c, a);
+    ManagerCommunity::addNotice(c, a);
     notifyObservers(DataType::Notices);
 }
 bool AcadenceManager::updateNotice(const QString &date, const QString &author, const QString &oldContent, const QString &newContent)
 {
-    const bool updated = ManagerNotices::updateNotice(date, author, oldContent, newContent);
+    const bool updated = ManagerCommunity::updateNotice(date, author, oldContent, newContent);
     if (updated)
         notifyObservers(DataType::Notices);
     return updated;
 }
 bool AcadenceManager::deleteNotice(const QString &date, const QString &author, const QString &content)
 {
-    const bool deleted = ManagerNotices::deleteNotice(date, author, content);
+    const bool deleted = ManagerCommunity::deleteNotice(date, author, content);
     if (deleted)
         notifyObservers(DataType::Notices);
     return deleted;
 }
 
 // ============ Persons ============
-Student *AcadenceManager::getStudent(int id) { return ManagerPersons::getStudent(id); }
-Teacher *AcadenceManager::getTeacher(int id) { return ManagerPersons::getTeacher(id); }
+std::unique_ptr<Student> AcadenceManager::getStudent(int id) { return ManagerPersons::getStudent(id); }
+std::unique_ptr<Teacher> AcadenceManager::getTeacher(int id) { return ManagerPersons::getTeacher(id); }
 QPair<QString, QString> AcadenceManager::getAdminProfile(int id) { return ManagerPersons::getAdminProfile(id); }
 
 // ============ Tasks ============
-QVector<Task> AcadenceManager::getTasks(int userId) { return ManagerTasks::getTasks(userId); }
+QVector<Task> AcadenceManager::getTasks(int userId) { return ManagerProductivity::getTasks(userId); }
 void AcadenceManager::addTask(int userId, const QString &desc)
 {
-    ManagerTasks::addTask(userId, desc);
+    ManagerProductivity::addTask(userId, desc);
     notifyObservers(DataType::Tasks);
 }
 void AcadenceManager::completeTask(int taskId, bool status)
 {
-    ManagerTasks::completeTask(taskId, status);
+    ManagerProductivity::completeTask(taskId, status);
     notifyObservers(DataType::Tasks);
 }
 void AcadenceManager::deleteTask(int taskId)
 {
-    ManagerTasks::deleteTask(taskId);
+    ManagerProductivity::deleteTask(taskId);
     notifyObservers(DataType::Tasks);
 }
 void AcadenceManager::deleteCompletedTasks(int userId)
 {
-    ManagerTasks::deleteCompletedTasks(userId);
+    ManagerProductivity::deleteCompletedTasks(userId);
     notifyObservers(DataType::Tasks);
 }
 
 // ============ Prayers ============
-DailyPrayerStatus AcadenceManager::getDailyPrayers(int userId, QString date) { return ManagerPrayers::getDailyPrayers(userId, date); }
+DailyPrayerStatus AcadenceManager::getDailyPrayers(int userId, QString date) { return ManagerProductivity::getDailyPrayers(userId, date); }
 void AcadenceManager::updateDailyPrayer(int userId, QString date, QString prayer, bool status)
 {
-    ManagerPrayers::updateDailyPrayer(userId, date, prayer, status);
+    ManagerProductivity::updateDailyPrayer(userId, date, prayer, status);
     notifyObservers(DataType::Habits);
 }
 
 // ============ Habits ============
-QVector<Habit *> AcadenceManager::getHabits(int userId) { return ManagerHabits::getHabits(userId); }
+std::vector<std::unique_ptr<Habit>> AcadenceManager::getHabits(int userId) { return ManagerProductivity::getHabits(userId); }
 void AcadenceManager::addHabit(Habit *h)
 {
-    ManagerHabits::addHabit(h);
+    ManagerProductivity::addHabit(h);
     notifyObservers(DataType::Habits);
 }
 void AcadenceManager::updateHabit(Habit *h)
 {
-    ManagerHabits::updateHabit(h);
+    ManagerProductivity::updateHabit(h);
     notifyObservers(DataType::Habits);
 }
 void AcadenceManager::deleteHabit(int id)
 {
-    ManagerHabits::deleteHabit(id);
+    ManagerProductivity::deleteHabit(id);
     notifyObservers(DataType::Habits);
 }
 
 // ============ Routine ============
-QVector<RoutineSession> AcadenceManager::getRoutineForDay(QString day, int semester) { return ManagerRoutine::getRoutineForDay(day, semester); }
+QVector<RoutineSession> AcadenceManager::getRoutineForDay(QString day, int semester) { return ManagerProductivity::getRoutineForDay(day, semester); }
 void AcadenceManager::addRoutineItem(QString day, int serial, QString code, QString name, QString room, QString instructor, int semester)
 {
-    ManagerRoutine::addRoutineItem(day, serial, code, name, room, instructor, semester);
+    ManagerProductivity::addRoutineItem(day, serial, code, name, room, instructor, semester);
     notifyObservers(DataType::Routine);
 }
-QVector<RoutineAdjustment> AcadenceManager::getRoutineAdjustments() { return ManagerRoutine::getRoutineAdjustments(); }
+QVector<RoutineAdjustment> AcadenceManager::getRoutineAdjustments() { return ManagerProductivity::getRoutineAdjustments(); }
 void AcadenceManager::addRoutineAdjustment(const RoutineAdjustment &adj)
 {
-    ManagerRoutine::addRoutineAdjustment(adj);
+    ManagerProductivity::addRoutineAdjustment(adj);
     notifyObservers(DataType::Routine);
 }
-QVector<RoutineSession> AcadenceManager::getEffectiveRoutine(QDate date, int semester) { return ManagerRoutine::getEffectiveRoutine(date, semester); }
+QVector<RoutineSession> AcadenceManager::getEffectiveRoutine(QDate date, int semester) { return ManagerProductivity::getEffectiveRoutine(date, semester); }
 QVector<RescheduleOption> AcadenceManager::getRescheduleOptions(QDate originDate, int originSerial, int semester, QString originCode, QString originRoom, QString instructorName)
 {
-    return ManagerRoutine::getRescheduleOptions(originDate, originSerial, semester, originCode, originRoom, instructorName);
+    return ManagerProductivity::getRescheduleOptions(originDate, originSerial, semester, originCode, originRoom, instructorName);
 }
 
 // ============ Academics ============
-QVector<Course *> AcadenceManager::getTeacherCourses(int teacherId) { return ManagerAcademics::getTeacherCourses(teacherId); }
-Course *AcadenceManager::getCourse(int id) { return ManagerAcademics::getCourse(id); }
+std::vector<std::unique_ptr<Course>> AcadenceManager::getTeacherCourses(int teacherId) { return ManagerAcademics::getTeacherCourses(teacherId); }
+std::unique_ptr<Course> AcadenceManager::getCourse(int id) { return ManagerAcademics::getCourse(id); }
 QVector<Assessment> AcadenceManager::getAssessments() { return ManagerAcademics::getAssessments(); }
 QVector<Assessment> AcadenceManager::getTeacherAssessments(int teacherId) { return ManagerAcademics::getTeacherAssessments(teacherId); }
 QVector<Assessment> AcadenceManager::getStudentAssessments(int studentId) { return ManagerAcademics::getStudentAssessments(studentId); }
@@ -272,8 +269,8 @@ void AcadenceManager::addAssessment(int courseId, QString title, QString type, Q
     ManagerAcademics::addAssessment(courseId, title, type, date, maxMarks);
     notifyObservers(DataType::Academics);
 }
-QVector<Student *> AcadenceManager::getStudentsByEnrollment(int courseId) { return ManagerAcademics::getStudentsByEnrollment(courseId); }
-QVector<Student *> AcadenceManager::getStudentsBySemester(int semester) { return ManagerAcademics::getStudentsBySemester(semester); }
+std::vector<std::unique_ptr<Student>> AcadenceManager::getStudentsByEnrollment(int courseId) { return ManagerAcademics::getStudentsByEnrollment(courseId); }
+std::vector<std::unique_ptr<Student>> AcadenceManager::getStudentsBySemester(int semester) { return ManagerAcademics::getStudentsBySemester(semester); }
 QVector<AttendanceRecord> AcadenceManager::getStudentAttendance(int studentId) { return ManagerAcademics::getStudentAttendance(studentId); }
 QVector<QString> AcadenceManager::getCourseDates(int courseId) { return ManagerAcademics::getCourseDates(courseId); }
 bool AcadenceManager::isPresent(int courseId, int studentId, QString date) { return ManagerAcademics::isPresent(courseId, studentId, date); }
@@ -292,55 +289,55 @@ QMap<int, double> AcadenceManager::getGradesForAssessment(int assessmentId) { re
 QSet<QString> AcadenceManager::getPresenceSet(int courseId) { return ManagerAcademics::getPresenceSet(courseId); }
 
 // ============ Queries ============
-QVector<Query> AcadenceManager::getQueries(int userId, QString role) { return ManagerQueries::getQueries(userId, role); }
+QVector<Query> AcadenceManager::getQueries(int userId, QString role) { return ManagerCommunity::getQueries(userId, role); }
 void AcadenceManager::addQuery(int userId, int teacherId, QString question)
 {
-    ManagerQueries::addQuery(userId, teacherId, question);
+    ManagerCommunity::addQuery(userId, teacherId, question);
     notifyObservers(DataType::Queries);
 }
 void AcadenceManager::answerQuery(int queryId, QString answer)
 {
-    ManagerQueries::answerQuery(queryId, answer);
+    ManagerCommunity::answerQuery(queryId, answer);
     notifyObservers(DataType::Queries);
 }
-QVector<QPair<int, QString>> AcadenceManager::getTeacherList() { return ManagerQueries::getTeacherList(); }
+QVector<QPair<int, QString>> AcadenceManager::getTeacherList() { return ManagerCommunity::getTeacherList(); }
 
 // ============ Personal Messages ============
-QVector<PersonalMessage> AcadenceManager::getMessages(int userId) { return ManagerMessages::getMessages(userId); }
-int AcadenceManager::getUnreadMessageCount(int userId) { return ManagerMessages::getUnreadCount(userId); }
+QVector<PersonalMessage> AcadenceManager::getMessages(int userId) { return ManagerCommunity::getMessages(userId); }
+int AcadenceManager::getUnreadMessageCount(int userId) { return ManagerCommunity::getUnreadCount(userId); }
 void AcadenceManager::sendMessage(int senderId, const QString &senderRole, int receiverId,
                                   const QString &subject, const QString &content)
 {
-    ManagerMessages::sendMessage(senderId, senderRole, receiverId, subject, content);
+    ManagerCommunity::sendMessage(senderId, senderRole, receiverId, subject, content);
     notifyObservers(DataType::Messages);
 }
 void AcadenceManager::markMessageRead(int messageId)
 {
-    ManagerMessages::markRead(messageId);
+    ManagerCommunity::markRead(messageId);
     notifyObservers(DataType::Messages);
 }
 void AcadenceManager::deleteMessage(int messageId)
 {
-    ManagerMessages::deleteMessage(messageId);
+    ManagerCommunity::deleteMessage(messageId);
     notifyObservers(DataType::Messages);
 }
 
 // ============ Lost & Found ============
-QVector<LostFoundPost> AcadenceManager::getLostFoundPosts() { return ManagerLostFound::getPosts(); }
+QVector<LostFoundPost> AcadenceManager::getLostFoundPosts() { return ManagerCommunity::getPosts(); }
 void AcadenceManager::addLostFoundPost(int posterId, const QString &posterName, const QString &posterRole,
-                                        const QString &type, const QString &itemName, const QString &description,
-                                        const QString &location)
+                                       const QString &type, const QString &itemName, const QString &description,
+                                       const QString &location)
 {
-    ManagerLostFound::addPost(posterId, posterName, posterRole, type, itemName, description, location);
+    ManagerCommunity::addPost(posterId, posterName, posterRole, type, itemName, description, location);
     notifyObservers(DataType::LostFound);
 }
 void AcadenceManager::claimLostFoundPost(int postId, const QString &claimerName)
 {
-    ManagerLostFound::claimPost(postId, claimerName);
+    ManagerCommunity::claimPost(postId, claimerName);
     notifyObservers(DataType::LostFound);
 }
 void AcadenceManager::deleteLostFoundPost(int postId)
 {
-    ManagerLostFound::deletePost(postId);
+    ManagerCommunity::deletePost(postId);
     notifyObservers(DataType::LostFound);
 }

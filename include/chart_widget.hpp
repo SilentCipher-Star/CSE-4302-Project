@@ -8,6 +8,7 @@
 #include <QPair>
 #include <QString>
 #include <QColor>
+#include "theme.hpp"
 
 class BarChartWidget : public QWidget
 {
@@ -21,12 +22,16 @@ public:
 
     void setData(const QVector<QPair<QString, double>> &data, double maxValue = 100.0)
     {
-        m_data    = data;
+        m_data = data;
         m_maxValue = maxValue > 0 ? maxValue : 100.0;
         update();
     }
 
-    void setBarColor(const QColor &color) { m_barColor = color; update(); }
+    void setBarColor(const QColor &color)
+    {
+        m_barColor = color;
+        update();
+    }
 
 protected:
     void paintEvent(QPaintEvent *) override
@@ -35,7 +40,7 @@ protected:
         p.setRenderHint(QPainter::Antialiasing);
 
         const int ml = 50, mr = 16, mt = 24, mb = 64;
-        const int chartW = width()  - ml - mr;
+        const int chartW = width() - ml - mr;
         const int chartH = height() - mt - mb;
 
         p.fillRect(rect(), palette().window());
@@ -47,8 +52,8 @@ protected:
             return;
         }
 
-        // Grid lines + Y labels
-        p.setFont(QFont("Segoe UI", 8));
+        // Overlay percent divisions
+        p.setFont(QFont(AppFonts::Family, 8));
         for (int i = 0; i <= 4; ++i)
         {
             int y = mt + chartH - chartH * i / 4;
@@ -60,17 +65,17 @@ protected:
                        QString::number(m_maxValue * i / 4, 'f', 0) + "%");
         }
 
-        // Bars
-        const int n          = m_data.size();
-        const int spacing    = 12;
-        const int barW       = qMax(24, (chartW - spacing * (n + 1)) / n);
+        // Calculate proportions and render columns
+        const int n = m_data.size();
+        const int spacing = 12;
+        const int barW = qMax(24, (chartW - spacing * (n + 1)) / n);
 
         for (int i = 0; i < n; ++i)
         {
-            double val  = qBound(0.0, m_data[i].second, m_maxValue);
-            int    barH = static_cast<int>(chartH * val / m_maxValue);
-            int    x    = ml + spacing + i * (barW + spacing);
-            int    y    = mt + chartH - barH;
+            double val = qBound(0.0, m_data[i].second, m_maxValue);
+            int barH = static_cast<int>(chartH * val / m_maxValue);
+            int x = ml + spacing + i * (barW + spacing);
+            int y = mt + chartH - barH;
 
             QLinearGradient grad(x, y, x, y + barH);
             grad.setColorAt(0, m_barColor.lighter(130));
@@ -80,23 +85,23 @@ protected:
             path.addRoundedRect(x, y, barW, barH, 6, 6);
             p.fillPath(path, grad);
 
-            // Value label
+            // Superimpose specific percentage metric
             p.setPen(palette().text().color());
-            p.setFont(QFont("Segoe UI", 8, QFont::Bold));
+            p.setFont(QFont(AppFonts::Family, 8, QFont::Bold));
             p.drawText(x, y - 18, barW, 16, Qt::AlignCenter,
                        QString::number(m_data[i].second, 'f', 1) + "%");
 
-            // X label (rotated)
+            // Draw slanted title descriptors below zero bounds
             p.save();
             p.translate(x + barW / 2, mt + chartH + 10);
             p.rotate(30);
-            p.setFont(QFont("Segoe UI", 8));
+            p.setFont(QFont(AppFonts::Family, 8));
             p.setPen(palette().text().color());
             p.drawText(0, 0, 130, 18, Qt::AlignLeft, m_data[i].first);
             p.restore();
         }
 
-        // Axes
+        // Print bounding axis outlines
         p.setPen(QPen(palette().text().color(), 2));
         p.drawLine(ml, mt, ml, mt + chartH);
         p.drawLine(ml, mt + chartH, ml + chartW, mt + chartH);

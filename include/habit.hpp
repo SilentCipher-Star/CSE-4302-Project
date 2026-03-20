@@ -18,7 +18,7 @@ enum class Frequency
 
 class Habit
 {
-public:
+protected:
     int id;
     int studentId;
     QString name;
@@ -28,8 +28,23 @@ public:
     QDate lastUpdated;
     bool isCompleted;
 
+public:
     Habit(int id, int sid, QString n, HabitType t, Frequency f);
     virtual ~Habit() = default;
+
+    int getId() const { return id; }
+    void setId(int newId) { id = newId; }
+    int getStudentId() const { return studentId; }
+    QString getName() const { return name; }
+    HabitType getType() const { return type; }
+    Frequency getFrequency() const { return frequency; }
+
+    int getStreak() const { return streak; }
+    void setStreak(int s) { streak = s; }
+    QDate getLastUpdated() const { return lastUpdated; }
+    void setLastUpdated(const QDate &d) { lastUpdated = d; }
+    bool getIsCompleted() const { return isCompleted; }
+    void setIsCompleted(bool c) { isCompleted = c; }
 
     virtual QString getProgressString() const = 0;
     virtual QString serializeValue() const = 0;
@@ -42,11 +57,18 @@ public:
 
 class DurationHabit : public virtual Habit
 {
-public:
+protected:
     int targetMinutes;
     double currentMinutes;
 
+public:
     DurationHabit(int id, int sid, QString n, Frequency f, int target);
+
+    int getTargetMinutes() const { return targetMinutes; }
+    double getCurrentMinutes() const { return currentMinutes; }
+    void setCurrentMinutes(double mins) { currentMinutes = mins; }
+    void addMinutes(double mins) { currentMinutes += mins; }
+
     QString getProgressString() const override;
     QString serializeValue() const override;
     void deserializeValue(const QString &val) override;
@@ -54,12 +76,20 @@ public:
 
 class CountHabit : public virtual Habit
 {
-public:
+protected:
     int targetCount;
     int currentCount;
     QString unit;
 
+public:
     CountHabit(int id, int sid, QString n, Frequency f, int target, QString u);
+
+    int getTargetCount() const { return targetCount; }
+    int getCurrentCount() const { return currentCount; }
+    void setCurrentCount(int count) { currentCount = count; }
+    void addCount(int count) { currentCount += count; }
+    QString getUnit() const { return unit; }
+
     QString getProgressString() const override;
     QString serializeValue() const override;
     void deserializeValue(const QString &val) override;

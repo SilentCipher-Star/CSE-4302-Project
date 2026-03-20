@@ -24,6 +24,8 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     include/assetmanager.hpp
     include/attendance_simulator.hpp
     include/chart_widget.hpp
+    include/command_history.hpp
+    include/commands.hpp
     include/course.hpp
     include/csvdelegate.hpp
     include/csvhandler.hpp
@@ -32,18 +34,15 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     include/exceptions.hpp
     include/gpa_strategy.hpp
     include/habit.hpp
+    include/icommand.hpp
     include/logindialog.hpp
     include/mainwindow.hpp
     include/manager_academics.hpp
     include/manager_auth.hpp
-    include/manager_habits.hpp
-    include/manager_messages.hpp
-    include/manager_notices.hpp
+    include/manager_community.hpp
     include/manager_persons.hpp
-    include/manager_prayers.hpp
-    include/manager_queries.hpp
-    include/manager_routine.hpp
-    include/manager_tasks.hpp
+    include/manager_productivity.hpp
+    include/models.hpp
     include/notice_decorators.hpp
     include/notifications.hpp
     include/person.hpp
@@ -54,13 +53,13 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     include/student_iterator.hpp
     include/teacher.hpp
     include/theme.hpp
-    include/theme_toggle.hpp
     include/timer.hpp
     include/ui_academics.hpp
     include/ui_admin.hpp
     include/ui_calendar.hpp
     include/ui_dashboard.hpp
     include/ui_habits.hpp
+    include/ui_lostfound.hpp
     include/ui_personal_inbox.hpp
     include/ui_planner.hpp
     include/ui_queries.hpp
@@ -75,6 +74,7 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/appmanager.cpp
     src/appmanager_analytics.cpp
     src/assetmanager.cpp
+    src/command_history.cpp
     src/course.cpp
     src/csvdelegate.cpp
     src/csvhandler.cpp
@@ -85,14 +85,9 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/mainwindow.cpp
     src/manager_academics.cpp
     src/manager_auth.cpp
-    src/manager_habits.cpp
-    src/manager_messages.cpp
-    src/manager_notices.cpp
+    src/manager_community.cpp
     src/manager_persons.cpp
-    src/manager_prayers.cpp
-    src/manager_queries.cpp
-    src/manager_routine.cpp
-    src/manager_tasks.cpp
+    src/manager_productivity.cpp
     src/person.cpp
     src/personfactory.cpp
     src/routine.cpp
@@ -103,17 +98,9 @@ add_executable(Acadence WIN32 MACOSX_BUNDLE
     src/ui_academics.cpp
     src/ui_admin.cpp
     src/ui_calendar.cpp
-    include/theme_toggle.hpp
-    include/icommand.hpp
-    include/command_history.hpp
-    src/command_history.cpp
-    include/commands.hpp
-    include/manager_lostfound.hpp
-    src/manager_lostfound.cpp
-    include/ui_lostfound.hpp
-    src/ui_lostfound.cpp
     src/ui_dashboard.cpp
     src/ui_habits.cpp
+    src/ui_lostfound.cpp
     src/ui_personal_inbox.cpp
     src/ui_planner.cpp
     src/ui_queries.cpp

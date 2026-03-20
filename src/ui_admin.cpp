@@ -55,6 +55,14 @@ void UIAdmin::onTableComboBoxChanged(const QString &tableName)
     {
         QMessageBox::warning(nullptr, "Load Error", e.what());
     }
+    catch (const std::exception &e)
+    {
+        QMessageBox::warning(nullptr, "Load Error", QString("Standard exception:\n%1").arg(e.what()));
+    }
+    catch (...)
+    {
+        QMessageBox::warning(nullptr, "Load Error", "Unknown error loading table.");
+    }
     for (const auto &row : data)
     {
         QList<QStandardItem *> items;

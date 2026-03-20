@@ -9,13 +9,15 @@ QMap<QString, QVector<QStringList>> CsvHandler::m_cache;
 
 QString CsvHandler::getDataDirectory()
 {
-    QString path = QCoreApplication::applicationDirPath() + "/../assets/data";
-    QDir dir(path);
-    if (!dir.exists())
+    static QString path = []()
     {
-        dir.mkpath(".");
-    }
-    return path + "/";
+        QString p = QCoreApplication::applicationDirPath() + "/../assets/data";
+        QDir dir(p);
+        if (!dir.exists())
+            dir.mkpath(".");
+        return p + "/";
+    }();
+    return path;
 }
 
 QVector<QStringList> CsvHandler::readCsv(const QString &filename)

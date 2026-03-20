@@ -57,6 +57,7 @@ ui_*.h
 
 # Build Directories
 build/
+build-*/
 bin/
 debug/
 release/

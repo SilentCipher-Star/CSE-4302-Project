@@ -22,7 +22,7 @@ void UIRoutine::refreshRoutine()
     int semester = -1;
     if (userRole == Constants::Role::Student)
     {
-        std::unique_ptr<Student> s(myManager->getStudent(userId));
+        auto s = myManager->getStudent(userId);
         if (s)
         {
             semester = s->getSemester();
@@ -62,13 +62,12 @@ void UIRoutine::refreshTeacherRoutine()
 
     if (userRole == Constants::Role::Teacher)
     {
-        QVector<Course *> courses = myManager->getTeacherCourses(userId);
+        auto courses = myManager->getTeacherCourses(userId);
         QStringList myCodes;
-        for (Course *c : courses)
+        for (const auto &c : courses)
         {
             myCodes << c->getCode();
         }
-        qDeleteAll(courses);
 
         QVector<RoutineSession> filtered;
         for (const auto &item : items)

@@ -12,6 +12,7 @@
 #include <QScrollBar>
 #include <algorithm>
 #include <memory>
+#include "../include/commands.hpp"
 
 TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int teacherId, QWidget *parent)
     : QDialog(parent), myManager(manager), teacherId(teacherId)
@@ -24,13 +25,13 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
     mainLayout->setSpacing(8);
     mainLayout->setContentsMargins(12, 12, 12, 12);
 
-    // ── Title ──
+    // Add title for the dialog
     QLabel *title = new QLabel("Daily Attendance Sheet");
     title->setStyleSheet(QString("font-size: %1px; font-weight: bold; padding: 4px 0;").arg(AppFonts::Large));
     title->setAlignment(Qt::AlignCenter);
     mainLayout->addWidget(title);
 
-    // ── Top bar: course selector + classes held ──
+    // Layout for course selection and class statistics
     QHBoxLayout *topBar = new QHBoxLayout();
 
     topBar->addWidget(new QLabel("Course:"));
@@ -51,7 +52,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     mainLayout->addLayout(topBar);
 
-    // ── Week navigation ──
+    // Controls to navigate between weeks
     QHBoxLayout *navBar = new QHBoxLayout();
 
     btnPrevWeek = new QPushButton("<<  Prev Week");
@@ -71,13 +72,13 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     mainLayout->addLayout(navBar);
 
-    // ── Separator ──
+    // Visual separator
     QFrame *sep = new QFrame();
     sep->setFrameShape(QFrame::HLine);
     sep->setStyleSheet("color: #444;");
     mainLayout->addWidget(sep);
 
-    // ── Action buttons row ──
+    // Buttons to manipulate attendance data
     QHBoxLayout *actionBar = new QHBoxLayout();
 
     btnAddToday = new QPushButton("+ Add Today's Class");
@@ -107,7 +108,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
     actionBar->addStretch();
     mainLayout->addLayout(actionBar);
 
-    // ── Legend ──
+    // Legend indicating cell color meanings
     QHBoxLayout *legendRow = new QHBoxLayout();
     auto addLegend = [&](const QString &bgColor, const QString &text)
     {
@@ -129,7 +130,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
     legendRow->addWidget(hint);
     mainLayout->addLayout(legendRow);
 
-    // ── Table ──
+    // Setup main attendance grid
     table = new QTableWidget();
     table->setSelectionMode(QAbstractItemView::SingleSelection);
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -143,7 +144,7 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
                              .arg(AppFonts::Small));
     mainLayout->addWidget(table, 1);
 
-    // ── Bottom bar ──
+    // Bottom controls for exporting and saving
     QHBoxLayout *btnBar = new QHBoxLayout();
 
     btnExport = new QPushButton("Export CSV");
@@ -163,15 +164,14 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
 
     mainLayout->addLayout(btnBar);
 
-    // ── Populate courses ──
-    QVector<Course *> courses = myManager->getTeacherCourses(teacherId);
-    for (auto *c : courses)
+    // Fill dropdown with assigned courses
+    auto courses = myManager->getTeacherCourses(teacherId);
+    for (const auto &c : courses)
     {
         comboCourse->addItem(c->getCode() + " - " + c->getName(), c->getId());
     }
-    qDeleteAll(courses);
 
-    // ── Connections ──
+    // Connect UI events
     connect(comboCourse, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TeacherAttendanceDialog::onCourseChanged);
     connect(table, &QTableWidget::cellClicked, this, &TeacherAttendanceDialog::onCellClicked);
     connect(table->horizontalHeader(), &QHeaderView::sectionClicked, this, &TeacherAttendanceDialog::onHeaderClicked);
@@ -187,17 +187,14 @@ TeacherAttendanceDialog::TeacherAttendanceDialog(AcadenceManager *manager, int t
     connect(btnExport, &QPushButton::clicked, this, &TeacherAttendanceDialog::onExportClicked);
     connect(btnClose, &QPushButton::clicked, this, &QDialog::accept);
 
-    // ── Initial load ──
+    // Trigger initial population
     if (comboCourse->count() > 0)
         onCourseChanged(0);
 }
 
 TeacherAttendanceDialog::~TeacherAttendanceDialog()
 {
-    qDeleteAll(students);
 }
-
-// ─── Helpers ──────────────────────────────────────────────────
 
 int TeacherAttendanceDialog::visibleDateCount() const
 {
@@ -229,8 +226,6 @@ QVector<QString> TeacherAttendanceDialog::visibleDates() const
     return result;
 }
 
-// ─── Build the spreadsheet table ─────────────────────────────
-
 void TeacherAttendanceDialog::buildTable()
 {
     table->clear();
@@ -258,10 +253,10 @@ void TeacherAttendanceDialog::buildTable()
     table->setHorizontalHeaderLabels(headers);
     table->setRowCount(students.size());
 
-    // Header row height for multi-line date headers
+    // Ensure headers fit multiple lines
     table->horizontalHeader()->setMinimumHeight(40);
 
-    // Set column widths
+    // Apply appropriate column widths
     table->setColumnWidth(0, 50);  // ID
     table->setColumnWidth(1, 160); // Name
     for (int j = 0; j < dateCols; ++j)
@@ -274,19 +269,19 @@ void TeacherAttendanceDialog::buildTable()
         int sid = students[i]->getId();
         QString name = students[i]->getName().trimmed();
 
-        // ID column
+        // Populate student ID
         QTableWidgetItem *idItem = new QTableWidgetItem(QString::number(sid));
         idItem->setTextAlignment(Qt::AlignCenter);
         table->setItem(i, 0, idItem);
 
-        // Name column
+        // Populate student name
         QTableWidgetItem *nameItem = new QTableWidgetItem(name);
         table->setItem(i, 1, nameItem);
 
-        // Visible date columns with clickable P/A cells
+        // Add clickable presence indicators
         for (int j = 0; j < dateCols; ++j)
         {
-            bool present = myManager->isPresent(currentCourseId, sid, dates[j]);
+            bool present = currentPresenceSet.contains(QString::number(sid) + "_" + dates[j]);
 
             QTableWidgetItem *cell = new QTableWidgetItem(present ? "P" : "A");
             cell->setTextAlignment(Qt::AlignCenter);
@@ -302,7 +297,7 @@ void TeacherAttendanceDialog::buildTable()
             colorCell(i, 2 + j, present);
         }
 
-        // Calculate absent stats across ALL dates (not just visible)
+        // Compute absence statistics across the whole dataset
         recalcRowStats(i);
     }
 
@@ -310,7 +305,7 @@ void TeacherAttendanceDialog::buildTable()
 
     updateStatsLabel();
 
-    // Update week navigation label
+    // Render display range label for active dates
     if (!dates.isEmpty())
     {
         QDate first = QDate::fromString(dates.first(), "yyyy-MM-dd");
@@ -327,7 +322,7 @@ void TeacherAttendanceDialog::buildTable()
         lblWeekRange->setText("No class dates yet - click 'Add Today's Class' to start");
     }
 
-    // Enable/disable navigation buttons
+    // Toggle pagination limits based on boundaries
     int maxOffset = allDates.isEmpty() ? 0 : (allDates.size() - 1) / datesPerPage;
     btnPrevWeek->setEnabled(weekOffset < maxOffset);
     btnNextWeek->setEnabled(weekOffset > 0);
@@ -370,20 +365,20 @@ void TeacherAttendanceDialog::recalcRowStats(int row)
         int visIdx = visDates.indexOf(d);
         if (visIdx >= 0)
         {
-            // Use the table cell's current state
+            // Query visible cell presence state
             QTableWidgetItem *c = table->item(row, 2 + visIdx);
             if (c && !c->data(Qt::UserRole + 2).toBool())
                 totalAbsent++;
         }
         else
         {
-            // Use saved data
-            if (!myManager->isPresent(currentCourseId, sid, d))
+            // Retrieve from backing cache for dates off-screen
+            if (!currentPresenceSet.contains(QString::number(sid) + "_" + d))
                 totalAbsent++;
         }
     }
 
-    // Absent count column
+    // Record total absence count
     QTableWidgetItem *absentItem = table->item(row, 2 + dateCols);
     if (!absentItem)
     {
@@ -397,7 +392,7 @@ void TeacherAttendanceDialog::recalcRowStats(int row)
     absentItem->setFont(abf);
     absentItem->setForeground(totalAbsent > 0 ? QColor(220, 20, 60) : QColor(34, 168, 90));
 
-    // Absent % column
+    // Derive absence percentage ratio
     double absentPct = allDates.isEmpty() ? 0.0 : (double)totalAbsent / allDates.size() * 100.0;
     QTableWidgetItem *pctItem = table->item(row, 2 + dateCols + 1);
     if (!pctItem)
@@ -421,13 +416,13 @@ void TeacherAttendanceDialog::recalcRowStats(int row)
 
 void TeacherAttendanceDialog::updateStatsLabel()
 {
-    if (students.isEmpty() || allDates.isEmpty())
+    if (students.empty() || allDates.isEmpty())
     {
         lblStats->setText("Students: 0");
         return;
     }
 
-    // Count students below 75% attendance
+    // Compute total occurrences of low attendance
     QVector<QString> visDates = visibleDates();
     int lowCount = 0;
     for (int i = 0; i < students.size(); ++i)
@@ -445,7 +440,7 @@ void TeacherAttendanceDialog::updateStatsLabel()
             }
             else
             {
-                if (!myManager->isPresent(currentCourseId, sid, d))
+                if (!currentPresenceSet.contains(QString::number(sid) + "_" + d))
                     totalAbsent++;
             }
         }
@@ -465,11 +460,8 @@ void TeacherAttendanceDialog::updateStatsLabel()
         lblStats->setStyleSheet(QString("font-size: %1px; font-weight: bold; color: #22a85a;").arg(AppFonts::Small));
 }
 
-// ─── Slots ────────────────────────────────────────────────────
-
 void TeacherAttendanceDialog::onCourseChanged(int index)
 {
-    qDeleteAll(students);
     students.clear();
     allDates.clear();
     weekOffset = 0;
@@ -481,25 +473,26 @@ void TeacherAttendanceDialog::onCourseChanged(int index)
     if (currentCourseId <= 0)
         return;
 
-    std::unique_ptr<Course> c(myManager->getCourse(currentCourseId));
+    auto c = myManager->getCourse(currentCourseId);
     if (!c)
         return;
 
     students = myManager->getStudentsByEnrollment(currentCourseId);
 
-    // If no enrollments, fall back to semester-based students
-    if (students.isEmpty())
+    // Fallback to general semester filtering when no explicit enrollments exist
+    if (students.empty())
         students = myManager->getStudentsBySemester(c->getSemester());
 
     allDates = myManager->getCourseDates(currentCourseId);
     std::sort(allDates.begin(), allDates.end());
+    currentPresenceSet = myManager->getPresenceSet(currentCourseId);
 
     buildTable();
 }
 
 void TeacherAttendanceDialog::onCellClicked(int row, int col)
 {
-    // Only respond to clicks on date columns
+    // Prevent actions on non-editable indicator columns
     int dateCols = visibleDateCount();
     if (col < 2 || col >= 2 + dateCols)
         return;
@@ -524,13 +517,13 @@ void TeacherAttendanceDialog::onHeaderClicked(int logicalIndex)
     if (logicalIndex >= 2 && logicalIndex < 2 + dateCols)
     {
         selectedDateCol = logicalIndex;
-        // Visual feedback - briefly highlight the column
+        // Visually highlight the target column
         for (int i = 0; i < table->rowCount(); ++i)
         {
             QTableWidgetItem *cell = table->item(i, logicalIndex);
             if (cell)
             {
-                // Keep existing color but add selection indicator in the border
+                // Retain existing indicator color and outline item selection
                 cell->setSelected(true);
             }
         }
@@ -587,14 +580,14 @@ void TeacherAttendanceDialog::onAddTodayClicked()
         return;
     }
 
-    // Mark all students absent initially for today
-    for (auto *s : students)
+    // Default to absent when instantiating new class columns
+    for (const auto &s : students)
         myManager->markAttendance(currentCourseId, s->getId(), today, false);
 
     allDates.append(today);
     std::sort(allDates.begin(), allDates.end());
 
-    // Jump to latest page
+    // Snap view to the end of the timeline
     weekOffset = 0;
     buildTable();
 
@@ -675,6 +668,7 @@ void TeacherAttendanceDialog::onSaveClicked()
 
     QVector<QString> visDates = visibleDates();
     int dateCols = visDates.size();
+    QVector<ManagerAcademics::AttendanceUpdate> attUpdates;
 
     for (int i = 0; i < table->rowCount(); ++i)
     {
@@ -685,16 +679,28 @@ void TeacherAttendanceDialog::onSaveClicked()
             if (!cell)
                 continue;
             bool present = cell->data(Qt::UserRole + 2).toBool();
-            myManager->markAttendance(currentCourseId, sid, visDates[j], present);
+            attUpdates.append({sid, visDates[j], present});
+
+            // Manually refresh local memory structure to ensure cross-page cohesion
+            QString key = QString::number(sid) + "_" + visDates[j];
+            if (present)
+                currentPresenceSet.insert(key);
+            else
+                currentPresenceSet.remove(key);
         }
     }
 
+    if (!attUpdates.isEmpty())
+    {
+        auto batch = std::make_shared<BatchMarkAttendanceCommand>(currentCourseId, attUpdates);
+        myManager->executeCommand(batch);
+    }
     QMessageBox::information(this, "Saved", "Attendance saved successfully!");
 }
 
 void TeacherAttendanceDialog::onExportClicked()
 {
-    if (currentCourseId <= 0 || students.isEmpty())
+    if (currentCourseId <= 0 || students.empty())
         return;
 
     QString courseName = comboCourse->currentText().replace(" ", "_");
@@ -712,18 +718,18 @@ void TeacherAttendanceDialog::onExportClicked()
 
     QTextStream out(&file);
 
-    // Course info header
+    // Dump metadata summary preamble
     out << "Course:," << comboCourse->currentText() << "\n";
     out << "Number of Classes Held:," << allDates.size() << "\n";
     out << "Total Students:," << students.size() << "\n\n";
 
-    // Column header
+    // Print CSV fields legend
     out << "ID,Name";
     for (const QString &d : allDates)
         out << "," << d;
     out << ",Total Present,Total Absent,Absent %,Attendance %\n";
 
-    // Data rows
+    // Aggregate student performance lines
     QVector<QString> visDates = visibleDates();
     for (int i = 0; i < students.size(); ++i)
     {
@@ -742,7 +748,7 @@ void TeacherAttendanceDialog::onExportClicked()
             }
             else
             {
-                present = myManager->isPresent(currentCourseId, sid, d);
+                present = currentPresenceSet.contains(QString::number(sid) + "_" + d);
             }
 
             out << "," << (present ? "P" : "A");

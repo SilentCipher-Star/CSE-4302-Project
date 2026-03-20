@@ -7,6 +7,8 @@
 #include <QDateEdit>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QDebug>
+#include <exception>
 
 CsvDelegate::CsvDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
 
@@ -238,8 +240,14 @@ void CsvDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
                     {
                         data = CsvHandler::readCsv(table + ".csv");
                     }
+                    catch (const std::exception &e)
+                    {
+                        qWarning() << "Validation check: failed to read" << table << "CSV:" << e.what();
+                        continue;
+                    }
                     catch (...)
                     {
+                        qWarning() << "Validation check: unknown error reading" << table << "CSV.";
                         continue;
                     }
                     for (const auto &row : data)

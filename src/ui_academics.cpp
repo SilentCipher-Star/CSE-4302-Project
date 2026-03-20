@@ -35,7 +35,7 @@
 
 namespace
 {
-    // Helper to fetch assessment details to avoid duplicating this logic.
+    // Extract specific course data avoiding repetitive index lookups
     struct AssessmentDetails
     {
         int courseId = -1;
@@ -269,13 +269,12 @@ void UIAcademics::refreshTeacherTools()
 {
     ui->comboTeacherCourse->clear();
     ui->comboAttendanceCourse->clear();
-    QVector<Course *> courses = myManager->getTeacherCourses(userId);
-    for (auto c : courses)
+    auto courses = myManager->getTeacherCourses(userId);
+    for (const auto &c : courses)
     {
         ui->comboTeacherCourse->addItem(c->getName(), c->getId());
         ui->comboAttendanceCourse->addItem(c->getCode() + " - " + c->getName(), c->getId());
     }
-    qDeleteAll(courses);
 
     ui->comboTeacherAssessment->clear();
     QVector<Assessment> assessments = myManager->getTeacherAssessments(userId);
@@ -318,19 +317,19 @@ void UIAcademics::refreshTeacherGrades()
     if (!details.isValid())
         return;
 
-    std::unique_ptr<Course> c(myManager->getCourse(details.courseId));
+    auto c = myManager->getCourse(details.courseId);
 
-    QVector<Student *> students;
+    std::vector<std::unique_ptr<Student>> students;
     if (c)
     {
         students = myManager->getStudentsBySemester(c->getSemester());
     }
 
     StudentCollection collection;
-    for (auto *s : students)
-        collection.add(s);
+    for (const auto &s : students)
+        collection.add(s.get());
 
-    // Optimization: Bulk fetch grades for this assessment
+    // Fetch complete grade list in single transaction
     QMap<int, double> gradeMap = myManager->getGradesForAssessment(assessmentId);
 
     StudentIterator iter = collection.createIterator();
@@ -347,7 +346,6 @@ void UIAcademics::refreshTeacherGrades()
         ui->tableGrading->setItem(i, 2, new QTableWidgetItem(gradeStr));
         ++i;
     }
-    qDeleteAll(students);
     ui->tableGrading->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
@@ -365,7 +363,7 @@ void UIAcademics::onSaveGradesClicked()
     const int maxMarks = details.maxMarks;
     const int courseId = details.courseId;
 
-    std::unique_ptr<Course> course(myManager->getCourse(courseId));
+    auto course = myManager->getCourse(courseId);
     if (!course || course->getTeacherId() != userId)
     {
         QMessageBox::warning(nullptr, "Permission Denied", "You don't have permission to grade this assessment.");
@@ -373,7 +371,7 @@ void UIAcademics::onSaveGradesClicked()
     }
 
     int rows = ui->tableGrading->rowCount();
-    QVector<CommandPtr> gradeCommands;
+    QVector<ManagerAcademics::GradeUpdate> gradeUpdates;
 
     for (int i = 0; i < rows; ++i)
     {
@@ -389,12 +387,12 @@ void UIAcademics::onSaveGradesClicked()
             return;
         }
 
-        gradeCommands.append(std::make_shared<AddGradeCommand>(sid, assessmentId, marks));
+        gradeUpdates.append({sid, marks});
     }
 
-    if (!gradeCommands.isEmpty())
+    if (!gradeUpdates.isEmpty())
     {
-        auto batch = std::make_shared<BatchCommand>(gradeCommands, "Save grades", DataType::Academics);
+        auto batch = std::make_shared<BatchAddGradeCommand>(assessmentId, gradeUpdates);
         myManager->executeCommand(batch);
     }
     QMessageBox::information(nullptr, "Success", "Grades Saved");
@@ -412,11 +410,11 @@ void UIAcademics::refreshTeacherAttendance()
     {
         return;
     }
-    std::unique_ptr<Course> c(myManager->getCourse(courseId));
+    auto c = myManager->getCourse(courseId);
     if (!c)
         return;
 
-    QVector<Student *> students = myManager->getStudentsBySemester(c->getSemester());
+    auto students = myManager->getStudentsBySemester(c->getSemester());
     QVector<QString> dates = myManager->getCourseDates(courseId);
 
     QStringList headers;
@@ -428,7 +426,7 @@ void UIAcademics::refreshTeacherAttendance()
     ui->tableAttendance->setHorizontalHeaderLabels(headers);
     ui->tableAttendance->setRowCount(students.size());
 
-    // Optimization: Bulk fetch attendance presence
+    // Retrieve aggregated presence hashes
     QSet<QString> presenceSet = myManager->getPresenceSet(courseId);
 
     for (int i = 0; i < students.size(); ++i)
@@ -459,7 +457,6 @@ void UIAcademics::refreshTeacherAttendance()
         ui->tableAttendance->setItem(i, 3, new QTableWidgetItem(QString::number(presentCount) + "/" + QString::number(dates.size())));
     }
 
-    qDeleteAll(students);
     QTimer::singleShot(0, [this]()
                        { ui->tableAttendance->adjustColumnWidths(); });
 }
@@ -495,21 +492,20 @@ void UIAcademics::onAddClassDateClicked()
         return;
     }
 
-    std::unique_ptr<Course> c(myManager->getCourse(courseId));
+    auto c = myManager->getCourse(courseId);
     if (!c)
         return;
 
-    QVector<Student *> students = myManager->getStudentsBySemester(c->getSemester());
-    QVector<CommandPtr> attCommands;
-    for (auto s : students)
+    auto students = myManager->getStudentsBySemester(c->getSemester());
+    QVector<ManagerAcademics::AttendanceUpdate> attUpdates;
+    for (const auto &s : students)
     {
-        attCommands.append(std::make_shared<MarkAttendanceCommand>(courseId, s->getId(), inputDate, false));
+        attUpdates.append({s->getId(), inputDate, false});
     }
-    qDeleteAll(students);
 
-    if (!attCommands.isEmpty())
+    if (!attUpdates.isEmpty())
     {
-        auto batch = std::make_shared<BatchCommand>(attCommands, "Add class date " + inputDate, DataType::Academics);
+        auto batch = std::make_shared<BatchMarkAttendanceCommand>(courseId, attUpdates);
         myManager->executeCommand(batch);
     }
 
@@ -716,9 +712,8 @@ void UIAcademics::onExportReportClicked()
     if (path.isEmpty())
         return;
 
-    Student *stu = myManager->getStudent(userId);
+    auto stu = myManager->getStudent(userId);
     QString studentName = stu ? stu->getName() : QString::number(userId);
-    delete stu;
 
     QVector<AttendanceRecord> att = myManager->getStudentAttendance(userId);
     QVector<Assessment> assessments = myManager->getStudentAssessments(userId);
@@ -774,7 +769,7 @@ void UIAcademics::onSendGradeReportsClicked()
     int assessmentId = ui->comboTeacherAssessment->currentData().toInt();
     QString assessName = ui->comboTeacherAssessment->currentText();
 
-    // Ask for optional note
+    // Capture manual teacher notes prior to mass report sending
     bool ok;
     QString note = QInputDialog::getMultiLineText(nullptr, "Send Grade Reports",
                                                   QString("Sending personal grade reports for:\n%1\n\nAdd an optional note to all students (leave empty for none):").arg(assessName),
@@ -793,9 +788,9 @@ void UIAcademics::onSendGradeReportsClicked()
 
 void UIAcademics::onSendPersonalMessageClicked()
 {
-    // Get list of courses to find students
-    QVector<Course *> courses = myManager->getTeacherCourses(userId);
-    if (courses.isEmpty())
+    // Validate teacher has classes before generating UI
+    auto courses = myManager->getTeacherCourses(userId);
+    if (courses.empty())
     {
         QMessageBox::warning(nullptr, "No Courses", "You have no courses assigned.");
         return;
@@ -807,48 +802,47 @@ void UIAcademics::onSendPersonalMessageClicked()
 
     QVBoxLayout *layout = new QVBoxLayout(&dlg);
 
-    // Course selection
+    // Initialize course dropdown
     layout->addWidget(new QLabel("Select Course:"));
     QComboBox *comboCourse = new QComboBox();
-    for (auto *c : courses)
+    for (const auto &c : courses)
         comboCourse->addItem(c->getCode() + " - " + c->getName(), c->getId());
     layout->addWidget(comboCourse);
 
-    // Student selection
+    // Initialize student selection layout
     layout->addWidget(new QLabel("Select Student:"));
     QComboBox *comboStudent = new QComboBox();
     layout->addWidget(comboStudent);
 
-    // Populate students when course changes
+    // Dynamically retrieve student IDs tied to course
     auto populateStudents = [&](int index)
     {
         comboStudent->clear();
         if (index < 0)
             return;
         int cid = comboCourse->currentData().toInt();
-        std::unique_ptr<Course> c(myManager->getCourse(cid));
+        auto c = myManager->getCourse(cid);
         if (!c)
             return;
 
-        QVector<Student *> students = myManager->getStudentsByEnrollment(cid);
-        if (students.isEmpty())
+        auto students = myManager->getStudentsByEnrollment(cid);
+        if (students.empty())
             students = myManager->getStudentsBySemester(c->getSemester());
 
         comboStudent->addItem("-- All Students --", -1);
-        for (auto *s : students)
+        for (const auto &s : students)
             comboStudent->addItem(QString("%1 - %2").arg(s->getId()).arg(s->getName()), s->getId());
-        qDeleteAll(students);
     };
     connect(comboCourse, QOverload<int>::of(&QComboBox::currentIndexChanged), populateStudents);
     populateStudents(0);
 
-    // Subject
+    // Generate simple subject line input
     layout->addWidget(new QLabel("Subject:"));
     QLineEdit *editSubject = new QLineEdit();
     editSubject->setPlaceholderText("e.g., Regarding your performance...");
     layout->addWidget(editSubject);
 
-    // Message body
+    // Generate extended text body editor
     layout->addWidget(new QLabel("Message:"));
     QTextEdit *editBody = new QTextEdit();
     editBody->setMinimumHeight(120);
@@ -860,8 +854,6 @@ void UIAcademics::onSendPersonalMessageClicked()
     layout->addWidget(bbox);
     connect(bbox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
     connect(bbox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-
-    qDeleteAll(courses);
 
     if (dlg.exec() != QDialog::Accepted)
         return;
@@ -878,42 +870,29 @@ void UIAcademics::onSendPersonalMessageClicked()
 
     if (targetStudentId == -1)
     {
-        // Send to all students in course
+        // Replicate message distribution for every registered student
         int cid = comboCourse->currentData().toInt();
-        std::unique_ptr<Course> c(myManager->getCourse(cid));
+        auto c = myManager->getCourse(cid);
         if (!c)
             return;
 
-        QVector<Student *> students = myManager->getStudentsByEnrollment(cid);
-        if (students.isEmpty())
+        auto students = myManager->getStudentsByEnrollment(cid);
+        if (students.empty())
             students = myManager->getStudentsBySemester(c->getSemester());
 
-        for (auto *s : students)
-            myManager->sendMessage(userId, "Teacher", s->getId(), subject, body);
-
-        int count = students.size();
-        qDeleteAll(students);
-        QMessageBox::information(nullptr, "Sent", QString("Message sent to %1 student(s).").arg(count));
+        for (const auto &s : students)
+            myManager->sendMessage(userId, userRole, s->getId(), subject, body);
     }
     else
     {
-        myManager->sendMessage(userId, "Teacher", targetStudentId, subject, body);
-        QMessageBox::information(nullptr, "Sent", "Message sent successfully!");
+        myManager->sendMessage(userId, userRole, targetStudentId, subject, body);
     }
+
+    QMessageBox::information(nullptr, "Success", "Message sent successfully.");
 }
 
 void UIAcademics::onOpenInboxClicked()
 {
-    PersonalInboxDialog dlg(myManager, userId, userRole, nullptr);
+    PersonalInboxDialog dlg(myManager, userId, nullptr);
     dlg.exec();
-
-    // Update inbox button text with unread count
-    int unread = myManager->getUnreadMessageCount(userId);
-    if (btnInbox)
-    {
-        if (unread > 0)
-            btnInbox->setText(QString("Inbox (%1)").arg(unread));
-        else
-            btnInbox->setText("Inbox");
-    }
 }

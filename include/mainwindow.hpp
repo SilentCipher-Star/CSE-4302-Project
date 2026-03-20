@@ -8,7 +8,6 @@
 #include "theme.hpp"
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
-#include "theme_toggle.hpp"
 
 // Forward declarations
 QT_BEGIN_NAMESPACE

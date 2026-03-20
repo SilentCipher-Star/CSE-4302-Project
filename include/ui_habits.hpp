@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QWidget>
+#include <memory>
+#include <vector>
 #include "appmanager.hpp"
 #include "habit.hpp"
 
@@ -42,6 +44,6 @@ private:
     AcadenceManager *myManager;
     int userId;
     Timer *m_workoutTimer;
-    QVector<Habit *> currentHabitList;
+    std::vector<std::unique_ptr<Habit>> currentHabitList;
     DurationHabit *activeTimerHabit;
 };

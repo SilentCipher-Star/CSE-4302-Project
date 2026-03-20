@@ -660,28 +660,26 @@ TamaStats UITamagotchi::computeStats()
     s.energy = m_energy;
 
     // Brain: CGPA
-    Student *stu = m_mgr->getStudent(m_userId);
+    auto stu = m_mgr->getStudent(m_userId);
     if (stu)
     {
         s.brain = (int)(stu->getCGPA() / 4.0 * 100.0);
-        delete stu;
     }
 
     // Health: habit streaks + completion
-    QVector<Habit *> habits = m_mgr->getHabits(m_userId);
-    if (!habits.isEmpty())
+    auto habits = m_mgr->getHabits(m_userId);
+    if (!habits.empty())
     {
         int totalStreak = 0, completed = 0;
-        for (auto h : habits)
+        for (const auto &h : habits)
         {
-            totalStreak += h->streak;
-            if (h->isCompleted)
+            totalStreak += h->getStreak();
+            if (h->getIsCompleted())
                 completed++;
         }
         double rate = (double)completed / habits.size();
         double avgS = qMin((double)totalStreak / habits.size() / 7.0, 1.0);
         s.health = (int)(rate * 55 + avgS * 45);
-        qDeleteAll(habits);
     }
 
     // Mood: prayers today

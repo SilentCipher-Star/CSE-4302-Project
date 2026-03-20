@@ -3,23 +3,19 @@
 #include "icommand.hpp"
 #include "appmanager.hpp"
 #include "manager_academics.hpp"
-#include "manager_tasks.hpp"
-#include "manager_notices.hpp"
+#include "manager_productivity.hpp"
+#include "manager_community.hpp"
 #include "csvhandler.hpp"
 #include <QVector>
 #include <algorithm>
 
 /**
- * Command Pattern - Concrete Commands
- *
- * Each class encapsulates one undoable operation.
- * Commands call the static Manager methods directly and
- * capture the old state needed for reversal.
+ * Concrete undoable actions wrapping calls to managers
  */
 
-// ============================================================================
-// MarkAttendanceCommand - Toggle a single student's attendance for a date
-// ============================================================================
+/**
+ * Updates a single student's presence status
+ */
 class MarkAttendanceCommand : public ICommand
 {
 public:
@@ -52,9 +48,9 @@ private:
     bool m_newPresent, m_oldPresent;
 };
 
-// ============================================================================
-// AddGradeCommand - Set or update a student's grade for an assessment
-// ============================================================================
+/**
+ * Overwrites score for specific student and test
+ */
 class AddGradeCommand : public ICommand
 {
 public:
@@ -73,7 +69,7 @@ public:
     {
         if (m_oldMarks < 0)
         {
-            // Grade didn't exist before — remove the row
+            // Delete generated grade row if original status was empty
             QVector<QStringList> data = CsvHandler::readCsv("grades.csv");
             QVector<QStringList> filtered;
             for (const auto &row : data)
@@ -102,9 +98,84 @@ private:
     double m_newMarks, m_oldMarks;
 };
 
-// ============================================================================
-// AddTaskCommand - Add a new task for a student
-// ============================================================================
+/**
+ * Processes sequential group attendance changes
+ */
+class BatchMarkAttendanceCommand : public ICommand
+{
+public:
+    BatchMarkAttendanceCommand(int courseId, const QVector<ManagerAcademics::AttendanceUpdate> &newUpdates)
+        : m_courseId(courseId), m_newUpdates(newUpdates)
+    {
+        for (const auto &u : newUpdates)
+        {
+            ManagerAcademics::AttendanceUpdate oldU;
+            oldU.studentId = u.studentId;
+            oldU.date = u.date;
+            oldU.present = ManagerAcademics::isPresent(courseId, u.studentId, u.date);
+            m_oldUpdates.append(oldU);
+        }
+    }
+
+    void execute() override
+    {
+        ManagerAcademics::markAttendanceBatch(m_courseId, m_newUpdates);
+    }
+
+    void undo() override
+    {
+        ManagerAcademics::markAttendanceBatch(m_courseId, m_oldUpdates);
+    }
+
+    QString description() const override { return "Batch update attendance"; }
+    DataType affectedDataType() const override { return DataType::Academics; }
+
+private:
+    int m_courseId;
+    QVector<ManagerAcademics::AttendanceUpdate> m_newUpdates;
+    QVector<ManagerAcademics::AttendanceUpdate> m_oldUpdates;
+};
+
+/**
+ * Saves test scores across a class sequentially
+ */
+class BatchAddGradeCommand : public ICommand
+{
+public:
+    BatchAddGradeCommand(int assessmentId, const QVector<ManagerAcademics::GradeUpdate> &newUpdates)
+        : m_assessmentId(assessmentId), m_newUpdates(newUpdates)
+    {
+        for (const auto &u : newUpdates)
+        {
+            ManagerAcademics::GradeUpdate oldU;
+            oldU.studentId = u.studentId;
+            oldU.marks = ManagerAcademics::getGrade(u.studentId, assessmentId);
+            m_oldUpdates.append(oldU);
+        }
+    }
+
+    void execute() override
+    {
+        ManagerAcademics::addGradeBatch(m_assessmentId, m_newUpdates);
+    }
+
+    void undo() override
+    {
+        ManagerAcademics::addGradeBatch(m_assessmentId, m_oldUpdates);
+    }
+
+    QString description() const override { return "Batch update grades"; }
+    DataType affectedDataType() const override { return DataType::Academics; }
+
+private:
+    int m_assessmentId;
+    QVector<ManagerAcademics::GradeUpdate> m_newUpdates;
+    QVector<ManagerAcademics::GradeUpdate> m_oldUpdates;
+};
+
+/**
+ * Inserts a habit or study target item
+ */
 class AddTaskCommand : public ICommand
 {
 public:
@@ -113,7 +184,7 @@ public:
 
     void execute() override
     {
-        // Determine the ID that will be assigned
+        // Calculate resulting row index before assignment
         QVector<QStringList> data = CsvHandler::readCsv("tasks.csv");
         int maxId = 0;
         for (const auto &row : data)
@@ -121,13 +192,13 @@ public:
                 maxId = std::max(maxId, row[0].toInt());
         m_assignedId = maxId + 1;
 
-        ManagerTasks::addTask(m_userId, m_desc);
+        ManagerProductivity::addTask(m_userId, m_desc);
     }
 
     void undo() override
     {
         if (m_assignedId > 0)
-            ManagerTasks::deleteTask(m_assignedId);
+            ManagerProductivity::deleteTask(m_assignedId);
     }
 
     QString description() const override
@@ -143,9 +214,9 @@ private:
     int m_assignedId;
 };
 
-// ============================================================================
-// DeleteTaskCommand - Delete a task (captures full state for restoration)
-// ============================================================================
+/**
+ * Wipes out an entry from task list and stores layout for reversal
+ */
 class DeleteTaskCommand : public ICommand
 {
 public:
@@ -154,18 +225,16 @@ public:
 
     void execute() override
     {
-        ManagerTasks::deleteTask(m_taskId);
+        ManagerProductivity::deleteTask(m_taskId);
     }
 
     void undo() override
     {
-        // Re-insert with original data
-        CsvHandler::appendCsv("tasks.csv", {
-            QString::number(m_taskId),
-            QString::number(m_userId),
-            m_desc,
-            m_wasCompleted ? "1" : "0"
-        });
+        // Replace item with identical column properties
+        CsvHandler::appendCsv("tasks.csv", {QString::number(m_taskId),
+                                            QString::number(m_userId),
+                                            m_desc,
+                                            m_wasCompleted ? "1" : "0"});
     }
 
     QString description() const override
@@ -181,9 +250,9 @@ private:
     bool m_wasCompleted;
 };
 
-// ============================================================================
-// CompleteTaskCommand - Toggle a task's completion status
-// ============================================================================
+/**
+ * Switches activity toggle values dynamically
+ */
 class CompleteTaskCommand : public ICommand
 {
 public:
@@ -192,12 +261,12 @@ public:
 
     void execute() override
     {
-        ManagerTasks::completeTask(m_taskId, m_newStatus);
+        ManagerProductivity::completeTask(m_taskId, m_newStatus);
     }
 
     void undo() override
     {
-        ManagerTasks::completeTask(m_taskId, m_oldStatus);
+        ManagerProductivity::completeTask(m_taskId, m_oldStatus);
     }
 
     QString description() const override
@@ -213,17 +282,17 @@ private:
     bool m_oldStatus, m_newStatus;
 };
 
-// ============================================================================
-// DeleteCompletedTasksCommand - Batch delete all completed tasks
-// ============================================================================
+/**
+ * Wipes finished targets while backing them up internally
+ */
 class DeleteCompletedTasksCommand : public ICommand
 {
 public:
     DeleteCompletedTasksCommand(int userId)
         : m_userId(userId)
     {
-        // Capture all completed tasks before deletion
-        QVector<Task> tasks = ManagerTasks::getTasks(userId);
+        // Pull snapshot of completed entries only
+        QVector<Task> tasks = ManagerProductivity::getTasks(userId);
         for (const auto &t : tasks)
         {
             if (t.getIsCompleted())
@@ -233,20 +302,18 @@ public:
 
     void execute() override
     {
-        ManagerTasks::deleteCompletedTasks(m_userId);
+        ManagerProductivity::deleteCompletedTasks(m_userId);
     }
 
     void undo() override
     {
-        // Re-insert all captured tasks
+        // Cycle via history and recover item structures
         for (const auto &t : m_deletedTasks)
         {
-            CsvHandler::appendCsv("tasks.csv", {
-                QString::number(t.first),
-                QString::number(m_userId),
-                t.second,
-                "1" // they were completed
-            });
+            CsvHandler::appendCsv("tasks.csv", {QString::number(t.first),
+                                                QString::number(m_userId),
+                                                t.second,
+                                                "1"});
         }
     }
 
@@ -262,9 +329,9 @@ private:
     QVector<QPair<int, QString>> m_deletedTasks; // id, description
 };
 
-// ============================================================================
-// AddNoticeCommand - Post a new notice
-// ============================================================================
+/**
+ * Appends community board item
+ */
 class AddNoticeCommand : public ICommand
 {
 public:
@@ -276,12 +343,12 @@ public:
 
     void execute() override
     {
-        ManagerNotices::addNotice(m_content, m_author);
+        ManagerCommunity::addNotice(m_content, m_author);
     }
 
     void undo() override
     {
-        ManagerNotices::deleteNotice(m_date, m_author, m_content);
+        ManagerCommunity::deleteNotice(m_date, m_author, m_content);
     }
 
     QString description() const override
@@ -295,9 +362,9 @@ private:
     QString m_content, m_author, m_date;
 };
 
-// ============================================================================
-// DeleteNoticeCommand - Delete an existing notice (captures for restoration)
-// ============================================================================
+/**
+ * Removes community item saving a ghost copy for rollback
+ */
 class DeleteNoticeCommand : public ICommand
 {
 public:
@@ -306,12 +373,12 @@ public:
 
     void execute() override
     {
-        ManagerNotices::deleteNotice(m_date, m_author, m_content);
+        ManagerCommunity::deleteNotice(m_date, m_author, m_content);
     }
 
     void undo() override
     {
-        // Re-insert the notice via CSV (to preserve the original date)
+        // Append identical details directly over CSV handler logic
         CsvHandler::appendCsv("notices.csv", {m_date, m_author, m_content});
     }
 
@@ -326,9 +393,9 @@ private:
     QString m_date, m_author, m_content;
 };
 
-// ============================================================================
-// BatchCommand - Groups multiple commands as a single undo/redo step
-// ============================================================================
+/**
+ * Bundles unrelated operations underneath a single action log
+ */
 class BatchCommand : public ICommand
 {
 public:
@@ -343,7 +410,7 @@ public:
 
     void undo() override
     {
-        // Undo in reverse order
+        // Ensure trailing operations are canceled first to avoid cascading faults
         for (int i = m_commands.size() - 1; i >= 0; --i)
             m_commands[i]->undo();
     }

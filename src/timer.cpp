@@ -16,139 +16,78 @@ Timer::Timer(QObject *parent)
     : QObject(parent), remainingTime(0), totalTime(0), elapsedTime(0),
       lastSecond(-1), isPaused(false), isStopwatch(false)
 {
-    try
-    {
-        internalTimer = new QTimer(this);
-        connect(internalTimer, &QTimer::timeout, this, &Timer::onTimeout);
-
-        tickSound = AssetManager::getSound("tick");
-        endSound = AssetManager::getSound("end");
-    }
-    catch (const std::exception &e)
-    {
-        qCritical() << "Exception in Timer constructor:" << e.what();
-    }
-    catch (...)
-    {
-        qCritical() << "Unknown exception in Timer constructor";
-    }
+    internalTimer = new QTimer(this);
+    connect(internalTimer, &QTimer::timeout, this, &Timer::onTimeout);
+    tickSound = AssetManager::getSound("tick");
+    endSound = AssetManager::getSound("end");
 }
 
 void Timer::start(double minutes)
 {
-    try
-    {
-        if (minutes <= 0)
-        {
-            qWarning() << "Invalid timer duration:" << minutes;
-            return;
-        }
-        remainingTime = static_cast<int>(minutes * MS_PER_MINUTE);
-        totalTime = remainingTime;
-        isPaused = false;
-        isStopwatch = false;
-        internalTimer->start(TIMER_INTERVAL_MS);
-        lastSecond = remainingTime / MS_PER_SECOND;
-        onTimeout();
-    }
-    catch (const std::exception &e)
-    {
-        qCritical() << "Exception in Timer::start:" << e.what();
-    }
-    catch (...)
-    {
-        qCritical() << "Unknown exception in Timer::start";
-    }
+    if (minutes <= 0)
+        return;
+
+    remainingTime = static_cast<int>(minutes * MS_PER_MINUTE);
+    totalTime = remainingTime;
+    isPaused = false;
+    isStopwatch = false;
+    internalTimer->start(TIMER_INTERVAL_MS);
+    lastSecond = remainingTime / MS_PER_SECOND;
+    onTimeout();
 }
 
 void Timer::startStopwatch(double targetMinutes)
 {
-    try
-    {
-        if (targetMinutes < 0)
-        {
-            qWarning() << "Invalid stopwatch target:" << targetMinutes;
-            return;
-        }
-        isStopwatch = true;
-        elapsedTime = 0;
-        totalTime = static_cast<int>(targetMinutes * MS_PER_MINUTE);
-        isPaused = false;
-        internalTimer->start(TIMER_INTERVAL_MS);
-        lastSecond = 0;
-        onTimeout();
-    }
-    catch (const std::exception &e)
-    {
-        qCritical() << "Exception in Timer::startStopwatch:" << e.what();
-    }
-    catch (...)
-    {
-        qCritical() << "Unknown exception in Timer::startStopwatch";
-    }
+    if (targetMinutes < 0)
+        return;
+
+    isStopwatch = true;
+    elapsedTime = 0;
+    totalTime = static_cast<int>(targetMinutes * MS_PER_MINUTE);
+    isPaused = false;
+    internalTimer->start(TIMER_INTERVAL_MS);
+    lastSecond = 0;
+    onTimeout();
 }
 
 void Timer::pause()
 {
-    try
+    if (internalTimer->isActive())
     {
-        if (internalTimer->isActive())
+        internalTimer->stop();
+        if (tickSound && tickSound->isPlaying())
+            tickSound->stop();
+        isPaused = true;
+    }
+    else if (isPaused)
+    {
+        bool canResume = false;
+        if (isStopwatch)
         {
-            internalTimer->stop();
-            if (tickSound && tickSound->isPlaying())
-                tickSound->stop();
-            isPaused = true;
-        }
-        else if (isPaused)
-        {
-            bool canResume = false;
-            if (isStopwatch)
-            {
-                if (totalTime <= 0 || elapsedTime < totalTime)
-                    canResume = true;
-            }
-            else if (remainingTime > 0)
-            {
+            if (totalTime <= 0 || elapsedTime < totalTime)
                 canResume = true;
-            }
-            if (canResume)
-            {
-                internalTimer->start(TIMER_INTERVAL_MS);
-                isPaused = false;
-            }
         }
-    }
-    catch (const std::exception &e)
-    {
-        qCritical() << "Exception in Timer::pause:" << e.what();
-    }
-    catch (...)
-    {
-        qCritical() << "Unknown exception in Timer::pause";
+        else if (remainingTime > 0)
+            canResume = true;
+
+        if (canResume)
+        {
+            internalTimer->start(TIMER_INTERVAL_MS);
+            isPaused = false;
+        }
     }
 }
 
 void Timer::stop()
 {
-    try
-    {
-        internalTimer->stop();
-        if (tickSound && tickSound->isPlaying())
-            tickSound->stop();
-        isPaused = false;
-        remainingTime = 0;
-        elapsedTime = 0;
-        lastSecond = -1;
-        emit timeUpdated("00:00", 0.0f);
-    }
-    catch (const std::exception &e)
-    {
-        qCritical() << "Exception in Timer::stop:" << e.what();
-    }
-    catch (...)
-    {
-        qCritical() << "Unknown exception in Timer::stop";
-    }
+    internalTimer->stop();
+    if (tickSound && tickSound->isPlaying())
+        tickSound->stop();
+    isPaused = false;
+    remainingTime = 0;
+    elapsedTime = 0;
+    lastSecond = -1;
+    emit timeUpdated("00:00", 0.0f);
 }
 
 double Timer::getElapsedMinutes() const
@@ -167,68 +106,52 @@ double Timer::getElapsedMinutes() const
 
 void Timer::onTimeout()
 {
-    try
+    if (isStopwatch)
     {
-        if (isStopwatch)
+        elapsedTime += TIMER_INTERVAL_MS;
+
+        int currentSecond = elapsedTime / MS_PER_SECOND;
+        if (currentSecond > lastSecond)
         {
-            elapsedTime += TIMER_INTERVAL_MS;
+            if (tickSound)
+                tickSound->play();
+            lastSecond = currentSecond;
+        }
 
-            int currentSecond = elapsedTime / MS_PER_SECOND;
-            if (currentSecond > lastSecond)
-            {
-                if (tickSound)
-                    tickSound->play();
-                lastSecond = currentSecond;
-            }
-
-            if (totalTime > 0 && elapsedTime >= totalTime)
-            {
-                elapsedTime = totalTime;
-                emitStopwatchTime(elapsedTime);
-                internalTimer->stop();
-                if (endSound)
-                    endSound->play();
-                emit finished();
-                return;
-            }
-
+        if (totalTime > 0 && elapsedTime >= totalTime)
+        {
+            elapsedTime = totalTime;
             emitStopwatchTime(elapsedTime);
+            internalTimer->stop();
+            if (endSound)
+                endSound->play();
+            emit finished();
+            return;
+        }
+
+        emitStopwatchTime(elapsedTime);
+    }
+    else
+    {
+        int currentSecond = (remainingTime - 1) / MS_PER_SECOND;
+        if (currentSecond < lastSecond && remainingTime > 0)
+        {
+            if (tickSound)
+                tickSound->play();
+            lastSecond = currentSecond;
+        }
+
+        emitCountdownTime(remainingTime);
+
+        if (remainingTime <= 0)
+        {
+            internalTimer->stop();
+            if (endSound)
+                endSound->play();
+            emit finished();
         }
         else
-        {
-            // Calculate ticks based on previous second to trigger sound at second boundaries
-            int currentSecond = (remainingTime - 1) / MS_PER_SECOND;
-            if (currentSecond < lastSecond && remainingTime > 0)
-            {
-                if (tickSound)
-                    tickSound->play();
-                lastSecond = currentSecond;
-            }
-
-            emitCountdownTime(remainingTime);
-
-            if (remainingTime <= 0)
-            {
-                internalTimer->stop();
-                if (endSound)
-                    endSound->play();
-                emit finished();
-            }
-            else
-            {
-                remainingTime -= TIMER_INTERVAL_MS;
-            }
-        }
-    }
-    catch (const std::exception &e)
-    {
-        qCritical() << "Exception in Timer::onTimeout:" << e.what();
-        internalTimer->stop();
-    }
-    catch (...)
-    {
-        qCritical() << "Unknown exception in Timer::onTimeout";
-        internalTimer->stop();
+            remainingTime -= TIMER_INTERVAL_MS;
     }
 }
 

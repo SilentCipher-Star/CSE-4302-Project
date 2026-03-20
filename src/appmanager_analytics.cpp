@@ -1,8 +1,7 @@
 #include "../include/appmanager.hpp"
 #include "../include/manager_academics.hpp"
-#include "../include/manager_notices.hpp"
 #include "../include/manager_persons.hpp"
-#include "../include/manager_messages.hpp"
+#include "../include/manager_community.hpp"
 #include "../include/csvhandler.hpp"
 
 QVector<AttendanceAnalytics> AcadenceManager::getLowAttendanceStudents(int courseId, double threshold)
@@ -22,9 +21,8 @@ int AcadenceManager::generateAttendanceWarnings(int courseId, int teacherId, dou
     if (flagged.isEmpty())
         return 0;
 
-    Teacher *teacher = ManagerPersons::getTeacher(teacherId);
+    auto teacher = ManagerPersons::getTeacher(teacherId);
     QString teacherName = teacher ? teacher->getName() : "Unknown";
-    delete teacher;
 
     for (const auto &a : flagged)
     {
@@ -38,7 +36,7 @@ int AcadenceManager::generateAttendanceWarnings(int courseId, int teacherId, dou
                               .arg(a.attendedClasses)
                               .arg(a.totalClasses)
                               .arg(QString::number(threshold, 'f', 0));
-        ManagerNotices::addNotice(content, teacherName);
+        ManagerCommunity::addNotice(content, teacherName);
     }
 
     notifyObservers(DataType::Notices);
@@ -58,7 +56,8 @@ int AcadenceManager::sendBulkGradeReports(int teacherId, int assessmentId, const
             break;
         }
     }
-    if (!target) return 0;
+    if (!target)
+        return 0;
 
     int courseId = target->getCourseId();
     QString courseName = target->getCourseName();
@@ -66,24 +65,23 @@ int AcadenceManager::sendBulkGradeReports(int teacherId, int assessmentId, const
     QString assessType = target->getType();
     int maxMarks = target->getMaxMarks();
 
-    Teacher *teacher = ManagerPersons::getTeacher(teacherId);
+    auto teacher = ManagerPersons::getTeacher(teacherId);
     QString teacherName = teacher ? teacher->getName() : "Unknown";
-    delete teacher;
 
     // Get course to find students
-    Course *course = ManagerAcademics::getCourse(courseId);
-    if (!course) return 0;
+    auto course = ManagerAcademics::getCourse(courseId);
+    if (!course)
+        return 0;
 
-    QVector<Student *> students = ManagerAcademics::getStudentsByEnrollment(courseId);
-    if (students.isEmpty())
+    auto students = ManagerAcademics::getStudentsByEnrollment(courseId);
+    if (students.empty())
         students = ManagerAcademics::getStudentsBySemester(course->getSemester());
-    delete course;
 
     // Get grades
     QVector<QStringList> gradeData = CsvHandler::readCsv("grades.csv");
 
     int sentCount = 0;
-    for (auto *stu : students)
+    for (const auto &stu : students)
     {
         int sid = stu->getId();
 
@@ -134,11 +132,10 @@ int AcadenceManager::sendBulkGradeReports(int teacherId, int assessmentId, const
 
         body += QString("\n- %1").arg(teacherName);
 
-        ManagerMessages::sendMessage(teacherId, "Teacher", sid, subject, body);
+        ManagerCommunity::sendMessage(teacherId, "Teacher", sid, subject, body);
         sentCount++;
     }
 
-    qDeleteAll(students);
     notifyObservers(DataType::Messages);
     return sentCount;
 }

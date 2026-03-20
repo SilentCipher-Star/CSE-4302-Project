@@ -19,6 +19,7 @@
 #include <QParallelAnimationGroup>
 #include <QtMath>
 #include <QSettings>
+#include <exception>
 
 // ── Sticker definitions: symbol · x-ratio · y-ratio · font-size (px) ──────
 struct StickerDef
@@ -473,6 +474,16 @@ void LoginDialog::onLoginClicked()
         QMessageBox::critical(this, "System Error", e.what());
         return;
     }
+    catch (const std::exception &e)
+    {
+        QMessageBox::critical(this, "System Error", QString("Standard exception:\n%1").arg(e.what()));
+        return;
+    }
+    catch (...)
+    {
+        QMessageBox::critical(this, "System Error", "Unknown error during login.");
+        return;
+    }
 
     if (!role.isEmpty())
     {
@@ -491,13 +502,13 @@ void LoginDialog::onLoginClicked()
         }
         else if (role == Constants::Role::Student)
         {
-            std::unique_ptr<Student> s(manager.getStudent(userId));
+            auto s = manager.getStudent(userId);
             if (s)
                 name = s->getName();
         }
         else if (role == Constants::Role::Teacher)
         {
-            std::unique_ptr<Teacher> t(manager.getTeacher(userId));
+            auto t = manager.getTeacher(userId);
             if (t)
                 name = t->getName();
         }

@@ -6,46 +6,18 @@
 
 QString ManagerAuth::login(const QString &username, const QString &password, int &userId, const QString &role)
 {
-    if (role == "Admin")
-    {
-        QVector<QStringList> admins = CsvHandler::readCsv("admins.csv");
-        for (const auto &row : admins)
-        {
-            if (row.size() >= 3 && row[1].trimmed() == username && row[2].trimmed() == password)
-            {
-                userId = row[0].toInt();
-                return "Admin";
-            }
-        }
-        return "";
-    }
+    QString filename = role.toLower() + "s.csv";
+    int userCol = (role == "Admin") ? 1 : 3;
+    int passCol = (role == "Admin") ? 2 : 4;
 
-    if (role == "Student")
+    QVector<QStringList> data = CsvHandler::readCsv(filename);
+    for (const auto &row : data)
     {
-        QVector<QStringList> students = CsvHandler::readCsv("students.csv");
-        for (const auto &row : students)
+        if (row.size() > passCol && row[userCol].trimmed() == username && row[passCol].trimmed() == password)
         {
-            if (row.size() >= 5 && row[3].trimmed() == username && row[4].trimmed() == password)
-            {
-                userId = row[0].toInt();
-                return "Student";
-            }
+            userId = row[0].toInt();
+            return role;
         }
-        return "";
-    }
-
-    if (role == "Teacher")
-    {
-        QVector<QStringList> teachers = CsvHandler::readCsv("teachers.csv");
-        for (const auto &row : teachers)
-        {
-            if (row.size() >= 5 && row[3].trimmed() == username && row[4].trimmed() == password)
-            {
-                userId = row[0].toInt();
-                return "Teacher";
-            }
-        }
-        return "";
     }
 
     return "";

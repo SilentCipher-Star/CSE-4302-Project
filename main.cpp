@@ -13,25 +13,24 @@ int main(int argc, char *argv[])
     app.setApplicationName("Acadence");
     app.setOrganizationName("Tutu_Ali");
 
-    // Load all assets (fonts, data, sounds) upfront to ensure smooth login transition
+    // Prepare heavy assets locally to speed up active UI render loops
     AssetManager::load();
 
     int exitCode = 0;
 
     do
     {
-        // Login Screen
         LoginDialog login(app);
         if (login.exec() != QDialog::Accepted)
         {
             return 0;
         }
 
-        // Main Window
+        // Mount central dashboard using returned credentials
         MainWindow window(login.getRole(), login.getUserId(), login.getName());
         window.show();
         exitCode = app.exec();
-    } while (exitCode == 99); // the logout button is programmed to exit the application with code 99
+    } while (exitCode == 99); // Relaunch if soft logout triggers app termination hook
 
     AssetManager::unload();
     return exitCode;

@@ -19,11 +19,10 @@ UICalendar::UICalendar(AcadenceManager *manager, const QString &role,
 {
     if (role == "student")
     {
-        Student *stu = m_mgr->getStudent(userId);
+        auto stu = m_mgr->getStudent(userId);
         if (stu)
         {
             m_semester = stu->getSemester();
-            delete stu;
         }
     }
     buildWidget();

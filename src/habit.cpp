@@ -50,9 +50,9 @@ bool Habit::checkReset()
         isCompleted = false;
         lastUpdated = today;
         if (auto dh = dynamic_cast<DurationHabit *>(this))
-            dh->currentMinutes = 0.0;
+            dh->setCurrentMinutes(0.0);
         if (auto ch = dynamic_cast<CountHabit *>(this))
-            ch->currentCount = 0;
+            ch->setCurrentCount(0);
         return true;
     }
     return false;

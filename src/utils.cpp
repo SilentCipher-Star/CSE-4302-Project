@@ -1,5 +1,6 @@
 #include "../include/utils.hpp"
 #include "../include/csvhandler.hpp"
+#include "../include/theme.hpp"
 #include <QRegularExpression>
 #include <QStandardItemModel>
 #include <QCoreApplication>
@@ -57,9 +58,30 @@ void Utils::loadFonts()
         QStringList filters;
         filters << "*.ttf" << "*.otf";
         dir.setNameFilters(filters);
+        int loadedCount = 0;
         for (const QFileInfo &info : dir.entryInfoList())
         {
-            QFontDatabase::addApplicationFont(info.absoluteFilePath());
+            int fontId = QFontDatabase::addApplicationFont(info.absoluteFilePath());
+            if (fontId != -1)
+            {
+                QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+                if (!families.isEmpty())
+                {
+                    if (loadedCount == 0)
+                    {
+                        AppFonts::Family = families.first();
+                    }
+                    else if (loadedCount == 1)
+                    {
+                        AppFonts::TimerFamily = families.first();
+                    }
+                    loadedCount++;
+                }
+            }
+        }
+        if (loadedCount == 1)
+        {
+            AppFonts::TimerFamily = AppFonts::Family;
         }
     }
 }
@@ -67,7 +89,7 @@ void Utils::loadFonts()
 QDate Utils::getDateForDay(QString dayName)
 {
     QDate today = QDate::currentDate();
-    int currentDayOfWeek = today.dayOfWeek(); // 1=Mon, 7=Sun
+    int currentDayOfWeek = today.dayOfWeek(); // Qt numeric bounds: 1=Mon, 7=Sun
 
     QStringList days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
     int targetDayOfWeek = days.indexOf(dayName) + 1;

@@ -17,7 +17,7 @@ UITimers::~UITimers()
 
 void UITimers::setupTimers()
 {
-    // Focus Timer
+    // Initialize strict study clock instance
     ui->label_timerDisplay->setText("00:00");
     ui->label_timerDisplay->setAlignment(Qt::AlignCenter);
     m_focusTimer = new Timer(this);
@@ -28,10 +28,11 @@ void UITimers::setupTimers()
         QColor acc = lbl->palette().color(QPalette::Highlight);
         QString accRgba = QString("rgba(%1, %2, %3, 0.25)").arg(acc.red()).arg(acc.green()).arg(acc.blue());
 
-        QString style = QString("QLabel { font-size: %1px; border: 3px solid palette(highlight); border-radius: 16px; color: palette(text); "
+        QString style = QString("QLabel { font-family: '%1', sans-serif; font-size: %2px; border: 3px solid palette(highlight); border-radius: 16px; color: palette(text); "
                                 "background: qlineargradient(x1:0, y1:0, x2:1, y2:0, "
-                                "stop:0 %2, stop:%3 %2, "
-                                "stop:%3 transparent, stop:1 transparent); }")
+                                "stop:0 %3, stop:%4 %3, "
+                                "stop:%4 transparent, stop:1 transparent); }")
+                            .arg(AppFonts::TimerFamily)
                             .arg(AppFonts::Timer)
                             .arg(accRgba)
                             .arg(progress > 0.001 ? progress - 0.001 : 0)
@@ -45,7 +46,7 @@ void UITimers::setupTimers()
     connect(m_focusTimer, &Timer::finished, [this]()
             { QMessageBox::information(nullptr, "Timer", "Focus session complete!"); });
 
-    // Workout/Habit Timer
+    // Assign flexible tracker to habit processes
     ui->label_workoutTimerDisplay->setText("00:00");
     ui->label_workoutTimerDisplay->setAlignment(Qt::AlignCenter);
     m_workoutTimer = new Timer(this);
@@ -62,14 +63,14 @@ void UITimers::setupTimers()
                 bool ok;
                 int count = QInputDialog::getInt(nullptr, "Workout Progress", "Session Done! Add Reps/Count:", 0, 0, 1000, 1, &ok);
                 if (ok && count > 0) {
-                    wh->currentCount += count;
+                    wh->addCount(count);
                 }
-                wh->currentMinutes = wh->targetMinutes;
-                if (wh->currentCount >= wh->targetCount)
+                wh->setCurrentMinutes(wh->getTargetMinutes());
+                if (wh->getCurrentCount() >= wh->getTargetCount())
                     wh->markComplete();
                 myManager->updateHabit(wh);
             } else if (auto dh = dynamic_cast<DurationHabit*>(activeTimerHabit)) {
-                dh->currentMinutes = dh->targetMinutes;
+                dh->setCurrentMinutes(dh->getTargetMinutes());
                 dh->markComplete();
                 myManager->updateHabit(dh);
             }
@@ -111,16 +112,16 @@ void UITimers::onWorkoutTimerStartClicked()
 
     if (auto wh = dynamic_cast<WorkoutHabit *>(activeTimerHabit))
     {
-        double remaining = wh->targetMinutes - wh->currentMinutes;
+        double remaining = wh->getTargetMinutes() - wh->getCurrentMinutes();
         if (remaining <= 0.001)
-            remaining = wh->targetMinutes;
+            remaining = wh->getTargetMinutes();
         m_workoutTimer->start(remaining);
     }
     else if (auto dh = dynamic_cast<DurationHabit *>(activeTimerHabit))
     {
-        double remaining = dh->targetMinutes - dh->currentMinutes;
+        double remaining = dh->getTargetMinutes() - dh->getCurrentMinutes();
         if (remaining <= 0.001)
-            remaining = dh->targetMinutes;
+            remaining = dh->getTargetMinutes();
         m_workoutTimer->startStopwatch(remaining);
     }
 }
@@ -145,19 +146,19 @@ void UITimers::onWorkoutTimerStopClicked()
         DurationHabit *activeTimerHabit = m_habitsModule->getActiveTimerHabit();
         if (elapsed > 0)
         {
-            activeTimerHabit->currentMinutes += elapsed;
+            activeTimerHabit->addMinutes(elapsed);
 
             if (auto wh = dynamic_cast<WorkoutHabit *>(activeTimerHabit))
             {
                 bool ok;
                 int count = QInputDialog::getInt(nullptr, "Workout Stopped", "Add Reps/Count:", 0, 0, 1000, 1, &ok);
                 if (ok && count > 0)
-                    wh->currentCount += count;
+                    wh->addCount(count);
 
-                if (wh->currentMinutes >= wh->targetMinutes && wh->currentCount >= wh->targetCount)
+                if (wh->getCurrentMinutes() >= wh->getTargetMinutes() && wh->getCurrentCount() >= wh->getTargetCount())
                     wh->markComplete();
             }
-            else if (activeTimerHabit->currentMinutes >= activeTimerHabit->targetMinutes)
+            else if (activeTimerHabit->getCurrentMinutes() >= activeTimerHabit->getTargetMinutes())
                 activeTimerHabit->markComplete();
 
             myManager->updateHabit(activeTimerHabit);

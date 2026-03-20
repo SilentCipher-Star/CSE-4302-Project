@@ -1,4 +1,5 @@
 #include "../include/ui_lostfound.hpp"
+#include "../include/theme.hpp"
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QSplitter>
@@ -22,14 +23,13 @@ void UILostFound::buildWidget()
     mainLayout->setContentsMargins(16, 16, 16, 16);
     mainLayout->setSpacing(12);
 
-    // ── Title ──
+    // Add main title for the board
     QLabel *title = new QLabel("Lost & Found Board");
-    title->setStyleSheet("font-size: 20px; font-weight: bold; padding: 4px 0;");
+    title->setStyleSheet(QString("font-size: %1px; font-weight: bold; padding: 4px 0;").arg(AppFonts::Large));
     mainLayout->addWidget(title);
 
-    // ── Filter bar ──
+    // Set up filter and search bar layout
     QHBoxLayout *filterBar = new QHBoxLayout();
-    filterBar->setSpacing(10);
 
     QLabel *filterLabel = new QLabel("Filter:");
     filterLabel->setStyleSheet("font-weight: bold;");
@@ -37,21 +37,21 @@ void UILostFound::buildWidget()
 
     m_filterCombo = new QComboBox();
     m_filterCombo->addItems({"All Posts", "Lost Items", "Found Items", "My Posts", "Open Only", "Claimed"});
-    m_filterCombo->setMinimumWidth(140);
     filterBar->addWidget(m_filterCombo);
 
     m_searchEdit = new QLineEdit();
     m_searchEdit->setPlaceholderText("Search by item name or location...");
     m_searchEdit->setClearButtonEnabled(true);
+    m_searchEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     filterBar->addWidget(m_searchEdit, 1);
 
     filterBar->addStretch();
     mainLayout->addLayout(filterBar);
 
-    // ── Content: splitter with table on left, detail on right ──
+    // Create a splitter to separate the post list from the detail view
     QSplitter *splitter = new QSplitter(Qt::Horizontal);
 
-    // Left: post table
+    // Initialize the table for listing posts
     m_table = new QTableWidget();
     m_table->setColumnCount(6);
     m_table->setHorizontalHeaderLabels({"Type", "Item", "Location", "Posted By", "Date", "Status"});
@@ -62,82 +62,70 @@ void UILostFound::buildWidget()
     m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     m_table->verticalHeader()->setVisible(false);
     m_table->setAlternatingRowColors(true);
-    m_table->setMinimumWidth(500);
     splitter->addWidget(m_table);
 
-    // Right: detail panel
+    // Setup the detail panel for displaying selected post information
     QWidget *detailPanel = new QWidget();
     QVBoxLayout *detailLayout = new QVBoxLayout(detailPanel);
     detailLayout->setContentsMargins(8, 0, 0, 0);
-    detailLayout->setSpacing(8);
 
     QLabel *detailTitle = new QLabel("Post Details");
-    detailTitle->setStyleSheet("font-size: 14px; font-weight: bold; padding: 4px 0;"
-                               "border-bottom: 2px solid palette(mid);");
+    detailTitle->setStyleSheet(QString("font-size: %1px; font-weight: bold; padding: 4px 0; border-bottom: 2px solid palette(mid);").arg(AppFonts::Normal));
     detailLayout->addWidget(detailTitle);
 
     m_detailView = new QTextBrowser();
     m_detailView->setOpenExternalLinks(false);
-    m_detailView->setMinimumWidth(260);
     m_detailView->setPlaceholderText("Select a post to view details...");
     detailLayout->addWidget(m_detailView, 1);
 
-    // Action buttons
+    // Provide action buttons for the selected post
     QHBoxLayout *actionBar = new QHBoxLayout();
     m_btnClaim = new QPushButton("Mark as Claimed");
     m_btnClaim->setEnabled(false);
-    m_btnClaim->setStyleSheet("QPushButton { padding: 6px 16px; font-weight: bold; }");
     actionBar->addWidget(m_btnClaim);
 
     m_btnDelete = new QPushButton("Delete Post");
     m_btnDelete->setEnabled(false);
-    m_btnDelete->setStyleSheet("QPushButton { padding: 6px 16px; color: #c0392b; font-weight: bold; }");
     actionBar->addWidget(m_btnDelete);
 
     actionBar->addStretch();
     detailLayout->addLayout(actionBar);
 
-    detailPanel->setMinimumWidth(280);
     splitter->addWidget(detailPanel);
     splitter->setStretchFactor(0, 3);
     splitter->setStretchFactor(1, 2);
 
     mainLayout->addWidget(splitter, 1);
 
-    // ── New post form ──
+    // Create the form for submitting new lost or found posts
     QGroupBox *formBox = new QGroupBox("Report a Lost or Found Item");
-    formBox->setStyleSheet("QGroupBox { font-weight: bold; padding-top: 16px; margin-top: 8px; }");
     QHBoxLayout *formLayout = new QHBoxLayout(formBox);
-    formLayout->setSpacing(10);
 
     m_typeCombo = new QComboBox();
     m_typeCombo->addItems({"LOST", "FOUND"});
-    m_typeCombo->setMinimumWidth(90);
     formLayout->addWidget(m_typeCombo);
 
     m_editItemName = new QLineEdit();
     m_editItemName->setPlaceholderText("Item name...");
-    m_editItemName->setMinimumWidth(150);
+    m_editItemName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     formLayout->addWidget(m_editItemName);
 
     m_editLocation = new QLineEdit();
     m_editLocation->setPlaceholderText("Location...");
-    m_editLocation->setMinimumWidth(150);
+    m_editLocation->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     formLayout->addWidget(m_editLocation);
 
     m_editDescription = new QTextEdit();
     m_editDescription->setPlaceholderText("Description (color, brand, etc.)...");
-    m_editDescription->setMaximumHeight(60);
-    m_editDescription->setMinimumWidth(200);
+    m_editDescription->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     formLayout->addWidget(m_editDescription, 1);
 
     m_btnPost = new QPushButton("Post");
-    m_btnPost->setStyleSheet("QPushButton { padding: 8px 24px; font-weight: bold; font-size: 13px; }");
     formLayout->addWidget(m_btnPost);
 
     mainLayout->addWidget(formBox);
 
-    // ── Connections ──
+    // Connect signals and slots for interactivity
     connect(m_filterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &UILostFound::onFilterChanged);
     connect(m_searchEdit, &QLineEdit::textChanged, this, &UILostFound::onFilterChanged);
     connect(m_table, &QTableWidget::itemSelectionChanged, this, &UILostFound::onPostSelected);
@@ -148,6 +136,7 @@ void UILostFound::buildWidget()
 
 void UILostFound::refresh()
 {
+    // Retrieve posts and update the view
     m_posts = m_mgr->getLostFoundPosts();
     applyFilter();
 }
@@ -160,26 +149,30 @@ void UILostFound::applyFilter()
 
     for (const auto &post : m_posts)
     {
-        // Category filter
-        if (filter == "Lost Items" && post.getType() != "LOST") continue;
-        if (filter == "Found Items" && post.getType() != "FOUND") continue;
-        if (filter == "My Posts" && post.getPosterId() != m_userId) continue;
-        if (filter == "Open Only" && post.getStatus() != "OPEN") continue;
-        if (filter == "Claimed" && post.getStatus() != "CLAIMED") continue;
+        // Apply category filtering
+        if (filter == "Lost Items" && post.getType() != "LOST")
+            continue;
+        if (filter == "Found Items" && post.getType() != "FOUND")
+            continue;
+        if (filter == "My Posts" && post.getPosterId() != m_userId)
+            continue;
+        if (filter == "Open Only" && post.getStatus() != "OPEN")
+            continue;
+        if (filter == "Claimed" && post.getStatus() != "CLAIMED")
+            continue;
 
-        // Search filter
+        // Apply search keyword filtering
         if (!search.isEmpty())
         {
-            bool matches = post.getItemName().toLower().contains(search)
-                        || post.getLocation().toLower().contains(search)
-                        || post.getDescription().toLower().contains(search);
-            if (!matches) continue;
+            bool matches = post.getItemName().toLower().contains(search) || post.getLocation().toLower().contains(search) || post.getDescription().toLower().contains(search);
+            if (!matches)
+                continue;
         }
 
         m_filteredPosts.append(post);
     }
 
-    // Populate table
+    // Populate the table with filtered posts
     m_table->setRowCount(m_filteredPosts.size());
     for (int i = 0; i < m_filteredPosts.size(); ++i)
     {
@@ -213,6 +206,8 @@ void UILostFound::applyFilter()
     }
 
     m_table->resizeColumnsToContents();
+
+    // Clear detail view on refresh
     m_detailView->clear();
     m_btnClaim->setEnabled(false);
     m_btnDelete->setEnabled(false);
@@ -226,6 +221,7 @@ void UILostFound::onFilterChanged()
 void UILostFound::onPostSelected()
 {
     int row = m_table->currentRow();
+    // Disable actions if no valid row is selected
     if (row < 0 || row >= m_filteredPosts.size())
     {
         m_detailView->clear();
@@ -239,39 +235,43 @@ void UILostFound::onPostSelected()
     QString typeColor = p.getType() == "LOST" ? "#e74c3c" : "#27ae60";
     QString statusColor = p.getStatus() == "OPEN" ? "#2980b9" : "#7f8c8d";
 
+    // Format post details into HTML for presentation
     QString html = QString(
-        "<div style='font-family: sans-serif;'>"
-        "<h3 style='margin-bottom:4px;'>%1</h3>"
-        "<p><span style='color:%2; font-weight:bold; font-size:13px;'>"
-        "%3</span>"
-        " &nbsp; <span style='color:%4; font-weight:bold;'>%5</span></p>"
-        "<hr>"
-        "<p><b>Description:</b><br>%6</p>"
-        "<p><b>Location:</b> %7</p>"
-        "<p><b>Posted by:</b> %8 (%9)</p>"
-        "<p><b>Date:</b> %10</p>"
-        "%11"
-        "</div>")
-        .arg(p.getItemName())
-        .arg(typeColor)
-        .arg(p.getType())
-        .arg(statusColor)
-        .arg(p.getStatus())
-        .arg(p.getDescription().isEmpty() ? "<i>No description</i>" : p.getDescription().toHtmlEscaped().replace("\n", "<br>"))
-        .arg(p.getLocation().toHtmlEscaped())
-        .arg(p.getPosterName().toHtmlEscaped())
-        .arg(p.getPosterRole())
-        .arg(p.getDate())
-        .arg(p.getStatus() == "CLAIMED"
-             ? QString("<p><b>Claimed by:</b> %1</p>").arg(p.getClaimedBy().toHtmlEscaped())
-             : "");
+                       "<div style='font-family: \"%1\", sans-serif;'>"
+                       "<h3 style='margin-bottom:4px; font-size:%13px;'>%2</h3>"
+                       "<p><span style='color:%3; font-weight:bold; font-size:%14px;'>"
+                       "%4</span>"
+                       " &nbsp; <span style='color:%5; font-weight:bold; font-size:%14px;'>%6</span></p>"
+                       "<hr>"
+                       "<p style='font-size:%14px;'><b>Description:</b><br>%7</p>"
+                       "<p style='font-size:%14px;'><b>Location:</b> %8</p>"
+                       "<p style='font-size:%14px;'><b>Posted by:</b> %9 (%10)</p>"
+                       "<p style='font-size:%14px;'><b>Date:</b> %11</p>"
+                       "<div style='font-size:%14px;'>%12</div>"
+                       "</div>")
+                       .arg(AppFonts::Family)
+                       .arg(p.getItemName())
+                       .arg(typeColor)
+                       .arg(p.getType())
+                       .arg(statusColor)
+                       .arg(p.getStatus())
+                       .arg(p.getDescription().isEmpty() ? "<i>No description</i>" : p.getDescription().toHtmlEscaped().replace("\n", "<br>"))
+                       .arg(p.getLocation().toHtmlEscaped())
+                       .arg(p.getPosterName().toHtmlEscaped())
+                       .arg(p.getPosterRole())
+                       .arg(p.getDate())
+                       .arg(p.getStatus() == "CLAIMED"
+                                ? QString("<b>Claimed by:</b> %1").arg(p.getClaimedBy().toHtmlEscaped())
+                                : "")
+                       .arg(AppFonts::Large)
+                       .arg(AppFonts::Small);
 
     m_detailView->setHtml(html);
 
-    // Enable claim only if post is open and user is not the poster
+    // Enable claim button only if post is open and the user is not the author
     m_btnClaim->setEnabled(p.getStatus() == "OPEN" && p.getPosterId() != m_userId);
 
-    // Enable delete only if user is the poster or admin
+    // Enable delete button only if the user is the author or an admin
     m_btnDelete->setEnabled(p.getPosterId() == m_userId || m_role == "Admin");
 }
 
@@ -298,7 +298,7 @@ void UILostFound::onPostClicked()
 
     m_mgr->addLostFoundPost(m_userId, m_userName, m_role, type, itemName, description, location);
 
-    // Clear form
+    // Clear form fields
     m_editItemName->clear();
     m_editLocation->clear();
     m_editDescription->clear();
@@ -308,12 +308,13 @@ void UILostFound::onPostClicked()
 void UILostFound::onClaimClicked()
 {
     int row = m_table->currentRow();
-    if (row < 0 || row >= m_filteredPosts.size()) return;
+    if (row < 0 || row >= m_filteredPosts.size())
+        return;
 
     const auto &p = m_filteredPosts[row];
     auto reply = QMessageBox::question(m_container, "Confirm Claim",
-        QString("Mark \"%1\" as claimed by you (%2)?").arg(p.getItemName(), m_userName),
-        QMessageBox::Yes | QMessageBox::No);
+                                       QString("Mark \"%1\" as claimed by you (%2)?").arg(p.getItemName(), m_userName),
+                                       QMessageBox::Yes | QMessageBox::No);
 
     if (reply == QMessageBox::Yes)
         m_mgr->claimLostFoundPost(p.getId(), m_userName);
@@ -322,12 +323,13 @@ void UILostFound::onClaimClicked()
 void UILostFound::onDeleteClicked()
 {
     int row = m_table->currentRow();
-    if (row < 0 || row >= m_filteredPosts.size()) return;
+    if (row < 0 || row >= m_filteredPosts.size())
+        return;
 
     const auto &p = m_filteredPosts[row];
     auto reply = QMessageBox::question(m_container, "Confirm Delete",
-        QString("Delete the post for \"%1\"? This cannot be undone.").arg(p.getItemName()),
-        QMessageBox::Yes | QMessageBox::No);
+                                       QString("Delete the post for \"%1\"? This cannot be undone.").arg(p.getItemName()),
+                                       QMessageBox::Yes | QMessageBox::No);
 
     if (reply == QMessageBox::Yes)
         m_mgr->deleteLostFoundPost(p.getId());

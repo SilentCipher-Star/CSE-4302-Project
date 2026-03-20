@@ -10,6 +10,9 @@
 #include <QDate>
 #include <QVector>
 #include <QMenu>
+#include <QSet>
+#include <memory>
+#include <vector>
 #include "appmanager.hpp"
 
 class TeacherAttendanceDialog : public QDialog
@@ -61,9 +64,10 @@ private:
 
     // Current state
     int currentCourseId = 0;
-    int selectedDateCol = -1;  // currently selected date column for column operations
-    QVector<Student *> students;
+    int selectedDateCol = -1; // currently selected date column for column operations
+    std::vector<std::unique_ptr<Student>> students;
     QVector<QString> allDates;        // all class dates sorted
+    QSet<QString> currentPresenceSet; // Cached presence to avoid O(N^2) CSV calls
     int weekOffset = 0;               // 0 = latest week range shown
     int datesPerPage = 7;             // show 7 dates per page
 

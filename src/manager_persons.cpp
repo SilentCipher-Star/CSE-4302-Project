@@ -1,56 +1,21 @@
 #include "../include/manager_persons.hpp"
 #include "../include/csvhandler.hpp"
 #include "../include/personfactory.hpp"
+#include "../include/appmanager.hpp"
+#include <unordered_map>
 
 namespace
 {
-    template <typename T>
-    class CsvRepository
-    {
-    public:
-        explicit CsvRepository(const QString &filename) : m_filename(filename) {}
+    std::unordered_map<int, std::unique_ptr<Student>> g_studentCache;
+    std::unordered_map<int, std::unique_ptr<Teacher>> g_teacherCache;
+    int g_lastStudentCount = 0;
+    int g_lastTeacherCount = 0;
 
-        template <typename Func>
-        T *findById(int id, Func parser)
-        {
-            QVector<QStringList> data = CsvHandler::readCsv(m_filename);
-            for (const auto &row : data)
-            {
-                if (!row.isEmpty() && row[0].toInt() == id)
-                {
-                    return parser(row);
-                }
-            }
-            return nullptr;
-        }
-
-        template <typename Func, typename Filter>
-        QVector<T *> findAll(Func parser, Filter filter)
-        {
-            QVector<T *> results;
-            QVector<QStringList> data = CsvHandler::readCsv(m_filename);
-            for (const auto &row : data)
-            {
-                if (filter(row))
-                {
-                    if (T *obj = parser(row))
-                    {
-                        results.append(obj);
-                    }
-                }
-            }
-            return results;
-        }
-
-    private:
-        QString m_filename;
-    };
-
-    Student *parseStudent(const QStringList &row)
+    std::unique_ptr<Student> parseStudent(const QStringList &row)
     {
         if (row.size() < 8)
             return nullptr;
-        Student *s = PersonFactory::createStudent(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
+        auto s = PersonFactory::createStudent(row[0].toInt(), row[1], row[2], row[5], row[6], row[7].toInt());
         s->setUsername(row[3]);
         s->setPassword(row[4]);
 
@@ -62,11 +27,11 @@ namespace
         return s;
     }
 
-    Teacher *parseTeacher(const QStringList &row)
+    std::unique_ptr<Teacher> parseTeacher(const QStringList &row)
     {
         if (row.size() < 7)
             return nullptr;
-        Teacher *t = PersonFactory::createTeacher(row[0].toInt(), row[1], row[2], row[5], row[6]);
+        auto t = PersonFactory::createTeacher(row[0].toInt(), row[1], row[2], row[5], row[6]);
         t->setUsername(row[3]);
         t->setPassword(row[4]);
 
@@ -77,16 +42,44 @@ namespace
     }
 }
 
-Student *ManagerPersons::getStudent(int id)
+std::unique_ptr<Student> ManagerPersons::getStudent(int id)
 {
+    // Invalidate cache if the underlying data size has changed
+    int currentSize = CsvHandler::readCsv("students.csv").size();
+    if (currentSize != g_lastStudentCount)
+    {
+        g_studentCache.clear();
+        g_lastStudentCount = currentSize;
+    }
+
+    if (g_studentCache.find(id) != g_studentCache.end())
+        return std::make_unique<Student>(*g_studentCache[id]);
+
     CsvRepository<Student> repo("students.csv");
-    return repo.findById(id, parseStudent);
+    auto s = repo.findById(id, parseStudent);
+    if (s)
+        g_studentCache[id] = std::make_unique<Student>(*s);
+    return std::move(s);
 }
 
-Teacher *ManagerPersons::getTeacher(int id)
+std::unique_ptr<Teacher> ManagerPersons::getTeacher(int id)
 {
+    // Invalidate cache if the underlying data size has changed
+    int currentSize = CsvHandler::readCsv("teachers.csv").size();
+    if (currentSize != g_lastTeacherCount)
+    {
+        g_teacherCache.clear();
+        g_lastTeacherCount = currentSize;
+    }
+
+    if (g_teacherCache.find(id) != g_teacherCache.end())
+        return std::make_unique<Teacher>(*g_teacherCache[id]);
+
     CsvRepository<Teacher> repo("teachers.csv");
-    return repo.findById(id, parseTeacher);
+    auto t = repo.findById(id, parseTeacher);
+    if (t)
+        g_teacherCache[id] = std::make_unique<Teacher>(*t);
+    return std::move(t);
 }
 
 QPair<QString, QString> ManagerPersons::getAdminProfile(int id)

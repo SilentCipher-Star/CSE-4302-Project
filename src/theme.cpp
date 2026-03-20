@@ -2,6 +2,11 @@
 #include "../include/csvhandler.hpp"
 #include <QStyleFactory>
 #include <QPalette>
+#include <QDebug>
+#include <QPainter>
+#include <QPropertyAnimation>
+#include <QMouseEvent>
+#include <exception>
 
 void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
 {
@@ -32,12 +37,11 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
 
     a.setPalette(p);
 
-    // %1=background  %2=surface  %3=text  %4=accent
-    // %5=Normal      %6=Timer    %7=Small  %8=Large
+    // Embed theme colors dynamically through QString mappings
     QString qss = QString(
 
-                      /* ─── Base ──────────────────────────────────────────────────────── */
-                      "QWidget  { font-size:%5px; font-family:'%9','Segoe UI',sans-serif;"
+                      /* Base component defaults */
+                      "QWidget  { font-size:%5px; font-family:'%9';"
                       "           color:%3; background-color:%1;"
                       "           selection-background-color:%4; selection-color:%1; }"
                       "QMainWindow { background: qlineargradient(x1:0,y1:0,x2:1,y2:1,"
@@ -45,13 +49,13 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "QDialog     { background: qlineargradient(x1:0,y1:0,x2:1,y2:1,"
                       "              stop:0 %1, stop:0.55 %2, stop:1 %1); }"
 
-                      /* ─── Special labels ─────────────────────────────────────────────── */
+                      /* Specific application label overrides */
                       "QLabel#label_timerDisplay, QLabel#label_workoutTimerDisplay"
                       "  { font-size:%6px; font-weight:300; color:%4;"
-                      "    font-family:'%9',sans-serif; }"
+                      "    font-family:'%10',sans-serif; }"
                       "QLabel#label_welcome { font-size:%8px; font-weight:bold; }"
 
-                      /* ─── Buttons ────────────────────────────────────────────────────── */
+                      /* Interactive click elements */
                       "QPushButton {"
                       "  background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 %4,stop:1 %4);"
                       "  color:%1; border:none; border-radius:18px;"
@@ -63,7 +67,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "QPushButton:disabled {"
                       "  background-color:%2; color:%3; border:1.5px solid %4; border-radius:18px; }"
 
-                      /* ─── Checkboxes ─────────────────────────────────────────────────── */
+                      /* Selectable item blocks */
                       "QCheckBox { spacing:10px; }"
                       "QCheckBox::indicator, QListView::indicator {"
                       "  width:22px; height:22px; border:2px solid %4; border-radius:8px; background-color:%2; }"
@@ -71,7 +75,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "  background:%4; border-color:%4; }"
                       "QCheckBox::indicator:hover, QListView::indicator:hover { border:2px solid %3; }"
 
-                      /* ─── Line Edits ─────────────────────────────────────────────────── */
+                      /* Single input boxes */
                       "QLineEdit {"
                       "  border:1.5px solid %4; border-radius:14px;"
                       "  padding:9px 14px; background-color:%2; color:%3; }"
@@ -80,7 +84,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "  background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 %2,stop:1 %1); }"
                       "QLineEdit:hover { border:1.5px solid %3; }"
 
-                      /* ─── ComboBox ───────────────────────────────────────────────────── */
+                      /* Dropdown elements */
                       "QComboBox {"
                       "  border:1.5px solid %4; border-radius:12px;"
                       "  padding:8px 12px; background-color:%2; color:%3; }"
@@ -100,7 +104,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "QComboBox QAbstractItemView::item { padding:9px 14px; border-radius:8px; }"
                       "QComboBox QAbstractItemView::item:hover { background-color:%4; color:%1; }"
 
-                      /* ─── Spin Boxes ─────────────────────────────────────────────────── */
+                      /* Number increment inputs */
                       "QAbstractSpinBox {"
                       "  border:1.5px solid %4; border-radius:12px;"
                       "  padding:8px 12px; background-color:%2; color:%3;"
@@ -116,7 +120,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "  border-left:1px solid %1; background:%4; border-bottom-right-radius:13px; }"
                       "QAbstractSpinBox::down-button:hover { background:%3; }"
 
-                      /* ─── Group Boxes / Cards ────────────────────────────────────────── */
+                      /* Framed sections */
                       "QGroupBox {"
                       "  border:1.5px solid %4; border-radius:20px;"
                       "  margin-top:32px; padding-top:24px; font-weight:700;"
@@ -127,13 +131,13 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "  background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 %2,stop:1 %1);"
                       "  border-radius:8px; }"
 
-                      /* ─── Dashboard Cards ────────────────────────────────────────────── */
+                      /* Status widget items */
                       "QFrame#statsCard {"
                       "  border: 2px solid transparent; }"
                       "QFrame#statsCard:hover {"
                       "  border: 2px solid %2; margin-top: -2px; margin-bottom: 2px; }"
 
-                      /* ─── Tab Widget ─────────────────────────────────────────────────── */
+                      /* Major pane selectors */
                       "QTabWidget::pane {"
                       "  border:1.5px solid %4; border-radius:18px;"
                       "  background:%2; top:-1px; padding:14px; margin-top: 10px; }"
@@ -147,7 +151,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "QTabBar::tab:hover:!selected {"
                       "  background:%2; border:1.5px solid %4; }"
 
-                      /* ─── Tables & Lists ─────────────────────────────────────────────── */
+                      /* Grid viewers */
                       "QTableWidget, QTableView, QListWidget {"
                       "  border:1.5px solid %4; border-radius:14px; padding:6px;"
                       "  gridline-color:%2; selection-background-color:%4; selection-color:%1;"
@@ -174,7 +178,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "  color:%1; border-radius:12px; }"
                       "QListWidget::item:hover:!selected { background-color:%2; border: 1px solid %4; border-radius:12px; }"
 
-                      /* ─── Scroll Bars ────────────────────────────────────────────────── */
+                      /* Layout scrollers */
                       "QScrollBar:vertical   { background:%2; width:10px; margin: 0px; border-radius:5px; }"
                       "QScrollBar:horizontal { background:%2; height:10px; margin: 0px; border-radius:5px; }"
                       "QScrollBar::handle:vertical {"
@@ -190,7 +194,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal"
                       "  { background:none; }"
 
-                      /* ─── Progress Bar ───────────────────────────────────────────────── */
+                      /* Status trackers */
                       "QProgressBar {"
                       "  border:1.5px solid %4; border-radius:10px; background-color:%2;"
                       "  text-align:center; color:%3; height:24px; }"
@@ -198,7 +202,7 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "  background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 %4,stop:1 %2);"
                       "  border-radius:9px; }"
 
-                      /* ─── Menus ──────────────────────────────────────────────────────── */
+                      /* Popout lists */
                       "QMenu { background-color:%2; border:1.5px solid %4; border-radius:14px; padding:6px; }"
                       "QMenu::item { padding:10px 30px 10px 18px; border-radius:8px; color:%3; }"
                       "QMenu::item:selected {"
@@ -206,27 +210,28 @@ void ThemeManager::applyTheme(QApplication &a, const AppTheme &theme)
                       "QMenu::separator { height:1px; background:%4; margin:5px 12px; }"
                       "QMenu::indicator { width:16px; height:16px; }"
 
-                      /* ─── Text Edit ──────────────────────────────────────────────────── */
+                      /* Multi line inputs */
                       "QTextEdit {"
                       "  border:1.5px solid %4; border-radius:14px;"
                       "  padding:10px; background-color:%2; color:%3; }"
                       "QTextEdit:focus { border:2px solid %4; }"
 
-                      /* ─── Tooltips ───────────────────────────────────────────────────── */
+                      /* Popup hovers */
                       "QToolTip {"
                       "  color:%3; background-color:%2; border:1.5px solid %4;"
                       "  border-radius:10px; padding:8px 12px; }"
 
                       )
-                      .arg(theme.background,  // %1
-                           theme.surface,     // %2
-                           theme.text,        // %3
-                           theme.accent)      // %4
-                      .arg(AppFonts::Normal)  // %5
-                      .arg(AppFonts::Timer)   // %6
-                      .arg(AppFonts::Small)   // %7
-                      .arg(AppFonts::Large)   // %8
-                      .arg(AppFonts::Family); // %9
+                      .arg(theme.background,       // %1
+                           theme.surface,          // %2
+                           theme.text,             // %3
+                           theme.accent)           // %4
+                      .arg(AppFonts::Normal)       // %5
+                      .arg(AppFonts::Timer)        // %6
+                      .arg(AppFonts::Small)        // %7
+                      .arg(AppFonts::Large)        // %8
+                      .arg(AppFonts::Family)       // %9
+                      .arg(AppFonts::TimerFamily); // %10
 
     a.setStyleSheet(qss);
 }
@@ -243,8 +248,13 @@ QVector<AppTheme> ThemeManager::getAvailableThemes()
                 themes.append({row[0], row[1], row[2], row[3], row[4]});
         }
     }
+    catch (const std::exception &e)
+    {
+        qWarning() << "Failed to load themes.csv:" << e.what();
+    }
     catch (...)
     {
+        qWarning() << "Unknown error loading themes.csv.";
     }
 
     if (themes.isEmpty())
@@ -268,4 +278,60 @@ QVector<AppTheme> ThemeManager::getDarkThemes()
         {"Ocean Depth", "#051020", "#0a1e38", "#dff0ff", "#38bdf8"},
         {"Amber Dark", "#1a1200", "#2a1f00", "#fff8e1", "#f59e0b"},
     };
+}
+
+ThemeToggle::ThemeToggle(QWidget *parent)
+    : QWidget(parent), m_anim(new QPropertyAnimation(this, "offset", this))
+{
+    setFixedSize(68, 30);
+    setCursor(Qt::PointingHandCursor);
+    setToolTip("Toggle dark / light mode");
+    m_anim->setDuration(180);
+    m_anim->setEasingCurve(QEasingCurve::InOutCubic);
+}
+
+void ThemeToggle::setDark(bool dark)
+{
+    m_dark = dark;
+    m_offset = dark ? 40.0 : 3.0;
+    update();
+}
+
+void ThemeToggle::setOffset(qreal v)
+{
+    m_offset = v;
+    update();
+}
+
+void ThemeToggle::mousePressEvent(QMouseEvent *)
+{
+    m_dark = !m_dark;
+    m_anim->setStartValue(m_offset);
+    m_anim->setEndValue(m_dark ? 40.0 : 3.0);
+    m_anim->start();
+    emit toggled(m_dark);
+}
+
+void ThemeToggle::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    // Generate base indicator capsule
+    QColor pill = m_dark ? QColor(67, 56, 202) : QColor(251, 146, 60);
+    p.setBrush(pill);
+    p.setPen(Qt::NoPen);
+    p.drawRoundedRect(rect(), 15, 15);
+
+    // Overlay animated toggle dot
+    p.setBrush(Qt::white);
+    p.drawEllipse(QRectF(m_offset, 3, 24, 24));
+
+    // Place unicode icon relative to toggle position
+    p.setPen(m_dark ? QColor(67, 56, 202) : QColor(234, 88, 12));
+    QFont f(AppFonts::Family);
+    f.setPixelSize(AppFonts::Small);
+    p.setFont(f);
+    p.drawText(QRectF(m_offset, 3, 24, 24), Qt::AlignCenter,
+               m_dark ? QString("\u263D") : QString("\u2600"));
 }

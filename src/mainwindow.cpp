@@ -24,6 +24,7 @@
 #include <QSettings>
 #include <QShortcut>
 #include <QProgressBar>
+#include <exception>
 
 MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), userRole(role), userId(uid), userName(name)
@@ -32,13 +33,13 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
 
     ui->setupUi(this);
 
-    // Corner widget: Dark Mode toggle + Logout
+    // Setup container for corner widgets like theme toggle and logout
     QWidget *cornerContainer = new QWidget(this);
     QHBoxLayout *cornerLayout = new QHBoxLayout(cornerContainer);
     cornerLayout->setContentsMargins(0, 0, 6, 0);
     cornerLayout->setSpacing(6);
 
-    // ── Load persisted theme settings ──
+    // Retrieve persisted theme settings from storage
     QSettings settings("Acadence", "Acadence");
     m_darkMode = settings.value("theme/darkMode", false).toBool();
     m_darkThemeIndex = settings.value("theme/darkIndex", 0).toInt();
@@ -56,7 +57,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         }
     }
 
-    // Apply the persisted theme now
+    // Apply the loaded theme immediately on startup
     AppTheme currentTheme;
     if (m_darkMode)
     {
@@ -71,33 +72,31 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()), m_userTheme);
     }
 
-    // ── Undo/Redo buttons ──
+    // Initialize global undo and redo buttons
     m_undoBtn = new QPushButton("Undo", cornerContainer);
     m_undoBtn->setToolTip("Nothing to undo");
     m_undoBtn->setEnabled(false);
-    m_undoBtn->setMaximumWidth(70);
-    connect(m_undoBtn, &QPushButton::clicked, this, [this]() {
+    connect(m_undoBtn, &QPushButton::clicked, this, [this]()
+            {
         myManager.undo();
-        updateUndoRedoButtons();
-    });
+        updateUndoRedoButtons(); });
 
     m_redoBtn = new QPushButton("Redo", cornerContainer);
     m_redoBtn->setToolTip("Nothing to redo");
     m_redoBtn->setEnabled(false);
-    m_redoBtn->setMaximumWidth(70);
-    connect(m_redoBtn, &QPushButton::clicked, this, [this]() {
+    connect(m_redoBtn, &QPushButton::clicked, this, [this]()
+            {
         myManager.redo();
-        updateUndoRedoButtons();
-    });
+        updateUndoRedoButtons(); });
 
-    // Keyboard shortcuts: Ctrl+Z for Undo, Ctrl+Y for Redo
+    // Bind standard keyboard shortcuts for undo and redo
     QShortcut *undoShortcut = new QShortcut(QKeySequence::Undo, this);
     connect(undoShortcut, &QShortcut::activated, m_undoBtn, &QPushButton::click);
 
     QShortcut *redoShortcut = new QShortcut(QKeySequence::Redo, this);
     connect(redoShortcut, &QShortcut::activated, m_redoBtn, &QPushButton::click);
 
-    // ── Corner widgets ──
+    // Setup theme toggling widgets
     m_themeBtn = new QPushButton(m_darkMode ? "Dark Theme" : "Theme", cornerContainer);
     connect(m_themeBtn, &QPushButton::clicked, this, &MainWindow::onThemeClicked);
 
@@ -112,13 +111,13 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     cornerLayout->addWidget(ui->logoutButton);
     ui->tabWidget->setCornerWidget(cornerContainer, Qt::TopRightCorner);
 
-    // Configure window state
+    // Configure main window flags and initial maximization state
     setWindowFlags(Qt::Window | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint | Qt::WindowCloseButtonHint);
     setWindowState(Qt::WindowMaximized);
 
     ui->label_welcome->setText("Welcome, " + name);
 
-    // Apply shadow effect
+    // Add decorative shadow effect to the profile group box
     QGraphicsDropShadowEffect *profileShadow = new QGraphicsDropShadowEffect(ui->groupBox_profile);
     profileShadow->setBlurRadius(20);
     profileShadow->setXOffset(0);
@@ -126,7 +125,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     profileShadow->setColor(QColor(0, 0, 0, 40));
     ui->groupBox_profile->setGraphicsEffect(profileShadow);
 
-    // Initialize UI modules
+    // Instantiate main UI modules
     uiDashboard = new UIDashboard(ui, &myManager, role, uid, name, this);
     uiPlanner = new UIPlanner(ui, &myManager, uid, this);
     uiTimers = new UITimers(ui, &myManager, uid, this);
@@ -136,19 +135,19 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     uiQueries = new UIQueries(ui, &myManager, role, uid, this);
     uiAdmin = new UIAdmin(ui, &myManager, this);
 
-    // Link habits module to timers
+    // Link habits and timers to allow integrated session tracking
     uiTimers->setHabitsModule(uiHabits);
 
-    // Setup UI
+    // Prepare tables and timer defaults
     setupTables();
     uiTimers->setupTimers();
     setupConnections();
 
-    // Lost & Found — available to all roles
+    // Append universal Lost & Found module
     uiLostFound = new UILostFound(&myManager, role, uid, name, this);
     ui->tabWidget->addTab(uiLostFound->getWidget(), "Lost && Found");
 
-    // Configure UI based on role
+    // Adjust visible tabs and capabilities based on user role
     if (role == Constants::Role::Student)
     {
         uiTamagotchi = new UITamagotchi(&myManager, role, uid, this);
@@ -187,7 +186,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         ui->addNoticeButton->setText("Post Targeted Notice");
     }
 
-    // ── Create Loading Overlay ──
+    // Show loading overlay while initial data fetch occurs
     m_loadingOverlay = new QWidget(this);
     m_loadingOverlay->setObjectName("loadingOverlay");
 
@@ -216,7 +215,7 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
     m_loadingOverlay->resize(width(), height());
     m_loadingOverlay->show();
 
-    // Load data
+    // Defer data loading slightly to allow window to render
     QTimer::singleShot(100, this, [this, role]()
                        {
         try
@@ -248,6 +247,14 @@ MainWindow::MainWindow(QString role, int uid, QString name, QWidget *parent)
         {
             QMessageBox::critical(this, "Data Error", QString("Failed to load initial data:\n%1").arg(e.what()));
         }
+        catch (const std::exception &e)
+        {
+            QMessageBox::critical(this, "Data Error", QString("Standard exception during load:\n%1").arg(e.what()));
+        }
+        catch (...)
+        {
+            QMessageBox::critical(this, "Data Error", "Unknown error during initial data load.");
+        }
         
         if (m_loadingOverlay)
         {
@@ -262,9 +269,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// Configure table headers
 void MainWindow::setupTables()
 {
+    // Make key tables interactive and prevent unwanted stretching
     QList<QTableView *> tables = {
         ui->adminTableView, ui->habitTableWidget, ui->tableRoutine, ui->tableTeacherRoutine,
         ui->tableAcademics, ui->tableGrading, ui->tableAttendance};
@@ -282,15 +289,21 @@ void MainWindow::onDataChanged(DataType type)
     {
     case DataType::Habits:
         uiHabits->refreshHabits();
+        if (userRole == Constants::Role::Student && uiTamagotchi)
+            uiTamagotchi->refreshTamagotchi();
         break;
     case DataType::Tasks:
         uiPlanner->refreshPlanner();
+        uiDashboard->refreshDashboard();
         break;
     case DataType::Routine:
         if (userRole == Constants::Role::Teacher)
             uiRoutine->refreshTeacherRoutine();
         else
             uiRoutine->refreshRoutine();
+        uiDashboard->refreshDashboard();
+        if (userRole == Constants::Role::Student && uiCalendar)
+            uiCalendar->refresh();
         break;
     case DataType::Notices:
         uiDashboard->refreshDashboard();
@@ -299,12 +312,17 @@ void MainWindow::onDataChanged(DataType type)
         uiAcademics->refreshAcademics();
         if (userRole == Constants::Role::Teacher)
             uiAcademics->refreshTeacherTools();
+        uiDashboard->refreshDashboard();
+        if (userRole == Constants::Role::Student && uiTamagotchi)
+            uiTamagotchi->refreshTamagotchi();
         break;
     case DataType::Queries:
         uiQueries->refreshQueries();
         break;
     case DataType::Profile:
         uiDashboard->refreshDashboard();
+        if (userRole == Constants::Role::Student && uiTamagotchi)
+            uiTamagotchi->refreshTamagotchi();
         break;
     case DataType::None:
         break;
@@ -320,18 +338,20 @@ void MainWindow::onDataChanged(DataType type)
 
 void MainWindow::updateUndoRedoButtons()
 {
+    // Sync undo/redo button states with command history
     m_undoBtn->setEnabled(myManager.canUndo());
     m_redoBtn->setEnabled(myManager.canRedo());
     m_undoBtn->setToolTip(myManager.canUndo()
-        ? "Undo: " + myManager.undoDescription()
-        : "Nothing to undo");
+                              ? "Undo: " + myManager.undoDescription()
+                              : "Nothing to undo");
     m_redoBtn->setToolTip(myManager.canRedo()
-        ? "Redo: " + myManager.redoDescription()
-        : "Nothing to redo");
+                              ? "Redo: " + myManager.redoDescription()
+                              : "Nothing to redo");
 }
 
 void MainWindow::toggleDarkMode(bool isDark)
 {
+    // Switch global theme between light and dark mode variants
     m_darkMode = isDark;
 
     QSettings settings("Acadence", "Acadence");
@@ -357,11 +377,12 @@ void MainWindow::toggleDarkMode(bool isDark)
 
 void MainWindow::onThemeClicked()
 {
+    // Cycle through available themes of the current mode
     QSettings settings("Acadence", "Acadence");
 
     if (m_darkMode)
     {
-        // Cycle through dark themes
+        // Move to the next dark theme
         auto dark = ThemeManager::getDarkThemes();
         m_darkThemeIndex = (m_darkThemeIndex + 1) % dark.size();
         ThemeManager::applyTheme(*static_cast<QApplication *>(QApplication::instance()),
@@ -370,7 +391,7 @@ void MainWindow::onThemeClicked()
         return;
     }
 
-    // Cycle through light themes
+    // Move to the next light theme
     auto themes = ThemeManager::getAvailableThemes();
     int idx = -1;
     for (int i = 0; i < themes.size(); ++i)
@@ -391,35 +412,35 @@ void MainWindow::setupConnections()
 {
     uiPlanner->setupConnections();
 
-    // Dashboard connections
+    // Connect UI actions for Dashboard
     connect(ui->btnChangePassword, &QPushButton::clicked, uiDashboard, &UIDashboard::onChangePasswordClicked);
     connect(ui->addNoticeButton, &QPushButton::clicked, uiDashboard, &UIDashboard::onAddNoticeClicked);
     connect(ui->logoutButton, &QPushButton::clicked, uiDashboard, &UIDashboard::onLogoutClicked);
     connect(ui->noticeListWidget, &QListWidget::itemClicked, uiDashboard, &UIDashboard::onNoticeItemClicked);
     connect(ui->noticeListWidget, &QListWidget::itemDoubleClicked, uiDashboard, &UIDashboard::onNoticeItemDoubleClicked);
 
-    // Study Planner connections
+    // Connect UI actions for Study Planner
     connect(ui->addTaskButton, &QPushButton::clicked, uiPlanner, &UIPlanner::onAddTaskClicked);
     connect(ui->btnDeleteTask, &QPushButton::clicked, uiPlanner, &UIPlanner::onDeleteTaskClicked);
     connect(ui->btnClearCompletedTasks, &QPushButton::clicked, uiPlanner, &UIPlanner::onClearCompletedTasksClicked);
     connect(ui->taskListWidget, &QListWidget::itemChanged, uiPlanner, &UIPlanner::onTaskItemChanged);
 
-    // Focus Timer connections
+    // Connect UI actions for Focus Timer
     connect(ui->btnTimerStart, &QPushButton::clicked, uiTimers, &UITimers::onFocusTimerStartClicked);
     connect(ui->btnTimerPause, &QPushButton::clicked, uiTimers, &UITimers::onFocusTimerPauseClicked);
     connect(ui->btnTimerStop, &QPushButton::clicked, uiTimers, &UITimers::onFocusTimerStopClicked);
 
-    // Workout Timer connections
+    // Connect UI actions for Workout Timer
     connect(ui->btnWorkoutStart, &QPushButton::clicked, uiTimers, &UITimers::onWorkoutTimerStartClicked);
     connect(ui->btnWorkoutPause, &QPushButton::clicked, uiTimers, &UITimers::onWorkoutTimerPauseClicked);
     connect(ui->btnWorkoutStop, &QPushButton::clicked, uiTimers, &UITimers::onWorkoutTimerStopClicked);
 
-    // Habits connections
+    // Connect UI actions for Habits management
     connect(ui->btnAddHabit, &QPushButton::clicked, uiHabits, &UIHabits::onAddHabitClicked);
     connect(ui->btnPerformHabit, &QPushButton::clicked, uiHabits, &UIHabits::onPerformHabitClicked);
     connect(ui->btnDeleteHabit, &QPushButton::clicked, uiHabits, &UIHabits::onDeleteHabitClicked);
 
-    // Prayer connections
+    // Connect UI actions for Prayer tracker
     connect(ui->chkFajr, &QCheckBox::toggled, uiHabits, &UIHabits::onFajrToggled);
     connect(ui->chkDhuhr, &QCheckBox::toggled, uiHabits, &UIHabits::onDhuhrToggled);
     connect(ui->chkAsr, &QCheckBox::toggled, uiHabits, &UIHabits::onAsrToggled);
@@ -427,13 +448,13 @@ void MainWindow::setupConnections()
     connect(ui->chkIsha, &QCheckBox::toggled, uiHabits, &UIHabits::onIshaToggled);
     connect(ui->btnPrayerHistory, &QPushButton::clicked, uiHabits, &UIHabits::onPrayerHistoryClicked);
 
-    // Routine connections
+    // Connect UI actions for Routine view
     connect(ui->comboRoutineDay, QOverload<int>::of(&QComboBox::currentIndexChanged), uiRoutine, &UIRoutine::onRoutineDayChanged);
     connect(ui->comboRoutineDayInput, QOverload<int>::of(&QComboBox::currentIndexChanged), uiRoutine, &UIRoutine::onTeacherRoutineDayChanged);
     connect(ui->btnCancelClass, &QPushButton::clicked, uiRoutine, &UIRoutine::onCancelClassClicked);
     connect(ui->btnRescheduleClass, &QPushButton::clicked, uiRoutine, &UIRoutine::onRescheduleClassClicked);
 
-    // Teacher Academic Tools connections
+    // Connect UI actions for Teacher Academic Tools
     connect(ui->btnCreateAssessment, &QPushButton::clicked, uiAcademics, &UIAcademics::onCreateAssessmentClicked);
     connect(ui->comboTeacherAssessment, QOverload<int>::of(&QComboBox::currentIndexChanged), uiAcademics, &UIAcademics::onTeacherAssessmentChanged);
     connect(ui->btnSaveGrades, &QPushButton::clicked, uiAcademics, &UIAcademics::onSaveGradesClicked);
@@ -441,17 +462,16 @@ void MainWindow::setupConnections()
     connect(ui->btnAddClassDate, &QPushButton::clicked, uiAcademics, &UIAcademics::onAddClassDateClicked);
     connect(ui->btnSaveAttendance, &QPushButton::clicked, uiAcademics, &UIAcademics::onSaveAttendanceClicked);
 
-    // Q&A connections
+    // Connect UI actions for Q&A section
     connect(ui->btnQueryAction, &QPushButton::clicked, uiQueries, &UIQueries::onQueryActionClicked);
 
-    // Admin Panel connections
+    // Connect UI actions for Admin operations
     connect(ui->tableComboBox, &QComboBox::currentTextChanged, uiAdmin, &UIAdmin::onTableComboBoxChanged);
     connect(ui->btnAddRow, &QPushButton::clicked, uiAdmin, &UIAdmin::onAddRowClicked);
     connect(ui->btnDeleteRow, &QPushButton::clicked, uiAdmin, &UIAdmin::onDeleteRowClicked);
     connect(ui->searchLineEdit, &QLineEdit::textChanged, uiAdmin, &UIAdmin::onSearchTextChanged);
 }
 
-// Handle resize event
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
@@ -459,6 +479,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     if (m_loadingOverlay)
         m_loadingOverlay->resize(size());
 
+    // Adjust active table column widths when the window is resized
     QTimer::singleShot(0, this, [=]()
                        {
         if (ui->adminTableView->isVisible())

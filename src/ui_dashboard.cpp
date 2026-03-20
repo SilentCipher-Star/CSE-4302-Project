@@ -32,6 +32,8 @@
 #include <QJsonArray>
 #include <algorithm>
 #include <memory>
+#include <QDebug>
+#include <exception>
 
 namespace
 {
@@ -45,7 +47,7 @@ namespace
     constexpr int NoticeCourseIdsRole = Qt::UserRole + 27;
     constexpr int NoticeRawAuthorRole = Qt::UserRole + 28;
     constexpr int NoticeRawContentRole = Qt::UserRole + 29;
-    // Decorator-pattern roles
+    // Metadata attributes managed by decorators
     constexpr int NoticeIsUrgentRole = Qt::UserRole + 30;
     constexpr int NoticeIsPinnedRole = Qt::UserRole + 31;
     constexpr int NoticeExpiresOnRole = Qt::UserRole + 32;
@@ -105,7 +107,7 @@ void UIDashboard::refreshStatsCards()
     if (!statsLayout)
         return;
 
-    // Enforce homogeneous distance from container border and between elements
+    // Ensure visually consistent spacing for metric modules
     statsLayout->setContentsMargins(16, 16, 16, 16);
     statsLayout->setSpacing(16);
 
@@ -119,29 +121,23 @@ void UIDashboard::refreshStatsCards()
 
     if (userRole == Constants::Role::Student)
     {
-        // GPA
+        // Calculate real-time grade metrics
         QString statsStr = myManager->getDashboardStats(userId, userRole);
         QString gpa = "N/A";
         if (statsStr.contains("GPA:"))
             gpa = statsStr.split("GPA:").last().trimmed();
 
-        // Attendance average
+        // Pull aggregated presence ratio
         double avgAtt = myManager->getOverallAttendancePercentage(userId);
         const QString attStr = (avgAtt > 0) ? QString::number(avgAtt, 'f', 1) + "%" : "N/A";
 
-        // Pending tasks
+        // Tabulate outstanding study tasks
         int pending = 0;
-        try
-        {
-            for (const auto &t : myManager->getTasks(userId))
-                if (!t.getIsCompleted())
-                    ++pending;
-        }
-        catch (...)
-        {
-        }
+        for (const auto &t : myManager->getTasks(userId))
+            if (!t.getIsCompleted())
+                ++pending;
 
-        // View Charts button
+        // Add graph inspection toggle
         QPushButton *chartBtn = new QPushButton("View Attendance Chart");
         chartBtn->setFixedHeight(46);
         chartBtn->setCursor(Qt::PointingHandCursor);
@@ -160,41 +156,25 @@ void UIDashboard::refreshStatsCards()
     }
     else if (userRole == Constants::Role::Teacher)
     {
-        // 1. Classes Today
+        // Count assigned sessions scheduled for the current date
         int classesToday = 0;
-        try
-        {
-            QVector<Course *> courses = myManager->getTeacherCourses(userId);
-            QSet<QString> myCodes;
-            for (auto c : courses)
-                myCodes.insert(c->getCode());
-            qDeleteAll(courses);
+        QSet<QString> myCodes;
+        for (const auto &c : myManager->getTeacherCourses(userId))
+            myCodes.insert(c->getCode());
 
-            QVector<RoutineSession> sessions = myManager->getEffectiveRoutine(QDate::currentDate());
-            for (const auto &s : sessions)
-            {
-                if (myCodes.contains(s.getCourseCode()))
-                    classesToday++;
-            }
-        }
-        catch (...)
+        QVector<RoutineSession> sessions = myManager->getEffectiveRoutine(QDate::currentDate());
+        for (const auto &s : sessions)
         {
+            if (myCodes.contains(s.getCourseCode()))
+                classesToday++;
         }
 
-        // 2. Students At Risk & Active Courses
+        // Identify active rosters and underperforming students
         int atRiskCount = 0;
-        int activeCourses = 0;
-        try
-        {
-            QVector<Course *> courses = myManager->getTeacherCourses(userId);
-            activeCourses = courses.size();
-            for (auto c : courses)
-                atRiskCount += myManager->getLowAttendanceStudents(c->getId(), 75.0).size();
-            qDeleteAll(courses);
-        }
-        catch (...)
-        {
-        }
+        auto courses = myManager->getTeacherCourses(userId);
+        int activeCourses = courses.size();
+        for (const auto &c : courses)
+            atRiskCount += myManager->getLowAttendanceStudents(c->getId(), 75.0).size();
 
         QHBoxLayout *cardsLayout = new QHBoxLayout();
         cardsLayout->setSpacing(16);
@@ -213,8 +193,13 @@ void UIDashboard::refreshStatsCards()
             teacherCount = CsvHandler::readCsv("teachers.csv").size();
             courseCount = CsvHandler::readCsv("courses.csv").size();
         }
+        catch (const std::exception &e)
+        {
+            qWarning() << "Failed to load admin stats:" << e.what();
+        }
         catch (...)
         {
+            qWarning() << "Unknown error loading admin stats.";
         }
 
         QHBoxLayout *cardsLayout = new QHBoxLayout();
@@ -227,7 +212,6 @@ void UIDashboard::refreshStatsCards()
     }
 }
 
-// ── Upcoming Events Widget ────────────────────────────────────────────────────
 QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &icon,
                                           const QVector<QPair<QString, QString>> &rows,
                                           const QString &accentColor) const
@@ -242,13 +226,13 @@ QFrame *UIDashboard::buildUpcomingSection(const QString &title, const QString &i
     vl->setContentsMargins(12, 10, 12, 10);
     vl->setSpacing(6);
 
-    // Section header
+    // Generate panel header label
     QLabel *hdr = new QLabel(icon + "  " + title);
     hdr->setStyleSheet(QString("font-size:%1px; font-weight:bold; color:palette(text); background:transparent; border:none;")
                            .arg(AppFonts::Normal));
     vl->addWidget(hdr);
 
-    // Divider
+    // Include visual separator
     QFrame *line = new QFrame();
     line->setFrameShape(QFrame::HLine);
     line->setStyleSheet(QString("background:%1; border:none; max-height:1px;").arg(accentColor));
@@ -308,107 +292,99 @@ void UIDashboard::refreshUpcomingEvents()
     QDate today = QDate::currentDate();
     QString todayDow = today.toString("dddd"); // e.g. "Monday"
 
-    // ── Section 1: Next Exam ──────────────────────────────────────────────
+    // Find closest upcoming exam assessment
     QVector<QPair<QString, QString>> examRows;
     QString examAccent = "#6d28d9";
-    try
+    QVector<Assessment> all = myManager->getStudentAssessments(userId);
+    int bestDays = INT_MAX;
+    Assessment *best = nullptr;
+    for (auto &a : all)
     {
-        QVector<Assessment> all = myManager->getStudentAssessments(userId);
-        int bestDays = INT_MAX;
-        Assessment *best = nullptr;
-        for (auto &a : all)
+        QDate d = QDate::fromString(a.getDate(), "yyyy-MM-dd");
+        if (!d.isValid())
+            continue;
+        int days = today.daysTo(d);
+        if (days >= 0 && days < bestDays)
         {
-            QDate d = QDate::fromString(a.getDate(), "yyyy-MM-dd");
-            if (!d.isValid())
-                continue;
-            int days = today.daysTo(d);
-            if (days >= 0 && days < bestDays)
-            {
-                bestDays = days;
-                best = &a;
-            }
-        }
-        if (best)
-        {
-            QString countdown;
-            if (bestDays == 0)
-            {
-                countdown = "TODAY!";
-                examAccent = "#dc2626";
-            }
-            else if (bestDays == 1)
-            {
-                countdown = "Tomorrow";
-                examAccent = "#dc2626";
-            }
-            else if (bestDays <= 3)
-            {
-                countdown = QString("in %1 days").arg(bestDays);
-                examAccent = "#ea580c";
-            }
-            else if (bestDays <= 7)
-            {
-                countdown = QString("in %1 days").arg(bestDays);
-                examAccent = "#d97706";
-            }
-            else
-            {
-                countdown = QString("in %1 days").arg(bestDays);
-                examAccent = "#059669";
-            }
-
-            examRows.append({best->getTitle(), best->getCourseName() + "  •  " + countdown});
+            bestDays = days;
+            best = &a;
         }
     }
-    catch (...)
+    if (best)
     {
+        QString countdown;
+        if (bestDays == 0)
+        {
+            countdown = "TODAY!";
+            examAccent = "#dc2626";
+        }
+        else if (bestDays == 1)
+        {
+            countdown = "Tomorrow";
+            examAccent = "#dc2626";
+        }
+        else if (bestDays <= 3)
+        {
+            countdown = QString("in %1 days").arg(bestDays);
+            examAccent = "#ea580c";
+        }
+        else if (bestDays <= 7)
+        {
+            countdown = QString("in %1 days").arg(bestDays);
+            examAccent = "#d97706";
+        }
+        else
+        {
+            countdown = QString("in %1 days").arg(bestDays);
+            examAccent = "#059669";
+        }
+
+        examRows.append({best->getTitle(), best->getCourseName() + "  •  " + countdown});
     }
 
-    // ── Section 2: Today's Classes ────────────────────────────────────────
+    // Fetch courses aligned with current day of week
     QVector<QPair<QString, QString>> classRows;
     int semester = -1;
     try
     {
-        Student *stu = myManager->getStudent(userId);
+        auto stu = myManager->getStudent(userId);
         if (stu)
         {
             semester = stu->getSemester();
-            delete stu;
         }
         QVector<RoutineSession> sessions = myManager->getRoutineForDay(todayDow, semester);
         for (const auto &s : sessions)
             classRows.append({s.getCourseCode() + "  " + s.getCourseName(),
                               s.getStartTime() + " – " + s.getEndTime() + "  •  " + s.getRoom()});
     }
+    catch (const std::exception &e)
+    {
+        qWarning() << "Failed to load today's classes:" << e.what();
+    }
     catch (...)
     {
+        qWarning() << "Unknown error loading today's classes.";
     }
 
-    // ── Section 3: Pending Tasks ──────────────────────────────────────────
+    // Limit pending task display slice
     QVector<QPair<QString, QString>> taskRows;
     int extraTasks = 0;
-    try
+    QVector<Task> tasks = myManager->getTasks(userId);
+    int shown = 0;
+    for (const auto &t : tasks)
     {
-        QVector<Task> tasks = myManager->getTasks(userId);
-        int shown = 0;
-        for (const auto &t : tasks)
+        if (t.getIsCompleted())
+            continue;
+        if (shown < 3)
         {
-            if (t.getIsCompleted())
-                continue;
-            if (shown < 3)
-            {
-                taskRows.append({t.getDescription(), ""});
-                ++shown;
-            }
-            else
-                ++extraTasks;
+            taskRows.append({t.getDescription(), ""});
+            ++shown;
         }
-        if (extraTasks > 0)
-            taskRows.append({QString("+ %1 more...").arg(extraTasks), ""});
+        else
+            ++extraTasks;
     }
-    catch (...)
-    {
-    }
+    if (extraTasks > 0)
+        taskRows.append({QString("+ %1 more...").arg(extraTasks), ""});
 
     hl->addWidget(buildUpcomingSection("Next Exam", "\xf0\x9f\x93\x9d", examRows, examAccent));
     hl->addWidget(buildUpcomingSection("Today's Classes", "\xf0\x9f\x93\x9a", classRows, "#0891b2"));
@@ -424,8 +400,13 @@ void UIDashboard::onViewChartsClicked()
     {
         records = myManager->getStudentAttendance(userId);
     }
+    catch (const std::exception &e)
+    {
+        qWarning() << "Failed to load student attendance for charts:" << e.what();
+    }
     catch (...)
     {
+        qWarning() << "Unknown error loading student attendance for charts.";
     }
 
     QDialog dlg;
@@ -476,9 +457,17 @@ void UIDashboard::refreshDashboard()
     }
     catch (const Acadence::Exception &e)
     {
-        // Ignore error if notices fail to load
+        qWarning() << "Failed to load notices:" << e.what();
     }
-    // Parsed notice info for sorting before inserting into the list widget
+    catch (const std::exception &e)
+    {
+        qWarning() << "Standard exception loading notices:" << e.what();
+    }
+    catch (...)
+    {
+        qWarning() << "Unknown error loading notices.";
+    }
+    // Prepare struct to cache parsed notice parts to facilitate accurate sorting
     struct ParsedEntry
     {
         Notice raw;
@@ -490,7 +479,7 @@ void UIDashboard::refreshDashboard()
 
     QVector<ParsedEntry> priorityEntries, regularEntries;
 
-    // Optimization: Cache student course IDs once to avoid reading CSV for every notice
+    // Minimize filesystem hits by querying target course enrollments once
     QSet<int> cachedStudentCourseIds;
     if (userRole == Constants::Role::Student)
     {
@@ -531,7 +520,7 @@ void UIDashboard::refreshDashboard()
             return false;
         }
 
-        // Fallback to legacy check if not structured
+        // Defer to backwards-compatibility parser if string is basic format
         return noticeVisibleForCurrentUser(content);
     };
 
@@ -568,7 +557,7 @@ void UIDashboard::refreshDashboard()
         if (isAdminLikeAuthor(e.authorDisplay))
             e.authorDisplay = "Register of the Campus";
 
-        // ---- Decorator Pattern: build the decorated notice ----
+        // Invoke Decorator flow to append formatting parameters
         auto decorated = buildDecoratedNotice(
             e.subject, e.body, e.authorDisplay, n.getDate(),
             e.isUrgent, e.isPinned, e.expiresOn);
@@ -576,7 +565,6 @@ void UIDashboard::refreshDashboard()
         e.badges = decorated->getBadges();
         e.highlight = decorated->getHighlightColor();
         e.priority = decorated->isPriority();
-        // -------------------------------------------------------
 
         if (e.priority)
             priorityEntries.append(e);
@@ -584,7 +572,7 @@ void UIDashboard::refreshDashboard()
             regularEntries.append(e);
     }
 
-    // Helper lambda: build a QListWidgetItem from stored ParsedEntry + preview
+    // Format display string using consolidated variables
     auto makeItem = [&](const ParsedEntry &e) -> QListWidgetItem *
     {
         QString previewLine;
@@ -620,8 +608,7 @@ void UIDashboard::refreshDashboard()
         return item;
     };
 
-    // Add pinned/urgent notices first, then ordinary notices (each group
-    // already sorted newest-first by ManagerNotices::getNotices)
+    // Output pinned notices to UI list ahead of unpinned items
     for (const auto &e : priorityEntries)
         ui->noticeListWidget->addItem(makeItem(e));
     for (const auto &e : regularEntries)
@@ -639,7 +626,7 @@ void UIDashboard::refreshDashboard()
 
     if (userRole == Constants::Role::Student)
     {
-        std::unique_ptr<Student> s(myManager->getStudent(userId));
+        auto s = myManager->getStudent(userId);
         if (s)
         {
             ui->val_p_name->setText(s->getName());
@@ -653,7 +640,7 @@ void UIDashboard::refreshDashboard()
     }
     else if (userRole == Constants::Role::Teacher)
     {
-        std::unique_ptr<Teacher> t(myManager->getTeacher(userId));
+        auto t = myManager->getTeacher(userId);
         if (t)
         {
             ui->val_p_name->setText(t->getName());
@@ -702,10 +689,8 @@ void UIDashboard::onAddNoticeClicked()
     courseTargetCombo->addItem("All My Students", "*");
     if (userRole == Constants::Role::Teacher)
     {
-        QVector<Course *> courses = myManager->getTeacherCourses(userId);
-        for (Course *c : courses)
+        for (const auto &c : myManager->getTeacherCourses(userId))
             courseTargetCombo->addItem(c->getCode() + " - " + c->getName(), QString::number(c->getId()));
-        qDeleteAll(courses);
         form->addRow("Student Target:", courseTargetCombo);
     }
 
@@ -722,7 +707,7 @@ void UIDashboard::onAddNoticeClicked()
     hintLabel->setStyleSheet("color: palette(text);");
     hintLabel->setText("Tip: Students will see sender, subject, and a preview. Clicking opens full notice.");
 
-    // ---- Decorator Pattern: notice options ----
+    // Inject formatting flags that alter notice decorators
     QGroupBox *optionsBox = new QGroupBox("Notice Options", &editor);
     QVBoxLayout *optLayout = new QVBoxLayout(optionsBox);
 
@@ -743,7 +728,6 @@ void UIDashboard::onAddNoticeClicked()
     expiryRow->addStretch();
     optLayout->addLayout(expiryRow);
     connect(expiryCheck, &QCheckBox::toggled, expiresEdit, &QDateEdit::setEnabled);
-    // -------------------------------------------
 
     mainLayout->addLayout(form);
     mainLayout->addWidget(new QLabel("Message:", &editor));
@@ -802,6 +786,14 @@ void UIDashboard::onAddNoticeClicked()
     {
         Notifications::error(nullptr, QString::fromUtf8(e.what()));
     }
+    catch (const std::exception &e)
+    {
+        Notifications::error(nullptr, QString("Standard exception:\n%1").arg(e.what()));
+    }
+    catch (...)
+    {
+        Notifications::error(nullptr, "Unknown error posting notice.");
+    }
 }
 
 void UIDashboard::onNoticeItemClicked(QListWidgetItem *item)
@@ -822,7 +814,7 @@ void UIDashboard::onNoticeItemClicked(QListWidgetItem *item)
     const QString audience = item->data(NoticeAudienceRole).toString();
     const QString body = item->data(NoticeBodyRole).toString();
 
-    // Decorator Pattern: show badges if the notice has any decorator applied
+    // Inject dynamic badges derived from priority tags
     const QString badges = item->data(NoticeBadgesRole).toString();
     if (!badges.isEmpty())
     {
@@ -950,10 +942,8 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
         courseTargetCombo->addItem("All My Students", "*");
         if (userRole == Constants::Role::Teacher)
         {
-            QVector<Course *> courses = myManager->getTeacherCourses(userId);
-            for (Course *c : courses)
+            for (const auto &c : myManager->getTeacherCourses(userId))
                 courseTargetCombo->addItem(c->getCode() + " - " + c->getName(), QString::number(c->getId()));
-            qDeleteAll(courses);
             if (courseIds.size() == 1)
             {
                 const int idx = courseTargetCombo->findData(courseIds.first());
@@ -972,7 +962,7 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
         bodyEdit->setAcceptRichText(false);
         bodyEdit->setPlainText(body);
 
-        // ---- Decorator Pattern: pre-populate existing decorator options ----
+        // Fetch and lock existing toggles to prevent unintentional property loss
         QGroupBox *editOptionsBox = new QGroupBox("Notice Options", &editor);
         QVBoxLayout *editOptLayout = new QVBoxLayout(editOptionsBox);
 
@@ -1007,7 +997,6 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
         editExpiryRow->addStretch();
         editOptLayout->addLayout(editExpiryRow);
         connect(editExpiryCheck, &QCheckBox::toggled, editExpiresEdit, &QDateEdit::setEnabled);
-        // -------------------------------------------------------------------
 
         mainLayout->addLayout(form);
         mainLayout->addWidget(new QLabel("Message:", &editor));
@@ -1085,12 +1074,12 @@ void UIDashboard::onNoticeListContextMenuRequested(const QPoint &pos)
 
 void UIDashboard::expandAllNotices()
 {
-    // Kept for compatibility: Gmail-style view opens full notice in dialog.
+    // Deprecated legacy layout function stub
 }
 
 void UIDashboard::collapseAllNotices()
 {
-    // Kept for compatibility: Gmail-style view opens full notice in dialog.
+    // Deprecated legacy layout function stub
 }
 
 void UIDashboard::onChangePasswordClicked()
@@ -1157,6 +1146,14 @@ void UIDashboard::onChangePasswordClicked()
         catch (const Acadence::Exception &e)
         {
             Notifications::error(nullptr, QString::fromUtf8(e.what()));
+        }
+        catch (const std::exception &e)
+        {
+            Notifications::error(nullptr, QString("Standard exception:\n%1").arg(e.what()));
+        }
+        catch (...)
+        {
+            Notifications::error(nullptr, "Unknown error changing password.");
         }
     }
 }
@@ -1295,7 +1292,7 @@ void UIDashboard::updateNoticeItemDisplay(QListWidgetItem *item)
 
     item->setText(item->data(NoticeHeaderRole).toString());
 
-    // Decorator pattern: apply the highlight colour computed by the decorator chain
+    // Extract highlight attributes rendered by background decorator logic
     const QColor highlight = item->data(NoticeHighlightColorRole).value<QColor>();
     if (highlight.isValid())
         item->setBackground(highlight);
@@ -1322,7 +1319,7 @@ QString UIDashboard::composeNoticeStorageContent(const QString &audienceTag, con
     obj.insert("subject", subject.trimmed());
     obj.insert("body", body.trimmed());
 
-    // Decorator flags – only persist when set (keeps CSV compact for plain notices)
+    // Omit boolean priority flags entirely if unset
     if (isUrgent)
         obj.insert("isUrgent", true);
     if (isPinned)
@@ -1368,7 +1365,7 @@ bool UIDashboard::parseStructuredNoticeContent(const QString &raw, QString &audi
     subject = obj.value("subject").toString().trimmed();
     body = obj.value("body").toString().trimmed();
 
-    // Decorator flags
+    // Read optional decorators
     if (isUrgent)
         *isUrgent = obj.value("isUrgent").toBool(false);
     if (isPinned)
@@ -1404,7 +1401,7 @@ QSet<int> UIDashboard::currentStudentCourseIds() const
 
 QString UIDashboard::courseNameById(int courseId) const
 {
-    std::unique_ptr<Course> c(myManager->getCourse(courseId));
+    auto c = myManager->getCourse(courseId);
     if (!c)
         return QString("Course #%1").arg(courseId);
     return c->getCode() + " - " + c->getName();
