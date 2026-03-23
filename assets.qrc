@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/sounds/tick.wav</file>
+        <file>assets/sounds/timer_end.wav</file>
+    </qresource>
+</RCC>

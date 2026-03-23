@@ -12,12 +12,12 @@ void AssetManager::load()
 {
     qDebug() << "AssetManager: Loading assets...";
     Utils::loadFonts();
-    CsvHandler::initialize();  // Ensure files exist
-    CsvHandler::loadAllData(); // Load data into cache
+    CsvHandler::initialize();
+    CsvHandler::loadAllData();
 
-    // Load sounds
-    loadSound("tick", "tick.wav");
-    loadSound("end", "timer_end.wav");
+    // Use the virtual paths defined in your assets.qrc
+    loadSound("tick", "qrc:/assets/sounds/tick.wav");
+    loadSound("end", "qrc:/assets/sounds/timer_end.wav");
 
     qDebug() << "AssetManager: Assets loaded.";
 }
@@ -32,13 +32,19 @@ void AssetManager::unload()
     qDebug() << "AssetManager: Assets unloaded.";
 }
 
-void AssetManager::loadSound(const QString &name, const QString &filename)
+void AssetManager::loadSound(const QString &name, const QString &path)
 {
-    QString soundPath = QCoreApplication::applicationDirPath() + "/../assets/sounds/" + filename;
     QSoundEffect *sound = new QSoundEffect();
-    sound->setSource(QUrl::fromLocalFile(soundPath));
+    
+    // Switch from local file to a standard QUrl for the resource path
+    sound->setSource(QUrl(path));
+    
     sound->setVolume(0.5f);
     m_sounds.insert(name, sound);
+    
+    if (!sound->isLoaded()) {
+        qWarning() << "AssetManager: Failed to load sound:" << name << "from path:" << path;
+    }
 }
 
 QSoundEffect *AssetManager::getSound(const QString &name)

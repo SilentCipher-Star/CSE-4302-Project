@@ -14,7 +14,8 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
 add_executable(Acadence WIN32 MACOSX_BUNDLE
     # Main
     main.cpp
-
+    assets.qrc
+    ${UI_FILES}
     # UI Forms
     src/mainwindow.ui
 
