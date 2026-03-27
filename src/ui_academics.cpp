@@ -32,9 +32,34 @@
 #include <QTextStream>
 #include <QLineEdit>
 #include <QTextEdit>
+#include <QStyledItemDelegate>
+#include <QAbstractItemView>
 
 namespace
 {
+    class FullCellGradeEditorDelegate : public QStyledItemDelegate
+    {
+    public:
+        using QStyledItemDelegate::QStyledItemDelegate;
+
+        QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override
+        {
+            if (index.column() == 2)
+            {
+                auto *editor = new QLineEdit(parent);
+                editor->setFrame(false);
+                return editor;
+            }
+            return QStyledItemDelegate::createEditor(parent, option, index);
+        }
+
+        void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override
+        {
+            Q_UNUSED(index);
+            editor->setGeometry(option.rect);
+        }
+    };
+
     // Extract specific course data avoiding repetitive index lookups
     struct AssessmentDetails
     {
@@ -63,8 +88,15 @@ namespace
 UIAcademics::UIAcademics(Ui::MainWindow *ui, AcadenceManager *manager, QString role, int uid, QObject *parent)
     : QObject(parent), ui(ui), myManager(manager), userRole(role), userId(uid), btnCheckWarnings(nullptr)
 {
+    // Make grade editing feel natural by keeping the editor aligned to full cell size.
+    ui->tableGrading->setItemDelegateForColumn(2, new FullCellGradeEditorDelegate(ui->tableGrading));
+
     if (role == "Teacher")
     {
+        // For attendance editing, keep selection to the clicked cell only.
+        ui->tableAttendance->setSelectionBehavior(QAbstractItemView::SelectItems);
+        ui->tableAttendance->setSelectionMode(QAbstractItemView::SingleSelection);
+
         btnCheckWarnings = new QPushButton("Check Attendance Warnings");
         ui->hbox_attendance_controls->addWidget(btnCheckWarnings);
         connect(btnCheckWarnings, &QPushButton::clicked, this, &UIAcademics::onCheckAttendanceWarningsClicked);
@@ -347,6 +379,7 @@ void UIAcademics::refreshTeacherGrades()
         ++i;
     }
     ui->tableGrading->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->tableGrading->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 void UIAcademics::onSaveGradesClicked()

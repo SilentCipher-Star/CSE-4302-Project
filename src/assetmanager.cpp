@@ -13,8 +13,8 @@ void AssetManager::load()
     qDebug() << "AssetManager: Loading assets...";
     Utils::loadFonts();
     CsvHandler::initialize();
-    CsvHandler::loadAllData();
-
+    // CSV data loads on-demand when first accessed, not upfront
+    
     // Use the virtual paths defined in your assets.qrc
     loadSound("tick", "qrc:/assets/sounds/tick.wav");
     loadSound("end", "qrc:/assets/sounds/timer_end.wav");
