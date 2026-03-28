@@ -62,6 +62,7 @@ bin/
 debug/
 release/
 cmake-build-*/
+assets/data/
 
 # IDE / Editor
 .vscode/
