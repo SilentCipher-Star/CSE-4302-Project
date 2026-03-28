@@ -169,12 +169,16 @@ void CsvHandler::initialize()
     for (const QString &fileName : otherFiles)
     {
         QFile file(dataDir + fileName);
-        if (!file.exists() && !file.open(QIODevice::WriteOnly | QIODevice::Text))
+        if (!file.exists())
         {
-        }
-        else
-        {
-            file.close();
+            if (file.open(QIODevice::WriteOnly | QIODevice::Text))
+            {
+                file.close();
+            }
+            else
+            {
+                qWarning() << "Failed to create missing database file:" << fileName;
+            }
         }
     }
 }
