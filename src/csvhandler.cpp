@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QDir>
 #include <QCoreApplication>
+#include <QDebug>
 
 QMap<QString, QVector<QStringList>> CsvHandler::m_cache;
 
@@ -188,7 +189,18 @@ void CsvHandler::loadAllData()
 
     for (const QString &file : files)
     {
-        readCsv(file); // This will trigger caching
+        try
+        {
+            readCsv(file); // This will trigger caching
+        }
+        catch (const Acadence::FileException &e)
+        {
+            qWarning() << "Could not preload" << file << ":" << e.what();
+        }
+        catch (const std::exception &e)
+        {
+            qWarning() << "Error preloading" << file << ":" << e.what();
+        }
     }
 }
 
